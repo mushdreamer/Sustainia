@@ -16,6 +16,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public TextMeshProUGUI happinessText;
         public Slider happinessSlider;
         public TextMeshProUGUI airQualityText;
+        public Slider airQualitySlider;
 
         // --- 核心全局变量 ---
         private float _money;
@@ -177,13 +178,18 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             foodText.text = $"Food: {_food:F0}";
             float electricityBalance = _electricityProduction - (_currentPopulation * electricityPerPerson);
             electricityText.text = $"Electricity: {electricityBalance:F1}";
-            happinessText.text = $"Happiness: {_happiness:F0}%";
+            happinessText.text = $"{_happiness:F0}%";
             if (happinessSlider != null)
             {
                 // 我们将在编辑器中把Slider的最大值设为100
                 happinessSlider.value = _happiness; // <<< --- 添加这一行 ---
             }
             airQualityText.text = $"AirQ: {_airQuality:F0}%";
+            if (airQualitySlider != null)
+            {
+                // 我们将在编辑器中把Slider的最大值设为100
+                airQualitySlider.value = _airQuality; // <<< --- 添加这一行 ---
+            }
         }
 
         // --- 公共方法，供其他脚本调用 ---
