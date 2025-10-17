@@ -184,7 +184,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
                 // 我们将在编辑器中把Slider的最大值设为100
                 happinessSlider.value = _happiness; // <<< --- 添加这一行 ---
             }
-            airQualityText.text = $"AirQ: {_airQuality:F0}%";
+            airQualityText.text = $"{_airQuality:F0}%";
             if (airQualitySlider != null)
             {
                 // 我们将在编辑器中把Slider的最大值设为100
