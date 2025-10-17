@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro; // 用于UI显示
+using UnityEngine.UI;
 
 namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 {
@@ -13,6 +14,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public TextMeshProUGUI foodText;
         public TextMeshProUGUI electricityText;
         public TextMeshProUGUI happinessText;
+        public Slider happinessSlider;
         public TextMeshProUGUI airQualityText;
 
         // --- 核心全局变量 ---
@@ -110,7 +112,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
                 }
 
                 // 人口增长
-                if (_currentPopulation < _populationCapacity)
+                if (_currentPopulation < _populationCapacity && (_currentPopulation > 0 || _foodProductionRate > 0))
                 {
                     _populationGrowthProgress += populationGrowthRate;
                     if (_populationGrowthProgress >= 1f)
@@ -176,6 +178,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             float electricityBalance = _electricityProduction - (_currentPopulation * electricityPerPerson);
             electricityText.text = $"Electricity: {electricityBalance:F1}";
             happinessText.text = $"Happiness: {_happiness:F0}%";
+            if (happinessSlider != null)
+            {
+                // 我们将在编辑器中把Slider的最大值设为100
+                happinessSlider.value = _happiness; // <<< --- 添加这一行 ---
+            }
             airQualityText.text = $"AirQ: {_airQuality:F0}%";
         }
 
