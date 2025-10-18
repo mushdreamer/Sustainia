@@ -17,8 +17,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public Slider happinessSlider;
         public TextMeshProUGUI airQualityText;
         public Slider airQualitySlider;
+        public TextMeshProUGUI dayText;
 
         // --- 核心全局变量 ---
+        private int _currentDay;
         private float _money;
         private int _currentPopulation;
         private int _populationCapacity;
@@ -76,6 +78,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
         void Start()
         {
+            _currentDay = 1;
             _money = startingMoney;
             _populationCapacity = startingPopulationCapacity;
             _happiness = 100f;
@@ -89,6 +92,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         // 每秒执行一次的核心游戏逻辑
         private void Tick()
         {
+            _currentDay++;
+
             // --- 重新计算应用增益后的总产量/排放 ---
             _electricityProduction = _baseElectricityProduction * _powerEfficiencyModifier;
             _carbonDioxideEmission = _baseCarbonDioxideEmission * _co2EmissionModifier;
@@ -189,6 +194,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             {
                 // 我们将在编辑器中把Slider的最大值设为100
                 airQualitySlider.value = _airQuality; // <<< --- 添加这一行 ---
+            }
+            // --- 更新Day UI ---
+            if (dayText != null) // <<< --- 添加这个 if 语句块 ---
+            {
+                dayText.text = $"Day {_currentDay}";
             }
         }
 
