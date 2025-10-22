@@ -22,6 +22,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables {
         // --- 在这里添加新属性 ---
         [field: SerializeField]
         public float Cost { get; private set; } = 100f; // 默认价格100
+        public float Health = 100f; // 默认血量100
 
         [field: Tooltip("Describes in which gridData the object will be stored.")]
         [field: SerializeField]
