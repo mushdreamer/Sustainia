@@ -20,9 +20,9 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public TextMeshProUGUI dayText;
 
         // --- 核心全局变量 ---
-        private int _currentDay;
+        public int _currentDay;
         private float _money;
-        private int _currentPopulation;
+        public int _currentPopulation;
         private int _populationCapacity;
         private int _basePopulation;
         private int _employedPopulation;
@@ -30,11 +30,12 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private float _foodProductionRate; // 每秒生产的食物
         private float _baseElectricityProduction;      // <<< --- 修改: 电力基础产量 ---
         private float _electricityProduction;
-        private float _happiness;
+        public float _happiness;
         private float _baseCarbonDioxideEmission;      // <<< --- 修改: 二氧化碳基础排放量 ---
         private float _carbonDioxideEmission;
-        private float _airQuality;
-        private bool _bankExists = false;
+        public float _airQuality;
+        private float _carbonDioxideAbsorption = 0f;
+        private int _bankCount = 0;
 
         // --- 新增科研相关变量 ---
         private float _powerEfficiencyModifier = 1.0f; // 电力效率修正，初始为100%
@@ -112,7 +113,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
                 // --- 新的银行逻辑 ---
                 // 只有在人口成功消耗食物后，银行才会产生收入
-                if (_bankExists && foodConsumed > 0)
+                if (_bankCount > 0 && foodConsumed > 0)
                 {
                     AddMoney(foodConsumed * moneyMultiplierFromFood);
                 }
@@ -164,12 +165,22 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             }
 
             // 6. 空气质量计算
-            // a. 因排放而下降
-            _airQuality -= _carbonDioxideEmission * airQualityDeclineRate;
-            // b. 自然恢复
+            // a. 计算基础值
+            _electricityProduction = _baseElectricityProduction * _powerEfficiencyModifier;
+            _carbonDioxideEmission = _baseCarbonDioxideEmission * _co2EmissionModifier;
+
+            // b. 计算净排放量 (总排放 - 总吸收)
+            float netEmission = _carbonDioxideEmission - _carbonDioxideAbsorption;
+
+            // c. 因净排放而下降 (如果净排放为负，我们当它为0，空气不会因此变好，只会自然恢复)
+            if (netEmission > 0)
+            {
+                _airQuality -= netEmission * airQualityDeclineRate;
+            }
+
+            // d. 自然恢复
             _airQuality += airQualityRecoveryRate;
 
-            // 确保空气质量在0-100之间
             _airQuality = Mathf.Clamp(_airQuality, 0f, 100f);
 
 
@@ -256,7 +267,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             }
             else
             {
-                Debug.LogWarning("没有足够的人口来农场工作!");
+                Debug.LogWarning("You need people to run the farm!");
                 // 这里可以提示玩家人口不足
             }
         }
@@ -306,9 +317,34 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             }
         }
 
-        public void SetBankStatus(bool exists)
+        public void AddCo2Absorption(float amount)
         {
-            _bankExists = exists;
+            _carbonDioxideAbsorption += amount;
+            UpdateUI();
+        }
+
+        public void RemoveCo2Absorption(float amount)
+        {
+            _carbonDioxideAbsorption -= amount;
+            if (_carbonDioxideAbsorption < 0) _carbonDioxideAbsorption = 0;
+            UpdateUI();
+        }
+        public void AddBank()
+        {
+            _bankCount++;
+        }
+
+        public void RemoveBank()
+        {
+            _bankCount--;
+            if (_bankCount < 0) _bankCount = 0;
+        }
+
+        // <<< +++ 添加这个新方法 +++
+        public float GetCurrentNetEmission()
+        {
+            float netEmission = _carbonDioxideEmission - _carbonDioxideAbsorption;
+            return (netEmission > 0) ? netEmission : 0;
         }
 
         public int GetUnemployedPopulation()

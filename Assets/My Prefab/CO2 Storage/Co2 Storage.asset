@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 220f42fd2be8412088d96b73d9d10822, type: 3}
+  m_Name: Co2 Storage
+  m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables.Placeable
+  <Size>k__BackingField: {x: 1.770269, y: 0.851442}
+  <Prefab>k__BackingField: {fileID: 4417588646843519417, guid: c62664927b31bb8418c2793f6366c3d1, type: 3}
+  <Icon>k__BackingField: {fileID: 21300000, guid: 5b694c0105118a04484c16e0533cc3a9, type: 3}
+  <Cost>k__BackingField: 100
+  <GridType>k__BackingField: 0
+  <ObjectGroupInfo>k__BackingField: 0
+  <DynamicSize>k__BackingField: 0

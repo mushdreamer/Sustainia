@@ -125,7 +125,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8491c1e2af13d64cb78d494507aa9ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingEffect
-  type: 4
+  type: 5
   populationCapacityIncrease: 5
+  initialPopulationGain: 2
   foodProduction: 2
   workersRequired: 2
+  electricityProduction: 10
+  co2Emission: 2
+  co2AbsorptionRate: 100
+  co2Capacity: 100
