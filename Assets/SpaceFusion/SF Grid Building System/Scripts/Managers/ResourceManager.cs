@@ -18,6 +18,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public TextMeshProUGUI airQualityText;
         public Slider airQualitySlider;
         public TextMeshProUGUI dayText;
+        public TextMeshProUGUI universityLevelText; // <<< +++ 新增: 用于显示大学等级 +++
 
         // --- 核心全局变量 ---
         public int _currentDay;
@@ -28,14 +29,15 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private int _employedPopulation;
         private float _food;
         private float _foodProductionRate; // 每秒生产的食物
-        private float _baseElectricityProduction;      // <<< --- 修改: 电力基础产量 ---
+        private float _baseElectricityProduction;
         private float _electricityProduction;
         public float _happiness;
-        private float _baseCarbonDioxideEmission;      // <<< --- 修改: 二氧化碳基础排放量 ---
+        private float _baseCarbonDioxideEmission;
         private float _carbonDioxideEmission;
         public float _airQuality;
         private float _carbonDioxideAbsorption = 0f;
         private int _bankCount = 0;
+        private int _universityLevel = 1; // <<< +++ 新增: 全局大学/科研等级，初始为1 +++
 
         // --- 新增科研相关变量 ---
         private float _powerEfficiencyModifier = 1.0f; // 电力效率修正，初始为100%
@@ -50,14 +52,18 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public float populationGrowthRate = 0.5f; // 当食物充足时，每秒人口增长的点数
         public float moneyMultiplierFromFood = 0.5f;
 
-        [Header("Electricity & Environment")] // <<< --- 新增参数组 ---
+        [Header("Electricity & Environment")]
         public float electricityPerPerson = 0.2f; // 每人每秒消耗的电力
         public float happinessChangeRate = 1f;    // 幸福度每秒变化的点数
         public float airQualityRecoveryRate = 0.1f; // 空气质量每秒自然恢复的点数
         public float airQualityDeclineRate = 0.2f;  // 每单位二氧化碳排放导致空气质量下降的速率
 
-        [Header("Institute Settings")] // <<< --- 新增参数组 ---
-        public float researchCost = 100f; // 每次科研投入的成本
+        // <<< --- 修改: "Institute Settings" 已重命名并扩展为 "Research Settings" ---
+        [Header("Research Settings")]
+        // <<< --- 修改: researchCost 重命名为 researchCostBase ---
+        public float researchCostBase = 100f; // <<< +++ 每次科研投入的 基础 成本 +++
+        public float researchCostMultiplier = 1.5f; // <<< +++ 新增: 科研成本的增长乘数 (例如 100, 150, 225...) +++
+        public int researchLevelCap = 10; // <<< +++ 新增: 大学最高等级 +++
         public float powerEfficiencyGain = 0.1f; // 每次科研提升的发电效率 (10%)
         public float co2EmissionReduction = 0.1f; // 每次科研降低的碳排放 (10%)
 
@@ -66,6 +72,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
         // --- 公开属性，用于其他脚本访问 ---
         public float Money => _money;
+        public int UniversityLevel => _universityLevel; // <<< +++ 新增: 公开访问大学等级 +++
 
         void Awake()
         {
@@ -84,6 +91,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             _populationCapacity = startingPopulationCapacity;
             _happiness = 100f;
             _airQuality = 100f;
+            _universityLevel = 1; // <<< +++ 确保开始时为1级 +++
             UpdateUI();
 
             // 每秒调用一次核心逻辑更新
@@ -112,7 +120,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
                 _food -= foodConsumed;
 
                 // --- 新的银行逻辑 ---
-                // 只有在人口成功消耗食物后，银行才会产生收入
                 if (_bankCount > 0 && foodConsumed > 0)
                 {
                     AddMoney(foodConsumed * moneyMultiplierFromFood);
@@ -134,8 +141,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
                 // 食物不足的逻辑 (饥饿)
                 _food = 0; // 耗尽所有食物
 
-                // --- 新的人口减少逻辑 ---
-                // 只有在当前人口大于基础人口时，才会因饥饿减少
                 if (_currentPopulation > _basePopulation)
                 {
                     _populationDecreaseProgress += populationDecreaseRate;
@@ -153,13 +158,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             // 5. 幸福度计算
             if (_electricityProduction >= electricityConsumed)
             {
-                // 电力充足，幸福度缓慢上升
                 _happiness += happinessChangeRate;
                 if (_happiness > 100f) _happiness = 100f;
             }
             else
             {
-                // 电力不足，幸福度缓慢下降
                 _happiness -= happinessChangeRate;
                 if (_happiness < 0f) _happiness = 0f;
             }
@@ -172,7 +175,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             // b. 计算净排放量 (总排放 - 总吸收)
             float netEmission = _carbonDioxideEmission - _carbonDioxideAbsorption;
 
-            // c. 因净排放而下降 (如果净排放为负，我们当它为0，空气不会因此变好，只会自然恢复)
+            // c. 因净排放而下降
             if (netEmission > 0)
             {
                 _airQuality -= netEmission * airQualityDeclineRate;
@@ -197,20 +200,23 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             happinessText.text = $"{_happiness:F0}%";
             if (happinessSlider != null)
             {
-                // 我们将在编辑器中把Slider的最大值设为100
-                happinessSlider.value = _happiness; // <<< --- 添加这一行 ---
+                happinessSlider.value = _happiness;
             }
             airQualityText.text = $"{_airQuality:F0}%";
             if (airQualitySlider != null)
             {
-                // 我们将在编辑器中把Slider的最大值设为100
-                airQualitySlider.value = _airQuality; // <<< --- 添加这一行 ---
+                airQualitySlider.value = _airQuality;
             }
-            // --- 更新Day UI ---
-            if (dayText != null) // <<< --- 添加这个 if 语句块 ---
+            if (dayText != null)
             {
                 dayText.text = $"Day {_currentDay}";
             }
+            // <<< +++ 新增: 更新大学等级UI +++
+            if (universityLevelText != null)
+            {
+                universityLevelText.text = $"University Level: {_universityLevel}";
+            }
+            // <<< +++ ---------------------- +++
         }
 
         // --- 公共方法，供其他脚本调用 ---
@@ -237,7 +243,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             _currentPopulation += initialPopulation;
             _basePopulation += initialPopulation;
 
-            // --- 关键逻辑：确保增加初始人口后，当前人口不会超过新的上限 ---
             _currentPopulation = Mathf.Min(_currentPopulation, _populationCapacity);
 
             UpdateUI();
@@ -250,7 +255,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
             if (_basePopulation < 0) _basePopulation = 0;
 
-            // --- 关键逻辑：移除房屋后，如果当前人口超过了新的上限，则将当前人口降低到与上限齐平 ---
             _currentPopulation = Mathf.Min(_currentPopulation, _populationCapacity);
 
             UpdateUI();
@@ -258,7 +262,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
         public void AddFoodProduction(float amount, int workersRequired)
         {
-            // 检查是否有足够的人口来工作
             if (GetUnemployedPopulation() >= workersRequired)
             {
                 _employedPopulation += workersRequired;
@@ -268,7 +271,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             else
             {
                 Debug.LogWarning("You need people to run the farm!");
-                // 这里可以提示玩家人口不足
             }
         }
 
@@ -280,7 +282,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             UpdateUI();
         }
 
-        // --- 新增公共方法 ---
         public void AddPowerPlantEffect(float electricity, float co2)
         {
             _baseElectricityProduction += electricity;
@@ -296,24 +297,33 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             if (_carbonDioxideEmission < 0) _carbonDioxideEmission = 0;
             UpdateUI();
         }
+
+        // <<< --- 修改: FundResearch 方法已更新 ---
         public void FundResearch()
         {
-            if (SpendMoney(researchCost))
+            // <<< +++ 新增: 检查是否已达最高等级 +++
+            if (_universityLevel >= researchLevelCap)
             {
-                // 科研成功，应用增益
-                _powerEfficiencyModifier += powerEfficiencyGain;
-                _co2EmissionModifier -= co2EmissionReduction;
+                Debug.Log("University is already at MAX Level!");
+                return;
+            }
 
-                // 确保排放修正不会低于0
-                if (_co2EmissionModifier < 0) _co2EmissionModifier = 0;
+            // <<< +++ 新增: 动态计算科研成本 +++
+            // 成本 = 基础成本 * (乘数 ^ (当前等级 - 1))
+            float currentResearchCost = researchCostBase * Mathf.Pow(researchCostMultiplier, _universityLevel - 1);
 
-                Debug.Log($"Research Succeed! Current Power Efficient: {_powerEfficiencyModifier * 100:F0}%, Co2 Emission: {_co2EmissionModifier * 100:F0}%");
+            // <<< --- 修改: 使用动态成本 ---
+            if (SpendMoney(currentResearchCost))
+            {
+                // <<< +++ 新增: 提升大学等级 +++
+                _universityLevel++;
+
+                Debug.Log($"Research Succeed! University Level is now: {_universityLevel}");
                 UpdateUI();
             }
             else
             {
-                Debug.Log("Not Enough Funding for Research!");
-                // 可以在此添加UI提示
+                Debug.Log($"Not Enough Funding for Research! Need {currentResearchCost:F0}");
             }
         }
 
@@ -340,7 +350,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             if (_bankCount < 0) _bankCount = 0;
         }
 
-        // <<< +++ 添加这个新方法 +++
         public float GetCurrentNetEmission()
         {
             float netEmission = _carbonDioxideEmission - _carbonDioxideAbsorption;

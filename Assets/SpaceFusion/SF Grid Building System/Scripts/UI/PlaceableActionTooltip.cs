@@ -4,17 +4,27 @@ using SpaceFusion.SF_Grid_Building_System.Scripts.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI {
-    public class PlaceableActionTooltip : MonoBehaviour {
+namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
+{
+    public class PlaceableActionTooltip : MonoBehaviour
+    {
         [SerializeField]
         private Button moveButton;
 
         [SerializeField]
         private Button removeButton;
 
-        [Header("Institute Buttons")] // <<< --- 新增按钮引用 ---
+        [Header("Institute Buttons")]
         [SerializeField]
         private Button researchButton;
+
+        // <<< +++ 
+        // +++ 1. 新增: 添加对 "升级" 按钮的引用
+        // +++ 
+        [Header("Building Action Buttons")]
+        [SerializeField]
+        private Button upgradeButton;
+        // <<< +++ -------------------------- +++
 
         [SerializeField]
         private GameObject tooltipUI;
@@ -32,47 +42,91 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI {
         private Vector2 _tooltipSize;
         private Camera _targetCamera;
 
-        private void Awake() {
-            if (_instance != null) {
+        private void Awake()
+        {
+            if (_instance != null)
+            {
                 Destroy(gameObject);
-            } else {
+            }
+            else
+            {
                 _instance = this;
                 _tooltipSize = GetComponent<RectTransform>().sizeDelta;
                 moveButton.onClick.AddListener(MoveObject);
                 removeButton.onClick.AddListener(RemoveObject);
-                researchButton.onClick.AddListener(FundResearch); // <<< --- 绑定新按钮的事件 ---
+                researchButton.onClick.AddListener(FundResearch);
+
+                // <<< +++ 
+                // +++ 2. 新增: 绑定新 "升级" 按钮的点击事件
+                // +++ 
+                if (upgradeButton != null) // (添加一个非空检查更安全)
+                {
+                    upgradeButton.onClick.AddListener(UpgradeObject);
+                }
+                // <<< +++ ---------------------------------- +++
+
                 tooltipUI.gameObject.SetActive(false);
             }
         }
 
-        private void Start() {
+        private void Start()
+        {
             _placementSystem = PlacementSystem.Instance;
             _targetCamera = GameManager.Instance.SceneCamera;
             InputManager.Instance.OnExit += CloseTooltip;
             PlacedObject.holdComplete += ShowTooltip;
         }
 
-        private void OnDestroy() {
+        private void OnDestroy()
+        {
             InputManager.Instance.OnExit -= CloseTooltip;
             PlacedObject.holdComplete -= ShowTooltip;
         }
 
-        private void CloseTooltip() {
+        private void CloseTooltip()
+        {
             tooltipUI.gameObject.SetActive(false);
             blockerUI.SetActive(false);
         }
 
-        private void Show(PlacedObject caller) {
+        private void Show(PlacedObject caller)
+        {
             _placedObject = caller;
-            // --- 核心修改：根据建筑类型显示不同按钮 ---
             var buildingType = _placedObject.buildingEffect.type;
 
             moveButton.gameObject.SetActive(true);
-            removeButton.gameObject.SetActive(true); // 移除按钮始终显示
+            removeButton.gameObject.SetActive(true);
 
-            //Only Show when Institute is Selected
-            researchButton.gameObject.SetActive(buildingType == BuildingType.Institute);
-            // --- 修改结束 ---
+            // <<< --- 
+            // --- 3. 修改: 这里的逻辑需要更新
+            // ---
+
+            // 旧逻辑:
+            // researchButton.gameObject.SetActive(buildingType == BuildingType.Institute);
+
+            // 新逻辑:
+            if (buildingType == BuildingType.Institute)
+            {
+                // 如果是大学，显示 "科研" 按钮，隐藏 "升级" 按钮
+                researchButton.gameObject.SetActive(true);
+                if (upgradeButton != null)
+                {
+                    upgradeButton.gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                // 如果是其他建筑 (房子, 农场等)，隐藏 "科研" 按钮，显示 "升级" 按钮
+                researchButton.gameObject.SetActive(false);
+                if (upgradeButton != null)
+                {
+                    upgradeButton.gameObject.SetActive(true);
+                }
+            }
+            // <<< --- 
+            // --- 修改结束
+            // --- 
+
             var screenPosition = _targetCamera.WorldToScreenPoint(caller.transform.position);
             tooltipUI.gameObject.SetActive(true);
             tooltipUI.transform.position = RecalculatePositionWithinBounds(screenPosition);
@@ -80,47 +134,70 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI {
 
         }
 
-        /// <summary>
-        /// makes sure that the shown tooltip is fully within the screen and also considers the defined margin to the screen edges
-        /// </summary>
-        private Vector3 RecalculatePositionWithinBounds(Vector3 screenPosition) {
+        private Vector3 RecalculatePositionWithinBounds(Vector3 screenPosition)
+        {
             var newPosition = new Vector3(screenPosition.x, screenPosition.y, screenPosition.z);
-            if (screenPosition.x < 0) {
+            if (screenPosition.x < 0)
+            {
                 newPosition.x = margin;
-            } else if (screenPosition.x + _tooltipSize.x > Screen.width) {
+            }
+            else if (screenPosition.x + _tooltipSize.x > Screen.width)
+            {
                 newPosition.x = Screen.width - _tooltipSize.x - margin;
             }
 
-            if (screenPosition.y < 0) {
+            if (screenPosition.y < 0)
+            {
                 newPosition.y = margin;
-            } else if (screenPosition.y + _tooltipSize.y > Screen.height) {
+            }
+            else if (screenPosition.y + _tooltipSize.y > Screen.height)
+            {
                 newPosition.y = Screen.height - _tooltipSize.y - margin;
             }
 
             return newPosition;
         }
 
-        private void MoveObject() {
+        private void MoveObject()
+        {
             _placementSystem.StartMoving(_placedObject);
             HideTooltip();
         }
 
-        private void RemoveObject() {
+        private void RemoveObject()
+        {
             _placementSystem.Remove(_placedObject);
             HideTooltip();
         }
 
-        private void HideTooltip() {
+        private void HideTooltip()
+        {
             tooltipUI.gameObject.SetActive(false);
             blockerUI.SetActive(false);
         }
-        private void FundResearch() // <<< --- 新增方法 ---
+
+        private void FundResearch()
         {
             ResourceManager.Instance.FundResearch();
-            HideTooltip(); // 执行操作后关闭菜单
+            HideTooltip();
         }
 
-        private static void ShowTooltip(PlacedObject caller) {
+        // <<< +++ 
+        // +++ 4. 新增: 升级按钮调用的方法
+        // +++ 
+        private void UpgradeObject()
+        {
+            // 它会调用我们之前在 BuildingEffect.cs 中创建的 TryUpgradeBuilding 方法
+            if (_placedObject != null && _placedObject.buildingEffect != null)
+            {
+                _placedObject.buildingEffect.TryUpgradeBuilding();
+            }
+            HideTooltip(); // 无论升级是否成功 (比如钱不够)，都关闭菜单
+        }
+        // <<< +++ ---------------------------------- +++
+
+        private static void ShowTooltip(PlacedObject caller)
+        {
             _instance.Show(caller);
         }
     }
