@@ -1,6 +1,8 @@
 using UnityEngine;
 using TMPro; // 用于UI显示
 using UnityEngine.UI;
+using System.Collections.Generic;
+using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 
 namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 {
@@ -18,7 +20,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public TextMeshProUGUI airQualityText;
         public Slider airQualitySlider;
         public TextMeshProUGUI dayText;
-        public TextMeshProUGUI universityLevelText; // <<< +++ 新增: 用于显示大学等级 +++
+        public TextMeshProUGUI universityLevelText;
 
         // --- 核心全局变量 ---
         public int _currentDay;
@@ -37,7 +39,14 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public float _airQuality;
         private float _carbonDioxideAbsorption = 0f;
         private int _bankCount = 0;
-        private int _universityLevel = 1; // <<< +++ 新增: 全局大学/科研等级，初始为1 +++
+        private int _universityLevel = 1;
+        // <<< +++ 新增: 跟踪所有建筑的总耗电量 +++
+        private float _totalElectricityConsumption = 0f;
+
+        // <<< +++ 新增: 跟踪所有已放置的建筑实例 +++
+        private List<BuildingEffect> _allPlacedBuildings = new List<BuildingEffect>();
+
+        private Dictionary<BuildingType, int> _buildingCounts = new Dictionary<BuildingType, int>();
 
         // --- 新增科研相关变量 ---
         private float _powerEfficiencyModifier = 1.0f; // 电力效率修正，初始为100%
@@ -53,26 +62,25 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public float moneyMultiplierFromFood = 0.5f;
 
         [Header("Electricity & Environment")]
-        public float electricityPerPerson = 0.2f; // 每人每秒消耗的电力
-        public float happinessChangeRate = 1f;    // 幸福度每秒变化的点数
+        // <<< --- 删除: electricityPerPerson 已被移除，因为现在耗电由建筑决定 ---
+        // public float electricityPerPerson = 0.2f; 
+        public float happinessChangeRate = 1f;    // 幸福度每秒变化的点数 (现在由空气质量触发)
         public float airQualityRecoveryRate = 0.1f; // 空气质量每秒自然恢复的点数
         public float airQualityDeclineRate = 0.2f;  // 每单位二氧化碳排放导致空气质量下降的速率
 
-        // <<< --- 修改: "Institute Settings" 已重命名并扩展为 "Research Settings" ---
         [Header("Research Settings")]
-        // <<< --- 修改: researchCost 重命名为 researchCostBase ---
-        public float researchCostBase = 100f; // <<< +++ 每次科研投入的 基础 成本 +++
-        public float researchCostMultiplier = 1.5f; // <<< +++ 新增: 科研成本的增长乘数 (例如 100, 150, 225...) +++
-        public int researchLevelCap = 10; // <<< +++ 新增: 大学最高等级 +++
-        public float powerEfficiencyGain = 0.1f; // 每次科研提升的发电效率 (10%)
-        public float co2EmissionReduction = 0.1f; // 每次科研降低的碳排放 (10%)
+        public float researchCostBase = 100f;
+        public float researchCostMultiplier = 1.5f;
+        public int researchLevelCap = 10;
+        public float powerEfficiencyGain = 0.1f;
+        public float co2EmissionReduction = 0.1f;
 
         private float _populationGrowthProgress = 0f;
         private float _populationDecreaseProgress = 0f;
 
         // --- 公开属性，用于其他脚本访问 ---
         public float Money => _money;
-        public int UniversityLevel => _universityLevel; // <<< +++ 新增: 公开访问大学等级 +++
+        public int UniversityLevel => _universityLevel;
 
         void Awake()
         {
@@ -91,7 +99,15 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             _populationCapacity = startingPopulationCapacity;
             _happiness = 100f;
             _airQuality = 100f;
-            _universityLevel = 1; // <<< +++ 确保开始时为1级 +++
+            _universityLevel = 1;
+            _totalElectricityConsumption = 0f; // <<< +++ 新增: 初始化耗电量 +++
+
+            _buildingCounts.Clear();
+            foreach (BuildingType type in System.Enum.GetValues(typeof(BuildingType)))
+            {
+                _buildingCounts[type] = 0;
+            }
+
             UpdateUI();
 
             // 每秒调用一次核心逻辑更新
@@ -104,6 +120,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             _currentDay++;
 
             // --- 重新计算应用增益后的总产量/排放 ---
+            // <<< --- 修改: 电力生产 = 总消耗 (PowerPlant自动满足) ---
+            _baseElectricityProduction = _totalElectricityConsumption;
             _electricityProduction = _baseElectricityProduction * _powerEfficiencyModifier;
             _carbonDioxideEmission = _baseCarbonDioxideEmission * _co2EmissionModifier;
 
@@ -139,7 +157,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             else
             {
                 // 食物不足的逻辑 (饥饿)
-                _food = 0; // 耗尽所有食物
+                _food = 0;
 
                 if (_currentPopulation > _basePopulation)
                 {
@@ -153,24 +171,28 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             }
 
             // 4. 电力计算
-            float electricityConsumed = _currentPopulation * electricityPerPerson;
+            // <<< --- 修改: 移除旧的 per-person 消耗 ---
+            // float electricityConsumed = _currentPopulation * electricityPerPerson;
+            // <<< --- 消耗现在等于所有建筑的总和 (电力生产会自动匹配此值) ---
+            float electricityConsumed = _totalElectricityConsumption;
 
             // 5. 幸福度计算
-            if (_electricityProduction >= electricityConsumed)
+            // <<< --- 修改: 根据用户要求，电力总是被满足，不再影响幸福度 ---
+            // <<< --- 替换: 幸福度现在与空气质量挂钩 ---
+            if (_airQuality > 70) // 如果空气质量好
             {
                 _happiness += happinessChangeRate;
-                if (_happiness > 100f) _happiness = 100f;
             }
-            else
+            else if (_airQuality < 40) // 如果空气质量差
             {
-                _happiness -= happinessChangeRate;
-                if (_happiness < 0f) _happiness = 0f;
+                _happiness -= happinessChangeRate * 1.5f; // 差空气导致幸福度下降更快
             }
+            _happiness = Mathf.Clamp(_happiness, 0f, 100f);
 
             // 6. 空气质量计算
-            // a. 计算基础值
-            _electricityProduction = _baseElectricityProduction * _powerEfficiencyModifier;
-            _carbonDioxideEmission = _baseCarbonDioxideEmission * _co2EmissionModifier;
+            // a. 计算基础值 (已在Tick开头完成)
+            // _electricityProduction = _baseElectricityProduction * _powerEfficiencyModifier;
+            // _carbonDioxideEmission = _baseCarbonDioxideEmission * _co2EmissionModifier;
 
             // b. 计算净排放量 (总排放 - 总吸收)
             float netEmission = _carbonDioxideEmission - _carbonDioxideAbsorption;
@@ -195,8 +217,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             moneyText.text = $"Money: {_money:F0}";
             populationText.text = $"Population: {_currentPopulation} / {_populationCapacity}";
             foodText.text = $"Food: {_food:F0}";
-            float electricityBalance = _electricityProduction - (_currentPopulation * electricityPerPerson);
-            electricityText.text = $"Electricity: {electricityBalance:F1}";
+
+            // <<< --- 修改: UI现在显示总消耗量 (需求) ---
+            // float electricityBalance = _electricityProduction - (_currentPopulation * electricityPerPerson);
+            electricityText.text = $"Electricity Demand: {_totalElectricityConsumption:F1}";
+
             happinessText.text = $"{_happiness:F0}%";
             if (happinessSlider != null)
             {
@@ -211,12 +236,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             {
                 dayText.text = $"Day {_currentDay}";
             }
-            // <<< +++ 新增: 更新大学等级UI +++
+
             if (universityLevelText != null)
             {
                 universityLevelText.text = $"University Level: {_universityLevel}";
             }
-            // <<< +++ ---------------------- +++
         }
 
         // --- 公共方法，供其他脚本调用 ---
@@ -282,41 +306,42 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             UpdateUI();
         }
 
-        public void AddPowerPlantEffect(float electricity, float co2)
+        // <<< --- 修改: 发电厂效果现在只接收 CO2 ---
+        public void AddPowerPlantEffect(float co2)
         {
-            _baseElectricityProduction += electricity;
             _baseCarbonDioxideEmission += co2;
             UpdateUI();
         }
 
-        public void RemovePowerPlantEffect(float electricity, float co2)
+        // <<< --- 修改: 发电厂效果现在只移除 CO2 ---
+        public void RemovePowerPlantEffect(float co2)
         {
-            _baseElectricityProduction -= electricity;
             _baseCarbonDioxideEmission -= co2;
-            if (_electricityProduction < 0) _electricityProduction = 0;
-            if (_carbonDioxideEmission < 0) _carbonDioxideEmission = 0;
+            // <<< --- 修正: 这里应该检查 _baseCarbonDioxideEmission ---
+            if (_baseCarbonDioxideEmission < 0) _baseCarbonDioxideEmission = 0;
             UpdateUI();
         }
 
-        // <<< --- 修改: FundResearch 方法已更新 ---
+        // <<< --- FundResearch 方法保持不变 ---
         public void FundResearch()
         {
-            // <<< +++ 新增: 检查是否已达最高等级 +++
             if (_universityLevel >= researchLevelCap)
             {
                 Debug.Log("University is already at MAX Level!");
                 return;
             }
 
-            // <<< +++ 新增: 动态计算科研成本 +++
-            // 成本 = 基础成本 * (乘数 ^ (当前等级 - 1))
             float currentResearchCost = researchCostBase * Mathf.Pow(researchCostMultiplier, _universityLevel - 1);
 
-            // <<< --- 修改: 使用动态成本 ---
             if (SpendMoney(currentResearchCost))
             {
-                // <<< +++ 新增: 提升大学等级 +++
                 _universityLevel++;
+
+                // !!! 注意: 你的研究系统当前只提升等级，
+                // 并没有实际应用 _powerEfficiencyModifier 或 _co2EmissionModifier 的变化。
+                // 你可能需要在这里添加如下逻辑:
+                // _powerEfficiencyModifier += powerEfficiencyGain;
+                // _co2EmissionModifier -= co2EmissionReduction;
 
                 Debug.Log($"Research Succeed! University Level is now: {_universityLevel}");
                 UpdateUI();
@@ -352,6 +377,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
         public float GetCurrentNetEmission()
         {
+            // <<< --- 修改: 确保使用应用了修正的 _carbonDioxideEmission ---
             float netEmission = _carbonDioxideEmission - _carbonDioxideAbsorption;
             return (netEmission > 0) ? netEmission : 0;
         }
@@ -359,6 +385,80 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public int GetUnemployedPopulation()
         {
             return _currentPopulation - _employedPopulation;
+        }
+
+        public void RegisterBuilding(BuildingType type)
+        {
+            if (_buildingCounts.ContainsKey(type))
+            {
+                _buildingCounts[type]++;
+            }
+        }
+
+        public void UnregisterBuilding(BuildingType type)
+        {
+            if (_buildingCounts.ContainsKey(type))
+            {
+                _buildingCounts[type]--;
+                if (_buildingCounts[type] < 0) _buildingCounts[type] = 0;
+            }
+        }
+
+
+        public bool CanBuildBuilding(BuildingType type)
+        {
+            return _buildingCounts.ContainsKey(type) && _buildingCounts[type] == 0;
+        }
+
+        // <<< +++ 
+        // +++ 新增: 用于建筑添加/移除耗电量
+        // +++ 
+        public void AddElectricityConsumption(float amount)
+        {
+            _totalElectricityConsumption += amount;
+            UpdateUI(); // 更新UI以显示新的电力平衡
+        }
+
+        public void RemoveElectricityConsumption(float amount)
+        {
+            _totalElectricityConsumption -= amount;
+            if (_totalElectricityConsumption < 0) _totalElectricityConsumption = 0;
+            UpdateUI(); // 更新UI以显示新的电力平衡
+        }
+
+        /// <summary>
+        /// 注册一个建筑实例到全局列表
+        /// </summary>
+        public void RegisterBuildingInstance(BuildingEffect building)
+        {
+            if (!_allPlacedBuildings.Contains(building))
+            {
+                _allPlacedBuildings.Add(building);
+                Debug.Log($"Building instance registered. Total count: {_allPlacedBuildings.Count}");
+            }
+        }
+
+        /// <summary>
+        /// 从全局列表中注销一个建筑实例
+        /// </summary>
+        public void UnregisterBuildingInstance(BuildingEffect building)
+        {
+            if (_allPlacedBuildings.Contains(building))
+            {
+                _allPlacedBuildings.Remove(building);
+                Debug.Log($"Building instance unregistered. Total count: {_allPlacedBuildings.Count}");
+            }
+        }
+
+        /// <summary>
+        /// 获取所有已放置建筑的列表 (返回一个副本以防止迭代时修改)
+        /// </summary>
+        public List<BuildingEffect> GetAllPlacedBuildings()
+        {
+            // 清理列表中可能已被摧毁的空引用
+            _allPlacedBuildings.RemoveAll(item => item == null);
+            // 返回一个新列表，这样遍历时删除元素也不会出错
+            return new List<BuildingEffect>(_allPlacedBuildings);
         }
     }
 }

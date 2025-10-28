@@ -10,37 +10,44 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public BuildingType type;
 
         [Header("Level Settings")]
-        public int buildingLevel = 1; // <<< +++ 新增: 建筑当前等级 +++
-        public int maxBuildingLevel = 10; // <<< +++ 新增: 建筑最高等级 +++
-        // <<< +++ 新增: 升级成本数组 (索引0 = 升到2级的成本, 索引1 = 升到3级的成本... 共9个元素) +++
+        public int buildingLevel = 1;
+        public int maxBuildingLevel = 10;
         public float[] upgradeCostPerLevel = { 50, 100, 180, 300, 500, 800, 1300, 2100, 3400 };
 
+        [Header("Health")]
+        [Tooltip("这个建筑 Prefab 的最大血量 (应匹配 Placeable.cs 中的设置)")]
+        public float maxHealth = 100f;
+        private float _currentHealth;
+
+        // <<< +++ 新增: 通用耗电设置 +++
+        [Header("General Consumption")]
+        // <<< +++ (请在Inspector中为 *除PowerPlant外* 的所有建筑Prefab填充这10个值) +++
+        public float[] electricityConsumptionPerLevel = { 1f, 1.2f, 1.5f, 2f, 2.5f, 3f, 3.5f, 4f, 4.5f, 5f };
+
         [Header("House Settings")]
-        // <<< --- 修改: 替换为等级数组 (请在Inspector中填充10个值) ---
         public int[] populationCapacityPerLevel = { 5, 8, 12, 18, 25, 35, 50, 70, 100, 140 };
         public int[] initialPopulationPerLevel = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
         [Header("Farm Settings")]
-        // <<< --- 修改: 替换为等级数组 (请在Inspector中填充10个值) ---
         public float[] foodProductionPerLevel = { 2f, 3f, 4.5f, 6f, 8f, 10f, 12f, 14f, 16f, 18f };
         public int[] workersRequiredPerLevel = { 2, 2, 3, 3, 4, 4, 5, 5, 6, 6 };
 
         [Header("PowerPlant Settings")]
-        // <<< --- 修改: 替换为等级数组 (请在Inspector中填充10个值) ---
+        // <<< --- 修改: 此数组已不再使用，因为电力是自动满足的 ---
         public float[] electricityProductionPerLevel = { 10f, 15f, 22f, 30f, 40f, 55f, 70f, 90f, 115f, 150f };
         public float[] co2EmissionPerLevel = { 2f, 2.5f, 3f, 3.5f, 4f, 4.5f, 5f, 5.5f, 6f, 6.5f };
 
         [Header("Co2 Storage Settings")]
-        // <<< --- 修改: 替换为等级数组 (请在Inspector中填充10个值) ---
         public float[] co2AbsorptionRatePerLevel = { 0.5f, 0.7f, 1f, 1.4f, 1.9f, 2.5f, 3.2f, 4f, 5f, 6f };
         public float[] co2CapacityPerLevel = { 100f, 130f, 170f, 220f, 280f, 350f, 440f, 550f, 700f, 900f };
 
         // --- 内部状态追踪变量 ---
         private float _currentCo2Stored = 0f;
-        private bool _isStorageActive = false; // 用于控制Update逻辑是否执行
-        // <<< +++ 新增: 用于存储当前等级的吸收率和容量，供Update使用 +++
+        private bool _isStorageActive = false;
         private float _currentAbsorptionRate = 0f;
         private float _currentCapacity = 0f;
+        // <<< +++ 新增: 存储当前耗电量，用于RemoveEffect +++
+        private float _currentElectricityConsumption = 0f;
 
         private void Update()
         {
@@ -49,17 +56,13 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                 return;
             }
 
-            // <<< --- 修改: 使用 _currentAbsorptionRate 变量 ---
             _currentCo2Stored += _currentAbsorptionRate * Time.deltaTime;
 
-            // <<< --- 修改: 使用 _currentCapacity 变量 ---
             if (_currentCo2Stored >= _currentCapacity)
             {
-                // <<< --- 修改: 使用 _currentCapacity 变量 ---
                 _currentCo2Stored = _currentCapacity;
                 _isStorageActive = false;
 
-                // <<< --- 修改: 使用 _currentAbsorptionRate 变量 ---
                 ResourceManager.Instance.RemoveCo2Absorption(_currentAbsorptionRate);
 
                 Debug.Log("One Co2 Storage is Full!");
@@ -69,15 +72,27 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         // 当建筑被成功放置时调用 (或升级后调用)
         public void ApplyEffect()
         {
-            // <<< +++ 新增: 获取当前等级对应的数组索引 +++
+            // <<< +++ 新增: 向 ResourceManager 注册实例 +++
+            ResourceManager.Instance.RegisterBuildingInstance(this);
+            // <<< +++ 新增: 初始化血量 +++
+            _currentHealth = maxHealth;
+
+            ResourceManager.Instance.RegisterBuilding(type);
+
             int levelIndex = buildingLevel - 1;
-            // (防止数组越界)
             if (levelIndex < 0) levelIndex = 0;
+
+            // <<< +++ 新增: (几乎)所有建筑都会耗电 +++
+            if (type != BuildingType.PowerPlant && levelIndex < electricityConsumptionPerLevel.Length)
+            {
+                _currentElectricityConsumption = electricityConsumptionPerLevel[levelIndex];
+                ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
+            }
+            // <<< +++ --------------------------- +++
 
             switch (type)
             {
                 case BuildingType.House:
-                    // <<< --- 修改: 从数组中获取数据 ---
                     if (levelIndex < populationCapacityPerLevel.Length && levelIndex < initialPopulationPerLevel.Length)
                     {
                         ResourceManager.Instance.AddHouseEffect(
@@ -86,7 +101,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                     }
                     break;
                 case BuildingType.Farm:
-                    // <<< --- 修改: 从数组中获取数据 ---
                     if (levelIndex < foodProductionPerLevel.Length && levelIndex < workersRequiredPerLevel.Length)
                     {
                         ResourceManager.Instance.AddFoodProduction(
@@ -98,26 +112,26 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                     ResourceManager.Instance.AddBank();
                     break;
                 case BuildingType.PowerPlant:
-                    // <<< --- 修改: 从数组中获取数据 ---
-                    if (levelIndex < electricityProductionPerLevel.Length && levelIndex < co2EmissionPerLevel.Length)
+                    // <<< --- 修改: 发电厂现在只应用CO2排放 ---
+                    // <<< --- 电力生产是自动的，不再需要 electricityProductionPerLevel ---
+                    if (levelIndex < co2EmissionPerLevel.Length)
                     {
                         ResourceManager.Instance.AddPowerPlantEffect(
-                            electricityProductionPerLevel[levelIndex],
                             co2EmissionPerLevel[levelIndex]);
                     }
                     break;
                 case BuildingType.Co2Storage:
-                    // <<< --- 修改: 从数组中获取数据并设置内部状态 ---
                     if (levelIndex < co2AbsorptionRatePerLevel.Length && levelIndex < co2CapacityPerLevel.Length)
                     {
                         _currentAbsorptionRate = co2AbsorptionRatePerLevel[levelIndex];
                         _currentCapacity = co2CapacityPerLevel[levelIndex];
-                        _currentCo2Stored = 0f; // 升级或放置时清空
+                        _currentCo2Stored = 0f;
                         _isStorageActive = true;
                         ResourceManager.Instance.AddCo2Absorption(_currentAbsorptionRate);
                     }
                     break;
                 case BuildingType.Institute:
+                    // (研究所现在也会耗电，已在上面处理)
                     break;
             }
         }
@@ -125,14 +139,25 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         // 当建筑被移除时调用 (或升级前调用)
         public void RemoveEffect()
         {
-            // <<< +++ 新增: 获取当前等级对应的数组索引 +++
+            // <<< +++ 新增: 向 ResourceManager 注销实例 +++
+            ResourceManager.Instance.UnregisterBuildingInstance(this);
+
+            ResourceManager.Instance.UnregisterBuilding(type);
+
             int levelIndex = buildingLevel - 1;
             if (levelIndex < 0) levelIndex = 0;
+
+            // <<< +++ 新增: 移除建筑时，也移除其耗电量 +++
+            if (type != BuildingType.PowerPlant)
+            {
+                ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
+                _currentElectricityConsumption = 0; // 重置
+            }
+            // <<< +++ --------------------------- +++
 
             switch (type)
             {
                 case BuildingType.House:
-                    // <<< --- 修改: 从数组中获取数据 ---
                     if (levelIndex < populationCapacityPerLevel.Length && levelIndex < initialPopulationPerLevel.Length)
                     {
                         ResourceManager.Instance.RemoveHouseEffect(
@@ -141,7 +166,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                     }
                     break;
                 case BuildingType.Farm:
-                    // <<< --- 修改: 从数组中获取数据 ---
                     if (levelIndex < foodProductionPerLevel.Length && levelIndex < workersRequiredPerLevel.Length)
                     {
                         ResourceManager.Instance.RemoveFoodProduction(
@@ -153,55 +177,47 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                     ResourceManager.Instance.RemoveBank();
                     break;
                 case BuildingType.PowerPlant:
-                    // <<< --- 修改: 从数组中获取数据 ---
-                    if (levelIndex < electricityProductionPerLevel.Length && levelIndex < co2EmissionPerLevel.Length)
+                    // <<< --- 修改: 只移除CO2排放 ---
+                    // (我们使用 buildingLevel-1 来获取 *当前* 等级的索引，因为这是 Remove)
+                    if (levelIndex < co2EmissionPerLevel.Length)
                     {
                         ResourceManager.Instance.RemovePowerPlantEffect(
-                            electricityProductionPerLevel[levelIndex],
                             co2EmissionPerLevel[levelIndex]);
                     }
                     break;
                 case BuildingType.Co2Storage:
-                    // <<< --- 修改: 使用 _currentAbsorptionRate 变量 ---
                     if (_isStorageActive)
                     {
                         ResourceManager.Instance.RemoveCo2Absorption(_currentAbsorptionRate);
                     }
                     _isStorageActive = false;
-                    _currentAbsorptionRate = 0; // 重置
-                    _currentCapacity = 0; // 重置
+                    _currentAbsorptionRate = 0;
+                    _currentCapacity = 0;
                     break;
                 case BuildingType.Institute:
+                    // (耗电量已在上面移除)
                     break;
             }
         }
 
-        // <<< +++ 
-        // +++ 新增: 尝试升级建筑的公共方法
-        // +++ 您需要从其他脚本 (例如建筑点击UI) 来调用这个方法
-        // +++ 
+        // ... TryUpgradeBuilding 方法保持不变 (它会正确调用 RemoveEffect 和 ApplyEffect)
         public void TryUpgradeBuilding()
         {
             // 检查1: 是否已达最高等级
             if (buildingLevel >= maxBuildingLevel)
             {
                 Debug.Log($"Building '{gameObject.name}' is already at max level ({maxBuildingLevel}).");
-                // 可以在此显示UI提示
                 return;
             }
 
             // 检查2: 大学等级是否足够
-            // 规则: 建筑的 *当前* 等级不能低于大学等级
-            // (换句话说: 你必须先升到大学2级，才能把建筑升到2级)
             if (buildingLevel >= ResourceManager.Instance.UniversityLevel)
             {
                 Debug.Log($"Cannot upgrade building. University Level {ResourceManager.Instance.UniversityLevel + 1} is required to upgrade to Level {buildingLevel + 1}.");
-                // 可以在此显示UI提示
                 return;
             }
 
             // 检查3: 检查升级成本
-            // 成本数组索引 = (当前等级 - 1)
             int costIndex = buildingLevel - 1;
             if (costIndex >= upgradeCostPerLevel.Length)
             {
@@ -224,14 +240,47 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
                 // 3. 应用新等级的效果
                 ApplyEffect();
-
-                // (您可以在这里添加其他逻辑，比如更换建筑模型、播放特效等)
             }
             else
             {
                 Debug.Log($"Not enough money to upgrade. Need {cost:F0}.");
-                // 可以在此显示UI提示
             }
         }
+        // <<< +++ 
+        // +++ 新增: 伤害和摧毁逻辑
+        // +++ 
+        /// <summary>
+        /// 对这个建筑造成伤害
+        /// </summary>
+        public void TakeDamage(float amount)
+        {
+            if (_currentHealth <= 0) return; // 已经被摧毁了
+
+            _currentHealth -= amount;
+            Debug.Log($"Building '{gameObject.name}' took {amount} damage. Current health: {_currentHealth}/{maxHealth}");
+
+            if (_currentHealth <= 0)
+            {
+                _currentHealth = 0;
+                DestroyBuilding();
+            }
+        }
+
+        /// <summary>
+        /// 建筑血量归零时调用
+        /// </summary>
+        private void DestroyBuilding()
+        {
+            Debug.Log($"Building '{gameObject.name}' has been destroyed by damage!");
+
+            // 1. 移除建筑效果并从 ResourceManager 注销
+            //    (RemoveEffect 包含了 UnregisterBuildingInstance)
+            RemoveEffect();
+
+            // 2. 从场景中移除 GameObject
+            // TODO: 您可能需要在这里添加粒子效果或声音
+            Destroy(gameObject);
+        }
+        // <<< +++ ---------------------------------- +++
     }
 }
