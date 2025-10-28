@@ -745,7 +745,6 @@ MonoBehaviour:
   foodConsumptionPerPerson: 0.1
   populationGrowthRate: 0.5
   moneyMultiplierFromFood: 0.5
-  electricityPerPerson: 1
   happinessChangeRate: 1
   airQualityRecoveryRate: 0.1
   airQualityDeclineRate: 0.2
@@ -800,6 +799,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EventDirector
   allEvents:
   - {fileID: 11400000, guid: d1528dc42a4faef4b972d229cc327249, type: 2}
+  - {fileID: 11400000, guid: f7861a97ffcb56a4696306dcfcb22da9, type: 2}
   minTimeBetweenEvents: 3
   maxTimeBetweenEvents: 5
 --- !u!4 &1394861147
