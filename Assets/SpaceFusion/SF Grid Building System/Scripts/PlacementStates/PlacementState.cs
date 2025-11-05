@@ -70,7 +70,21 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.PlacementStates {
 
             _selectedGridData.Add(gridPosition, _occupiedCells, _selectedObject.GetAssetIdentifier(), guid);
             // after we placed the object, this position becomes invalid --> we do not want to put a second object over it
-            _previewSystem.UpdatePosition(worldPosition, false, _selectedObject, _currentDirection);
+            // 检查我们刚刚放置的建筑是否是独特的
+            // (这是基于我们之前在 Placeable.cs 中添加的 IsUnique 字段)
+            if (_selectedObject.IsUnique)
+            {
+                // 如果是，立即调用 PlacementSystem 的 StopState() 来退出放置模式。
+                // 这将阻止用户在不退出模式的情况下连续点击放置。
+                PlacementSystem.Instance.StopState();
+            }
+            else
+            {
+                // 如果不是独特的 (例如道路、普通房屋)，
+                // 则像以前一样更新预览，允许连续放置
+                _previewSystem.UpdatePosition(worldPosition, false, _selectedObject, _currentDirection);
+            }
+            //_previewSystem.UpdatePosition(worldPosition, false, _selectedObject, _currentDirection);
         }
 
         public void OnRotation() {

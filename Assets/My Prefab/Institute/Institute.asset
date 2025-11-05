@@ -15,6 +15,9 @@ MonoBehaviour:
   <Size>k__BackingField: {x: 1.337736, y: 1.329888}
   <Prefab>k__BackingField: {fileID: 2706902175044359165, guid: b4f6eeb83170f86498bf4535ea2bc973, type: 3}
   <Icon>k__BackingField: {fileID: 21300000, guid: 992772632cef1b14487ee5874218016a, type: 3}
+  <Cost>k__BackingField: 100
+  Health: 100
+  <IsUnique>k__BackingField: 1
   <GridType>k__BackingField: 0
   <ObjectGroupInfo>k__BackingField: 0
   <DynamicSize>k__BackingField: 0

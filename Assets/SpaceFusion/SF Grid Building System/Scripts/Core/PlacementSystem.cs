@@ -31,6 +31,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
         private GameConfig _gameConfig;
         private PlaceableObjectDatabase _database;
 
+        // ---  在这里添加新代码  ---
+        // 使用 AssetIdentifier (string) 作为键，来跟踪已建造的独特建筑
+        private readonly HashSet<string> _uniqueBuildingsBuilt = new HashSet<string>();
+        // --- 新代码结束  ---
+
 
         private PlacementGrid _grid;
         // !!!!some additional triggers to handle specific cases !!!
@@ -78,6 +83,22 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
         /// initializes the PlacementState and adds all trigger functions
         /// </summary>
         public void StartPlacement(string assetIdentifier) {
+            // 1. 从数据库中获取建筑数据 (你已经提供了 _database 字段)
+            Placeable placeableData = _database.GetPlaceable(assetIdentifier);
+
+            // 2. 检查它是否是独特的 (我们刚添加的字段)，并且是否已经被建造
+            if (placeableData != null && placeableData.IsUnique)
+            {
+                if (_uniqueBuildingsBuilt.Contains(assetIdentifier))
+                {
+                    Debug.LogWarning($"无法开始放置 {assetIdentifier}: 该独特建筑已被建造。");
+
+                    // (可选) 在这里触发一个UI提示，告诉玩家“已达建造上限”
+                    // UIManager.Instance.ShowNotification("已达建造上限");
+
+                    return; // 立即停止，不允许进入放置状态
+                }
+            }
             StopState();
             _grid.SetVisualizationState(true);
             _stateHandler = new PlacementState(assetIdentifier, _grid, previewSystem, _database, _gridDataMap, placementHandler);
@@ -209,6 +230,40 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
 
             _stateHandler.UpdateState(gridPosition);
             _lastDetectedPosition = gridPosition;
+        }
+        /// <summary>
+        /// (新函数) 检查一个独特建筑是否已被建造
+        /// (这个函数主要给UI按钮使用，用来禁用按钮)
+        /// </summary>
+        public bool IsUniqueBuildingBuilt(string assetIdentifier)
+        {
+            return _uniqueBuildingsBuilt.Contains(assetIdentifier);
+        }
+
+        /// <summary>
+        /// (新函数) 注册一个新放置的独特建筑
+        /// (将由 PlacementHandler 在放置时调用)
+        /// </summary>
+        public void RegisterUniqueBuilding(string assetIdentifier)
+        {
+            // Add 方法如果成功添加 (即之前不存在) 会返回 true
+            if (_uniqueBuildingsBuilt.Add(assetIdentifier))
+            {
+                Debug.Log($"独特建筑已注册: {assetIdentifier}");
+            }
+        }
+
+        /// <summary>
+        /// (新函数) 注销一个被摧毁的独特建筑
+        /// (将由 PlacementHandler 在移除时调用)
+        /// </summary>
+        public void UnregisterUniqueBuilding(string assetIdentifier)
+        {
+            // Remove 方法如果成功移除 (即之前存在) 会返回 true
+            if (_uniqueBuildingsBuilt.Remove(assetIdentifier))
+            {
+                Debug.Log($"独特建筑已注销: {assetIdentifier}");
+            }
         }
     }
 }

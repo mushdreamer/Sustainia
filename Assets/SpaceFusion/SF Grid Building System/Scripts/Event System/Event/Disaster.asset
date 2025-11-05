@@ -16,9 +16,9 @@ MonoBehaviour:
   description: 
   minGameDays: 0
   maxGameDays: 0
-  minPopulation: 100
-  minHappiness: 100
-  minAirQuality: 100
+  minPopulation: 0
+  minHappiness: 0
+  minAirQuality: 0
   baseWeight: 10
   actions:
   - {fileID: 11400000, guid: 556bc898b16a8e4478637fa0f8ceaf04, type: 2}

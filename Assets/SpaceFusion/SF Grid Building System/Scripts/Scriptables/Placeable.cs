@@ -24,6 +24,13 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables {
         public float Cost { get; private set; } = 100f; // 默认价格100
         public float Health = 100f; // 默认血量100
 
+        // --- ⬇️ 在这里添加新代码 ⬇️ ---
+        [Header("Game Rules")]
+        [field: Tooltip("如果勾选，这个建筑在地图上只能存在一个。")]
+        [field: SerializeField]
+        public bool IsUnique { get; private set; } = false;
+        // --- ⬆️ 新代码结束 ⬆️ ---
+
         [field: Tooltip("Describes in which gridData the object will be stored.")]
         [field: SerializeField]
         public GridDataType GridType { get; private set; }

@@ -39,6 +39,13 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             ObjectGrouper.Instance.AddToGroup(obj, placeableObj.GridType);
             _placedObjectDictionary.Add(placedObject.data.guid, obj);
 
+            // 检查这是否是一个独特建筑 (我们刚添加的字段)，如果是，则注册它
+            if (placeableObj.IsUnique)
+            {
+                // (你的 Placeable.cs 已经有 GetAssetIdentifier() 方法)
+                PlacementSystem.Instance.RegisterUniqueBuilding(placeableObj.GetAssetIdentifier());
+            }
+
             // --- ADD THIS ---
             // 放置后应用建筑效果
             obj.GetComponent<BuildingEffect>()?.ApplyEffect();
@@ -70,6 +77,12 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             _placedObjectDictionary.Add(placedObject.data.guid, obj);
             ObjectGrouper.Instance.AddToGroup(obj, placeableObj.GridType);
 
+            // !!! 重要：加载游戏时，也必须注册独特建筑
+            if (placeableObj.IsUnique)
+            {
+                PlacementSystem.Instance.RegisterUniqueBuilding(placeableObj.GetAssetIdentifier());
+            }
+
             // --- ADD THIS ---
             // 加载的物体也需要应用效果
             obj.GetComponent<BuildingEffect>()?.ApplyEffect();
@@ -100,6 +113,13 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             if (!obj) {
                 Debug.LogError($"Removing object error: {guid} is not saved in dictionary");
                 return;
+            }
+
+            // !!! 重要：在销毁对象之前，检查它是否是独特建筑，并将其注销
+            PlacedObject placedObject = obj.GetComponent<PlacedObject>();
+            if (placedObject != null && placedObject.placeable.IsUnique)
+            {
+                PlacementSystem.Instance.UnregisterUniqueBuilding(placedObject.placeable.GetAssetIdentifier());
             }
 
             // --- ADD THIS ---
