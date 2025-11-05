@@ -17,7 +17,7 @@ MonoBehaviour:
   <Icon>k__BackingField: {fileID: 21300000, guid: e9b0ab8ed0201d147a27dbe8e201e0d9, type: 3}
   <Cost>k__BackingField: 100
   Health: 100
-  <IsUnique>k__BackingField: 0
+  <IsUnique>k__BackingField: 1
   <GridType>k__BackingField: 0
   <ObjectGroupInfo>k__BackingField: 0
   <DynamicSize>k__BackingField: 0

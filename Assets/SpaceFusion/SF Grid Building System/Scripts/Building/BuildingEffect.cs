@@ -30,7 +30,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         [Header("Farm Settings")]
         public float[] foodProductionPerLevel = { 2f, 3f, 4.5f, 6f, 8f, 10f, 12f, 14f, 16f, 18f };
-        public int[] workersRequiredPerLevel = { 2, 2, 3, 3, 4, 4, 5, 5, 6, 6 };
 
         [Header("PowerPlant Settings")]
         // <<< --- 修改: 此数组已不再使用，因为电力是自动满足的 ---
@@ -101,11 +100,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                     }
                     break;
                 case BuildingType.Farm:
-                    if (levelIndex < foodProductionPerLevel.Length && levelIndex < workersRequiredPerLevel.Length)
+                    if (levelIndex < foodProductionPerLevel.Length)
                     {
                         ResourceManager.Instance.AddFoodProduction(
-                            foodProductionPerLevel[levelIndex],
-                            workersRequiredPerLevel[levelIndex]);
+                            foodProductionPerLevel[levelIndex]);
                     }
                     break;
                 case BuildingType.Bank:
@@ -166,11 +164,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                     }
                     break;
                 case BuildingType.Farm:
-                    if (levelIndex < foodProductionPerLevel.Length && levelIndex < workersRequiredPerLevel.Length)
+                    if (levelIndex < foodProductionPerLevel.Length)
                     {
                         ResourceManager.Instance.RemoveFoodProduction(
-                            foodProductionPerLevel[levelIndex],
-                            workersRequiredPerLevel[levelIndex]);
+                            foodProductionPerLevel[levelIndex]);
                     }
                     break;
                 case BuildingType.Bank:
@@ -273,13 +270,29 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         {
             Debug.Log($"Building '{gameObject.name}' has been destroyed by damage!");
 
-            // 1. 移除建筑效果并从 ResourceManager 注销
-            //    (RemoveEffect 包含了 UnregisterBuildingInstance)
-            RemoveEffect();
+            // 1. 获取挂载在同一个 GameObject 上的 PlacedObject 组件
+            PlacedObject placedObject = GetComponent<PlacedObject>();
 
-            // 2. 从场景中移除 GameObject
-            // TODO: 您可能需要在这里添加粒子效果或声音
-            Destroy(gameObject);
+            if (placedObject != null && PlacementSystem.Instance != null)
+            {
+                // 2. 调用 PlacementSystem 的官方 "Remove" 功能
+                //    这会触发 RemoveState，然后正确调用 PlacementHandler，
+                //    它会为你处理 *所有* 事情：
+                //      - 注销独特建筑 (修复你的 BUG 2)
+                //      - 从 GridData 释放格子 (修复你的 BUG 1)
+                //      - 调用 RemoveEffect() (你的代码已包含)
+                //      - 从存档中移除
+                //      - 最后才 Destroy(gameObject)
+                PlacementSystem.Instance.Remove(placedObject);
+            }
+            else
+            {
+                // 备用方案: 如果找不到 PlacementSystem 或 PlacedObject，
+                // 至少执行旧的逻辑，防止 GameObject 留在原地。
+                Debug.LogError($"无法通过 PlacementSystem 移除 {gameObject.name}！执行紧急销毁。");
+                RemoveEffect();
+                Destroy(gameObject);
+            }
         }
         // <<< +++ ---------------------------------- +++
     }

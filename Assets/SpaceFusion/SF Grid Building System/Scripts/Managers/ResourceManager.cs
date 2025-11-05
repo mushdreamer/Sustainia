@@ -28,7 +28,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public int _currentPopulation;
         private int _populationCapacity;
         private int _basePopulation;
-        private int _employedPopulation;
         private float _food;
         private float _foodProductionRate; // 每秒生产的食物
         private float _baseElectricityProduction;
@@ -284,23 +283,14 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             UpdateUI();
         }
 
-        public void AddFoodProduction(float amount, int workersRequired)
+        public void AddFoodProduction(float amount)
         {
-            if (GetUnemployedPopulation() >= workersRequired)
-            {
-                _employedPopulation += workersRequired;
-                _foodProductionRate += amount;
-                UpdateUI();
-            }
-            else
-            {
-                Debug.LogWarning("You need people to run the farm!");
-            }
+            _foodProductionRate += amount;
+            UpdateUI();
         }
 
-        public void RemoveFoodProduction(float amount, int workersFreed)
+        public void RemoveFoodProduction(float amount)
         {
-            _employedPopulation -= workersFreed;
             _foodProductionRate -= amount;
             if (_foodProductionRate < 0) _foodProductionRate = 0;
             UpdateUI();
@@ -380,11 +370,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             // <<< --- 修改: 确保使用应用了修正的 _carbonDioxideEmission ---
             float netEmission = _carbonDioxideEmission - _carbonDioxideAbsorption;
             return (netEmission > 0) ? netEmission : 0;
-        }
-
-        public int GetUnemployedPopulation()
-        {
-            return _currentPopulation - _employedPopulation;
         }
 
         public void RegisterBuilding(BuildingType type)
