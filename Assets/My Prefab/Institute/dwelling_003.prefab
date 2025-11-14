@@ -1,0 +1,209 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &1438958810568765145
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2fdacc4343c412e46ab0358c3788ddc8, type: 2}
+    - target: {fileID: 919132149155446097, guid: 49febba954e892e418acd79293c85886, type: 3}
+      propertyPath: m_Name
+      value: dwelling_003
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49febba954e892e418acd79293c85886, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1992647209666034919}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49febba954e892e418acd79293c85886, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7418505888712760692}
+  m_SourcePrefab: {fileID: 100100000, guid: 49febba954e892e418acd79293c85886, type: 3}
+--- !u!1 &2249931451008258952 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 49febba954e892e418acd79293c85886, type: 3}
+  m_PrefabInstance: {fileID: 1438958810568765145}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &1992647209666034919
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2249931451008258952}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 6.398789, y: 17.3148, z: 6.490496}
+  m_Center: {x: -0.000019550323, y: 8.64673, z: 0.00000166893}
+--- !u!114 &7418505888712760692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2249931451008258952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8491c1e2af13d64cb78d494507aa9ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingEffect
+  type: 2
+  buildingLevel: 1
+  maxBuildingLevel: 10
+  upgradeCostPerLevel:
+  - 50
+  - 100
+  - 180
+  - 300
+  - 500
+  - 800
+  - 1300
+  - 2100
+  - 3400
+  maxHealth: 100
+  electricityConsumptionPerLevel:
+  - 1
+  - 1.2
+  - 1.5
+  - 2
+  - 2.5
+  - 3
+  - 3.5
+  - 4
+  - 4.5
+  - 5
+  populationCapacityPerLevel: 05000000080000000c0000001200000019000000230000003200000046000000640000008c000000
+  initialPopulationPerLevel: 02000000030000000400000005000000060000000700000008000000090000000a0000000b000000
+  foodProductionPerLevel:
+  - 2
+  - 3
+  - 4.5
+  - 6
+  - 8
+  - 10
+  - 12
+  - 14
+  - 16
+  - 18
+  electricityProductionPerLevel:
+  - 10
+  - 15
+  - 22
+  - 30
+  - 40
+  - 55
+  - 70
+  - 90
+  - 115
+  - 150
+  co2EmissionPerLevel:
+  - 2
+  - 2.5
+  - 3
+  - 3.5
+  - 4
+  - 4.5
+  - 5
+  - 5.5
+  - 6
+  - 6.5
+  co2AbsorptionRatePerLevel:
+  - 0.5
+  - 0.7
+  - 1
+  - 1.4
+  - 1.9
+  - 2.5
+  - 3.2
+  - 4
+  - 5
+  - 6
+  co2CapacityPerLevel:
+  - 100
+  - 130
+  - 170
+  - 220
+  - 280
+  - 350
+  - 440
+  - 550
+  - 700
+  - 900

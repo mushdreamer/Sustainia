@@ -238,7 +238,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
             if (universityLevelText != null)
             {
-                universityLevelText.text = $"University Level: {_universityLevel}";
+                universityLevelText.text = $"R&D Level: {_universityLevel}";
             }
         }
 

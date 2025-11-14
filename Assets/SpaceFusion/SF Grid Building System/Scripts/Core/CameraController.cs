@@ -75,8 +75,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             moveDirection.y = 0;
             var newPosition = transform.position - moveDirection * (_config.DragSpeed * Time.deltaTime);
             // Clamp position within bounds
-            newPosition.x = Mathf.Clamp(newPosition.x, xBoundary.x, xBoundary.y);
-            newPosition.z = Mathf.Clamp(newPosition.z, zBoundary.x, zBoundary.y);
+            //newPosition.x = Mathf.Clamp(newPosition.x, xBoundary.x, xBoundary.y);
+            //newPosition.z = Mathf.Clamp(newPosition.z, zBoundary.x, zBoundary.y);
             transform.position = newPosition;
         }
 
@@ -105,8 +105,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             }
 
             var newPosition = transform.position + new Vector3(direction.x, 0, direction.y) * (_config.DragSpeed * Time.deltaTime);
-            newPosition.x = Mathf.Clamp(newPosition.x, xBoundary.x, xBoundary.y);
-            newPosition.z = Mathf.Clamp(newPosition.z, zBoundary.x, zBoundary.y);
+            //newPosition.x = Mathf.Clamp(newPosition.x, xBoundary.x, xBoundary.y);
+            //newPosition.z = Mathf.Clamp(newPosition.z, zBoundary.x, zBoundary.y);
             transform.position = newPosition;
         }
 
@@ -119,12 +119,12 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
                 return;
             }
 
-            switch (scrollDelta) {
+            //switch (scrollDelta) {
                 // Stop zooming further if min or max Y reached
-                case > 0 when _sceneCamera.transform.position.y <= _config.YBoundary.x:
-                case < 0 when _sceneCamera.transform.position.y >= _config.YBoundary.y:
-                    return;
-            }
+                //case > 0 when _sceneCamera.transform.position.y <= _config.YBoundary.x:
+                //case < 0 when _sceneCamera.transform.position.y >= _config.YBoundary.y:
+                    //return;
+            //}
 
             var mouseRay = _sceneCamera.ScreenPointToRay(Input.mousePosition);
             // Flat ground at y = 0

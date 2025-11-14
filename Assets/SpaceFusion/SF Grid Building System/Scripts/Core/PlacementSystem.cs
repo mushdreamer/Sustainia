@@ -249,7 +249,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             // Add 方法如果成功添加 (即之前不存在) 会返回 true
             if (_uniqueBuildingsBuilt.Add(assetIdentifier))
             {
-                Debug.Log($"独特建筑已注册: {assetIdentifier}");
+                /*Debug.Log($"独特建筑已注册: {assetIdentifier}");*/
             }
         }
 
@@ -262,7 +262,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             // Remove 方法如果成功移除 (即之前存在) 会返回 true
             if (_uniqueBuildingsBuilt.Remove(assetIdentifier))
             {
-                Debug.Log($"独特建筑已注销: {assetIdentifier}");
+                /*Debug.Log($"独特建筑已注销: {assetIdentifier}");*/
             }
         }
     }

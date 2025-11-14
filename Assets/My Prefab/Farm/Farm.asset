@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 220f42fd2be8412088d96b73d9d10822, type: 3}
   m_Name: Farm
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables.Placeable
-  <Size>k__BackingField: {x: 1.2, y: 1.2}
-  <Prefab>k__BackingField: {fileID: 1317920134518363058, guid: e39d7d3ad4b849840a11542cacd1e9ed, type: 3}
+  <Size>k__BackingField: {x: 1.163241, y: 1.254897}
+  <Prefab>k__BackingField: {fileID: 7787231973309511902, guid: a5a41c5c86d848e48bf9dd34b44aed00, type: 3}
   <Icon>k__BackingField: {fileID: 21300000, guid: a53d4d573467d0c44838dba6de563baa, type: 3}
   <Cost>k__BackingField: 100
   Health: 100
