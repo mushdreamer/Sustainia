@@ -41,12 +41,24 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public float[] co2CapacityPerLevel = { 100f, 130f, 170f, 220f, 280f, 350f, 440f, 550f, 700f, 900f };
 
         // --- 内部状态追踪变量 ---
+        private bool _isInitialized = false;
         private float _currentCo2Stored = 0f;
         private bool _isStorageActive = false;
         private float _currentAbsorptionRate = 0f;
         private float _currentCapacity = 0f;
         // <<< +++ 新增: 存储当前耗电量，用于RemoveEffect +++
         private float _currentElectricityConsumption = 0f;
+
+        private void Start()
+        {
+            // 对于预先放置在场景中的建筑 (不是由玩家或加载程序放置的)，
+            // 它们也需要在游戏开始时应用其效果。
+            // _isInitialized 标志会防止 PlacementHandler (在放置新物体时) 再次调用它。
+            if (!_isInitialized)
+            {
+                ApplyEffect();
+            }
+        }
 
         private void Update()
         {
