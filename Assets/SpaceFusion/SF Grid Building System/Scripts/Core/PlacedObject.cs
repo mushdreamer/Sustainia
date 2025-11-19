@@ -7,25 +7,13 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
-    /// <summary>
-    /// PlacedObject is a helper script that will be attached automatically to the GameObjects that are placed on the grid
-    /// Every gameObject will get a unique id (guid) assigned when the Initialize function is called.
-    /// This script listens to the InputManagers LMB Hold action and checks if the action belongs to the object
-    /// If so then a PlaceableActionTooltip will be triggered to give you some choices what you want to do with this object
-    /// This script also handles adding and removing the objects save information so that we can properly save and load the data after application restart
-    /// OnApplicationQuit the data is automatically added to the saveSystem before the SaveFile is written
-    /// For removing there is a RemoveFromSaveData function that will be triggered when the user selects to remove this object from the grid
-    /// </summary>
-    public class PlacedObject : MonoBehaviour {
-        /// <summary>
-        /// we can have multiple placed objects,but they are placed at a time during the game.
-        /// The Action Tooltip needs to subscribe to the PlaceObject action directly, so we will make this static here
-        /// </summary>
+namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
+{
+    public class PlacedObject : MonoBehaviour
+    {
         public static Action<PlacedObject> holdComplete;
         public Placeable placeable;
-
-        public BuildingEffect buildingEffect; // <<< --- 在这里添加新的一行 ---
+        public BuildingEffect buildingEffect;
 
         private Vector3 _lastMousePosition;
         private Camera _sceneCamera;
@@ -33,80 +21,120 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
         [ReadOnly()]
         public PlaceableObjectData data = new();
 
-        private void OnEnable() {
-            InputManager.Instance.OnLmbPress += HandleMousePress;
-            InputManager.Instance.OnLmbHold += HandleMouseHold;
-            _sceneCamera = GameManager.Instance.SceneCamera;
+        private void OnEnable()
+        {
+            // 1. 安全检查：确保 InputManager 存在
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnLmbPress += HandleMousePress;
+                InputManager.Instance.OnLmbHold += HandleMouseHold;
+                Debug.Log($"[PlacedObject] 已启用并订阅输入事件: {gameObject.name}");
+            }
+            else
+            {
+                Debug.LogError($"[PlacedObject] InputManager.Instance 为空！无法订阅事件: {gameObject.name}");
+            }
+
+            // 尝试获取相机
+            GetCamera();
         }
 
-        private void OnDisable() {
-            InputManager.Instance.OnLmbPress -= HandleMousePress;
-            InputManager.Instance.OnLmbHold -= HandleMouseHold;
+        private void OnDisable()
+        {
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnLmbPress -= HandleMousePress;
+                InputManager.Instance.OnLmbHold -= HandleMouseHold;
+            }
         }
 
+        // 增强的获取相机方法
+        private void GetCamera()
+        {
+            if (_sceneCamera != null) return;
 
-        /// <summary>
-        /// Initialize function for creating a new object, we get the Placeable and the grid pos and then set all the needed information
-        /// ALso a unique GUID will be created for this instantiated object
-        /// </summary>
-        public void Initialize(Placeable scriptable, Vector3Int gridPosition) {
+            if (GameManager.Instance != null && GameManager.Instance.SceneCamera != null)
+            {
+                _sceneCamera = GameManager.Instance.SceneCamera;
+            }
+            else
+            {
+                _sceneCamera = Camera.main;
+            }
+
+            if (_sceneCamera == null)
+            {
+                Debug.LogWarning($"[PlacedObject] 警告: {gameObject.name} 找不到 SceneCamera 或 MainCamera！射线检测将失败。");
+            }
+        }
+
+        public void Initialize(Placeable scriptable, Vector3Int gridPosition)
+        {
             placeable = scriptable;
             data.assetIdentifier = scriptable.GetAssetIdentifier();
             data.gridPosition = gridPosition;
             data.guid = Guid.NewGuid().ToString();
         }
 
-        /// <summary>
-        /// Initializes the object that is created by loading our saved game state (no not really a new object)
-        /// the podata will be assigned by the loaded data and no new GUID will be created (uses the saved GUID)
-        /// </summary>
-        public void Initialize(PlaceableObjectData podata) {
+        public void Initialize(PlaceableObjectData podata)
+        {
             data = podata;
         }
 
-
-        private void HandleMousePress(Vector2 mousePosition) {
+        private void HandleMousePress(Vector2 mousePosition)
+        {
             _lastMousePosition = mousePosition;
+            // Debug.Log($"[PlacedObject] 按下: {gameObject.name}"); // 调试用，如果太吵可以注释掉
         }
 
-        private void HandleMouseHold(Vector2 mousePosition) {
-            // the press position and the position after hold should both point to the object --> otherwise invalid for this objects
-            if (IsRaycastOnObject(mousePosition) && IsRaycastOnObject(_lastMousePosition)) {
+        private void HandleMouseHold(Vector2 mousePosition)
+        {
+            // 每次操作前确保有相机
+            if (_sceneCamera == null) GetCamera();
+
+            // 检查按下位置和当前位置是否都在物体上
+            bool startOnObject = IsRaycastOnObject(_lastMousePosition);
+            bool currentOnObject = IsRaycastOnObject(mousePosition);
+
+            if (startOnObject && currentOnObject)
+            {
+                Debug.Log($"[PlacedObject] 长按成功触发: {gameObject.name}");
                 OnObjectHoldComplete();
             }
         }
 
+        private bool IsRaycastOnObject(Vector3 mousePosition)
+        {
+            if (_sceneCamera == null) return false;
 
-        private bool IsRaycastOnObject(Vector3 mousePosition) {
             var ray = _sceneCamera.ScreenPointToRay(mousePosition);
-            if (!Physics.Raycast(ray, out var hit)) {
-                return false;
+
+            // 使用 RaycastAll 穿透地板
+            RaycastHit[] hits = Physics.RaycastAll(ray);
+
+            foreach (var hit in hits)
+            {
+                if (hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform))
+                {
+                    return true;
+                }
             }
 
-            return hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform);
+            return false;
         }
 
-
-        /// <summary>
-        /// Shows Tooltip where the user can decide his next actions
-        /// </summary>
-        private void OnObjectHoldComplete() {
+        private void OnObjectHoldComplete()
+        {
             holdComplete?.Invoke(this);
         }
 
-
-        /// <summary>
-        /// called when the user removes the object from the game --> it will also be removed from the saved data
-        /// </summary>
-        public void RemoveFromSaveData() {
+        public void RemoveFromSaveData()
+        {
             GameManager.Instance?.saveData.RemoveData(data);
         }
 
-        /// <summary>
-        /// before application exited completely all PlacedObjects will add their data to the SaveData of the gameManager.
-        /// The GameManager will then handle the actual saving of the gameState
-        /// </summary>
-        private void OnApplicationQuit() {
+        private void OnApplicationQuit()
+        {
             GameManager.Instance?.saveData.AddData(data);
         }
     }

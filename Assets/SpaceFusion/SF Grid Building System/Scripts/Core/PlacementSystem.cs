@@ -66,6 +66,61 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             }
 
             StopState();
+
+            // --- ADD THIS ---
+            // 在系统初始化完毕后，扫描场景中已有的建筑
+            ScanAndRegisterSceneObjects();
+            // --- END ADD ---
+        }
+
+        // --- 在 PlacementSystem 类中添加此新方法 ---
+        private void ScanAndRegisterSceneObjects()
+        {
+            // 1. 找到场景中所有挂载了 BuildingEffect 的物体
+            BuildingEffect[] sceneBuildings = FindObjectsOfType<BuildingEffect>();
+
+            foreach (var building in sceneBuildings)
+            {
+                // 如果这个物体已经有 GUID 且在字典里了，说明已经被注册过（防止重复）
+                PlacedObject existingPO = building.GetComponent<PlacedObject>();
+                if (existingPO != null && !string.IsNullOrEmpty(existingPO.data.guid)) continue;
+
+                // 2. 尝试通过物体名称在数据库中找到对应的 Placeable 数据
+                // 注意：Unity 生成的实例通常叫 "House(Clone)" 或者手动放的叫 "House"
+                // 我们需要清理名称来匹配数据库的 ID
+                string cleanName = building.gameObject.name.Replace("(Clone)", "").Trim();
+
+                // 有时候手动放的可能叫 "House (1)"，如果你有这种情况，可能需要更复杂的正则去名
+                // 这里假设你的场景物体命名规范，和 Database 里的 ID 一致
+                Placeable data = _database.GetPlaceable(cleanName);
+
+                if (data == null)
+                {
+                    Debug.LogWarning($"场景中存在建筑 '{building.name}'，但在数据库中找不到 ID 为 '{cleanName}' 的数据。无法自动注册。请检查物体名称是否与 ScriptableObject ID 一致。");
+                    continue;
+                }
+
+                // 3. 计算它在网格上的位置
+                Vector3Int gridPos = _grid.WorldToCell(building.transform.position);
+
+                // 4. 调用 Handler 进行物体层面的注册 (添加组件、GUID、字典)
+                string guid = placementHandler.RegisterPrePlacedObject(building.gameObject, gridPos, data);
+
+                // 5. 更新 GridData (数据层面的注册，标记格子被占用)
+                // 这一步非常重要，否则你可以在旧建筑上重叠建造
+                if (_gridDataMap.ContainsKey(data.GridType))
+                {
+                    try
+                    {
+                        // 这里默认 size 使用 data.Size。如果场景里的物体被缩放过，可能会有偏差，但通常建筑游戏里这保持一致。
+                        _gridDataMap[data.GridType].Add(gridPos, Vector2Int.RoundToInt(data.Size), data.GetAssetIdentifier(), guid);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"注册预制建筑 {cleanName} 时出错，位置 {gridPos} 可能重叠或越界: {e.Message}");
+                    }
+                }
+            }
         }
 
 

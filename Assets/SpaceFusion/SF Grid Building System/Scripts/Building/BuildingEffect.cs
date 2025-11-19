@@ -49,6 +49,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         // <<< +++ 新增: 存储当前耗电量，用于RemoveEffect +++
         private float _currentElectricityConsumption = 0f;
 
+        private float _currentFoodProduction = 0f;
+        private int _currentPopCapacity = 0;
+        private int _currentPopInitial = 0;
+        private float _currentCo2Emission = 0f;
+
         private void Start()
         {
             // 对于预先放置在场景中的建筑 (不是由玩家或加载程序放置的)，
@@ -83,6 +88,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         // 当建筑被成功放置时调用 (或升级后调用)
         public void ApplyEffect()
         {
+            // --- ADD THIS ---
+            if (_isInitialized) return; // 防止重复应用
+            _isInitialized = true;      // 标记为已初始化
+            // --- END ADD ---
+
             // <<< +++ 新增: 向 ResourceManager 注册实例 +++
             ResourceManager.Instance.RegisterBuildingInstance(this);
             // <<< +++ 新增: 初始化血量 +++
@@ -104,30 +114,25 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             switch (type)
             {
                 case BuildingType.House:
-                    if (levelIndex < populationCapacityPerLevel.Length && levelIndex < initialPopulationPerLevel.Length)
+                    if (levelIndex < populationCapacityPerLevel.Length)
                     {
-                        ResourceManager.Instance.AddHouseEffect(
-                            populationCapacityPerLevel[levelIndex],
-                            initialPopulationPerLevel[levelIndex]);
+                        _currentPopCapacity = populationCapacityPerLevel[levelIndex];
+                        _currentPopInitial = initialPopulationPerLevel[levelIndex];
+                        ResourceManager.Instance.AddHouseEffect(_currentPopCapacity, _currentPopInitial);
                     }
                     break;
                 case BuildingType.Farm:
                     if (levelIndex < foodProductionPerLevel.Length)
                     {
-                        ResourceManager.Instance.AddFoodProduction(
-                            foodProductionPerLevel[levelIndex]);
+                        _currentFoodProduction = foodProductionPerLevel[levelIndex];
+                        ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
                     }
                     break;
-                case BuildingType.Bank:
-                    ResourceManager.Instance.AddBank();
-                    break;
                 case BuildingType.PowerPlant:
-                    // <<< --- 修改: 发电厂现在只应用CO2排放 ---
-                    // <<< --- 电力生产是自动的，不再需要 electricityProductionPerLevel ---
                     if (levelIndex < co2EmissionPerLevel.Length)
                     {
-                        ResourceManager.Instance.AddPowerPlantEffect(
-                            co2EmissionPerLevel[levelIndex]);
+                        _currentCo2Emission = co2EmissionPerLevel[levelIndex];
+                        ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Emission);
                     }
                     break;
                 case BuildingType.Co2Storage:

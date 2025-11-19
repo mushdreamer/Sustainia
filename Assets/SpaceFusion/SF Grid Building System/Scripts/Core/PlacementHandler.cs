@@ -132,5 +132,45 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             // destroy the object and set the reference of the list at the proper index to null
             Destroy(obj);
         }
+
+        /// <summary>
+        /// 注册一个已经在场景中存在的物体（非运行时生成的）
+        /// </summary>
+        public string RegisterPrePlacedObject(GameObject obj, Vector3Int gridPos, Placeable placeableObj)
+        {
+            // 1. 确保有 PlacedObject 组件
+            var placedObject = obj.GetComponent<PlacedObject>();
+            if (placedObject == null) placedObject = obj.AddComponent<PlacedObject>();
+
+            // 2. 确保有 BuildingEffect 组件引用
+            placedObject.buildingEffect = obj.GetComponent<BuildingEffect>();
+
+            // 3. 初始化数据 (生成 GUID)
+            placedObject.Initialize(placeableObj, gridPos);
+
+            // 注意：预先放置的物体默认方向通常设为 Down (0度)，或者你需要根据 transform.rotation 倒推方向
+            // 这里简化处理，假设场景里的物体不需要旋转修正，默认 Down
+            placedObject.data.direction = ObjectDirection.Down;
+
+            // 4. 加入对象分组
+            ObjectGrouper.Instance.AddToGroup(obj, placeableObj.GridType);
+
+            // 5. 加入字典进行追踪
+            if (!_placedObjectDictionary.ContainsKey(placedObject.data.guid))
+            {
+                _placedObjectDictionary.Add(placedObject.data.guid, obj);
+            }
+
+            // 6. 注册独特建筑限制
+            if (placeableObj.IsUnique)
+            {
+                PlacementSystem.Instance.RegisterUniqueBuilding(placeableObj.GetAssetIdentifier());
+            }
+
+            // 7. 应用效果 (如果 BuildingEffect 里的 Start 还没运行，这里会运行；如果运行过了，我们在第一步加的防护会阻止重复)
+            obj.GetComponent<BuildingEffect>()?.ApplyEffect();
+
+            return placedObject.data.guid;
+        }
     }
 }
