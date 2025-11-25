@@ -281,6 +281,58 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         }
 
         /// <summary>
+        /// 动态修改耗电量
+        /// </summary>
+        public void UpdateElectricityConsumption(float newValue)
+        {
+            if (type == BuildingType.PowerPlant) return;
+
+            // 1. 移除旧的数值
+            ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
+            // 2. 更新数值
+            _currentElectricityConsumption = newValue;
+            // 3. 应用新的数值
+            ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
+
+            Debug.Log($"{gameObject.name} 耗电量调整为: {newValue}");
+        }
+
+        /// <summary>
+        /// 动态修改食物产量 (Farm)
+        /// </summary>
+        public void UpdateFoodProduction(float newValue)
+        {
+            if (type != BuildingType.Farm) return;
+
+            ResourceManager.Instance.RemoveFoodProduction(_currentFoodProduction);
+            _currentFoodProduction = newValue;
+            ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
+
+            Debug.Log($"{gameObject.name} 食物产量调整为: {newValue}");
+        }
+
+        /// <summary>
+        /// 动态修改 CO2 排放 (PowerPlant)
+        /// </summary>
+        public void UpdateCo2Emission(float newValue)
+        {
+            if (type != BuildingType.PowerPlant) return;
+
+            ResourceManager.Instance.RemovePowerPlantEffect(_currentCo2Emission);
+            _currentCo2Emission = newValue;
+            ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Emission);
+
+            Debug.Log($"{gameObject.name} CO2排放调整为: {newValue}");
+        }
+
+        // 获取当前数值供 UI 显示
+        public float GetCurrentElectricity() => _currentElectricityConsumption;
+        public float GetCurrentFood() => _currentFoodProduction;
+        public float GetCurrentCo2() => _currentCo2Emission;
+
+        // <<< --- END ADD BLOCK --- >>>
+
+        /// <summary>
         /// 建筑血量归零时调用
         /// </summary>
         private void DestroyBuilding()
