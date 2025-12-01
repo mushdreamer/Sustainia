@@ -4503,13 +4503,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 635179576}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88f1313b48858104eb88aba63e0cc027, type: 3}
+  m_Script: {fileID: 11500000, guid: 4ba39de81987bbc43948cc6975432e4d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScannedCityGenerator
+  m_EditorClassIdentifier: Assembly-CSharp::MultiZoneCityGenerator
   cellSize: 1
   roadLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   buildingPrefabs:
   - {fileID: 3186172402005991606, guid: b7d49cff18d1d4141b223bdff2d60974, type: 3}
   - {fileID: 4417588646843519417, guid: c62664927b31bb8418c2793f6366c3d1, type: 3}
