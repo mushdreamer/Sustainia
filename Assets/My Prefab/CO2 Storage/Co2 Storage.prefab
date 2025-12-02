@@ -125,11 +125,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingEffect
   type: 4
-  populationCapacityIncrease: 5
-  initialPopulationGain: 2
+  maxHealth: 100
+  electricityConsumption: 1
+  populationCapacity: 5
+  initialPopulation: 2
+  houseCo2Change: 1
   foodProduction: 2
-  workersRequired: 2
-  electricityProduction: 10
-  co2Emission: 2
-  co2AbsorptionRate: 10
-  co2Capacity: 100
+  farmCo2Change: 2
+  instituteCo2Change: 3
+  bankCo2Change: 2
+  powerPlantCo2Change: 10
+  storageCo2Change: -1

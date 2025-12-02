@@ -126,84 +126,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingEffect
   type: 5
-  buildingLevel: 1
-  maxBuildingLevel: 10
-  upgradeCostPerLevel:
-  - 50
-  - 100
-  - 180
-  - 300
-  - 500
-  - 800
-  - 1300
-  - 2100
-  - 3400
   maxHealth: 100
-  electricityConsumptionPerLevel:
-  - 1
-  - 1.2
-  - 1.5
-  - 2
-  - 2.5
-  - 3
-  - 3.5
-  - 4
-  - 4.5
-  - 5
-  populationCapacityPerLevel: b004000098080000b20c0000cc100000e6140000001900001a1d0000342100004e25000068290000
-  initialPopulationPerLevel: 64000000640000006400000064000000640000006400000064000000640000006400000064000000
-  foodProductionPerLevel:
-  - 1200
-  - 2200
-  - 3250
-  - 4300
-  - 5350
-  - 6400
-  - 7450
-  - 8500
-  - 9550
-  - 10600
-  electricityProductionPerLevel:
-  - 10
-  - 15
-  - 22
-  - 30
-  - 40
-  - 55
-  - 70
-  - 90
-  - 115
-  - 150
-  co2EmissionPerLevel:
-  - 2
-  - 2.5
-  - 3
-  - 3.5
-  - 4
-  - 4.5
-  - 5
-  - 5.5
-  - 6
-  - 6.5
-  co2AbsorptionRatePerLevel:
-  - 0.5
-  - 0.7
-  - 1
-  - 1.4
-  - 1.9
-  - 2.5
-  - 3.2
-  - 4
-  - 5
-  - 6
-  co2CapacityPerLevel:
-  - 100
-  - 130
-  - 170
-  - 220
-  - 280
-  - 350
-  - 440
-  - 550
-  - 700
-  - 900
+  electricityConsumption: 1
+  populationCapacity: 5
+  initialPopulation: 2
+  houseCo2Change: 1
+  foodProduction: 2
+  farmCo2Change: 2
+  instituteCo2Change: 3
+  bankCo2Change: 2
+  powerPlantCo2Change: 10
+  storageCo2Change: -20
