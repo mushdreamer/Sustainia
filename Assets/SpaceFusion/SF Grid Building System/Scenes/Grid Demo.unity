@@ -8437,13 +8437,25 @@ MonoBehaviour:
   roadLayer:
     serializedVersion: 2
     m_Bits: 64
-  buildingPrefabs:
-  - {fileID: 3186172402005991606, guid: b7d49cff18d1d4141b223bdff2d60974, type: 3}
-  - {fileID: 4417588646843519417, guid: c62664927b31bb8418c2793f6366c3d1, type: 3}
-  - {fileID: 7787231973309511902, guid: a5a41c5c86d848e48bf9dd34b44aed00, type: 3}
-  - {fileID: 8530960427603277324, guid: c8cdcb643e013cf4cb2479a2438d27a8, type: 3}
-  - {fileID: 2249931451008258952, guid: e317db7ee50b02e4e90d9fcb5a482752, type: 3}
-  - {fileID: 469319145464965748, guid: 1120784db9e3caa4bb08860df84e8609, type: 3}
+  buildingOptions:
+  - name: 
+    prefab: {fileID: 8530960427603277324, guid: c8cdcb643e013cf4cb2479a2438d27a8, type: 3}
+    data: {fileID: 11400000, guid: a3d09581cd1b8544ca6267ec4a803c5d, type: 2}
+  - name: 
+    prefab: {fileID: 3186172402005991606, guid: b7d49cff18d1d4141b223bdff2d60974, type: 3}
+    data: {fileID: 11400000, guid: b14ee98781b800c478cd45230fe11f12, type: 2}
+  - name: 
+    prefab: {fileID: 4417588646843519417, guid: c62664927b31bb8418c2793f6366c3d1, type: 3}
+    data: {fileID: 11400000, guid: d3cb209b000d91d4cb6ed3c6b7dec152, type: 2}
+  - name: 
+    prefab: {fileID: 7787231973309511902, guid: a5a41c5c86d848e48bf9dd34b44aed00, type: 3}
+    data: {fileID: 11400000, guid: e22d11965f8a2194ab8b9d0edf309cc1, type: 2}
+  - name: 
+    prefab: {fileID: 2249931451008258952, guid: e317db7ee50b02e4e90d9fcb5a482752, type: 3}
+    data: {fileID: 11400000, guid: b74ee332cd834724c8817d280f342e84, type: 2}
+  - name: 
+    prefab: {fileID: 469319145464965748, guid: 1120784db9e3caa4bb08860df84e8609, type: 3}
+    data: {fileID: 11400000, guid: fe0a1f711d5699b429363c5e7aac7f53, type: 2}
   buildingYOffset: 0
   zones:
   - zoneName: 
@@ -26835,7 +26847,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1852914646376509975, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2571962017718635581, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_LocalScale.x
