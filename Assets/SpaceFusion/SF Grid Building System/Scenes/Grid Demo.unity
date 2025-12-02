@@ -8457,8 +8457,9 @@ MonoBehaviour:
     prefab: {fileID: 469319145464965748, guid: 1120784db9e3caa4bb08860df84e8609, type: 3}
     data: {fileID: 11400000, guid: fe0a1f711d5699b429363c5e7aac7f53, type: 2}
   buildingYOffset: 0
-  co2Target: 43
+  co2Target: 50
   targetTolerance: 0
+  maxBuildingLimit: 15
   zones:
   - zoneName: 
     originPoint: {fileID: 597993826}

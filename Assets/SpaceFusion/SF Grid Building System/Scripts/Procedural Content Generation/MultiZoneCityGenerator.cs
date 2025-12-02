@@ -3,26 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
-using System.IO; // <<< 1. 引入 IO 用于写 CSV >>>
+using System.IO;
 
 public class MultiZoneCityGenerator : MonoBehaviour
 {
     [System.Serializable]
-    public class GenerationZone
-    {
-        public string zoneName = "Area 1";
-        public Transform originPoint;
-        public int width = 20;
-        public int height = 20;
-    }
+    public class GenerationZone { public string zoneName = "Area 1"; public Transform originPoint; public int width = 20; public int height = 20; }
 
     [System.Serializable]
-    public struct BuildingType
-    {
-        public string name;
-        public GameObject prefab;
-        public Placeable data;
-    }
+    public struct BuildingType { public string name; public GameObject prefab; public Placeable data; }
 
     [Header("Global Settings")]
     public float cellSize = 10.0f;
@@ -31,17 +20,15 @@ public class MultiZoneCityGenerator : MonoBehaviour
     public float buildingYOffset = 0.0f;
 
     [Header("Optimization Goals")]
-    [Tooltip("我们希望城市达到的目标 CO2 排放总量")]
     public float co2Target = 50.0f;
-
-    // <<< 2. 新增容忍度，只要误差小于这个值就视为达成目标 >>>
-    [Tooltip("误差容忍度 (当 Error 小于此值时停止生成)")]
     public float targetTolerance = 1.0f;
 
-    // 用于记录当前生成过程中累积的 CO2 总量 (用于比较)
-    private float _currentTotalCo2 = 0f;
+    [Tooltip("最大建筑数量限制 (Constraint: Count <= Limit)")]
+    public int maxBuildingLimit = 20;
 
-    // <<< 3. CSV 相关变量 >>>
+    private float _currentTotalCo2 = 0f;
+    private int _placedCount = 0;
+
     private string _csvFilePath;
     private int _stepCount = 0;
 
@@ -50,163 +37,143 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
     void Start()
     {
-        // 游戏开始前，重置累积计数
         _currentTotalCo2 = 0f;
-        _stepCount = 0; // 重置步数
+        _placedCount = 0;
+        _stepCount = 0;
 
-        // <<< 4. 初始化 CSV 文件路径 (放在 Assets 文件夹同级) >>>
+        // 安全检查：Limit 不能超过实际地块数
+        if (maxBuildingLimit > zones.Count) maxBuildingLimit = zones.Count;
+
+        Debug.Log($"[Init] 目标 Co2: {co2Target}, 数量限制: <={maxBuildingLimit}");
+
         _csvFilePath = Path.Combine(Application.dataPath, $"TrainingData_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        InitCSV();
 
         StartCoroutine(GenerateZonesSequence());
     }
 
-    // <<< 5. 辅助方法：写 CSV 表头 >>>
     void InitCSV()
     {
-        // 写入表头：步数, 区域, 建筑, 当前总排放, 距离目标的误差(Error)
-        string header = "Step,ZoneName,BuildingName,CurrentTotalCo2,ErrorDistance";
+        // 表头去掉了 Avg_Needed，因为不再需要那个逻辑了
+        string header = "Step,ZoneName,BuildingName,Added_Co2,Total_Co2,Count_Ratio,Error_Distance";
         File.WriteAllText(_csvFilePath, header + "\n");
-        Debug.Log($"[CSV] 文件已创建: {_csvFilePath}");
     }
 
-    // <<< 6. 辅助方法：追加 CSV 数据 >>>
-    void WriteCSV(int step, string zone, string building, float total, float error)
+    void WriteCSV(int step, string zone, string building, float added, float total, float ratio, float error)
     {
-        string line = $"{step},{zone},{building},{total},{error}";
+        string line = $"{step},{zone},{building},{added},{total},{ratio:F2},{error}";
         File.AppendAllText(_csvFilePath, line + "\n");
     }
 
     IEnumerator GenerateZonesSequence()
     {
-        // 0. 先写入表头
-        InitCSV();
-
-        // 1. 准备随机索引列表
         List<int> availableIndices = new List<int>();
-        for (int i = 0; i < zones.Count; i++)
-        {
-            availableIndices.Add(i);
-        }
+        for (int i = 0; i < zones.Count; i++) availableIndices.Add(i);
 
-        Debug.Log($"[CityGen] 开始生成序列。目标 CO2: {co2Target}");
+        // 重试机制：防止随机不到合适的建筑导致死循环
+        int maxRetries = 200;
+        int totalAttempts = 0;
 
         // 记录初始误差
         float currentError = Mathf.Abs(_currentTotalCo2 - co2Target);
 
-        // 2. 循环生成区域
-        while (availableIndices.Count > 0)
+        // 循环条件：
+        // 1. 还有空地
+        // 2. 没超过数量限制
+        // 3. 没超过最大尝试次数
+        // 4. 【重要】误差还没达标 (如果达标了就直接停，省地皮！)
+        while (availableIndices.Count > 0 &&
+               _placedCount < maxBuildingLimit &&
+               totalAttempts < maxRetries &&
+               currentError > targetTolerance)
         {
-            // --- 步骤 A: 选择一个 Zone ---
+            totalAttempts++;
+
+            // 1. 随机选地
             int randomIndex = Random.Range(0, availableIndices.Count);
             int selectedZoneIndex = availableIndices[randomIndex];
             GenerationZone zoneToGenerate = zones[selectedZoneIndex];
 
-            // --- 步骤 B: 提议一个建筑 (Proposed Building) ---
-            // 随机选一个建筑类型作为“候选”
+            // 2. 随机提议
             int buildTypeIndex = Random.Range(0, buildingOptions.Count);
             BuildingType candidateType = buildingOptions[buildTypeIndex];
-
-            // --- 步骤 C: 获取它的预测排放量 (Proposed Co2 Emission) ---
             float proposedEmission = GetBuildingCo2FromPrefab(candidateType.prefab);
 
-            // --- 步骤 D: 计算比较 (The Calculation) ---
-            // 现在的误差
-            // float currentError = Mathf.Abs(_currentTotalCo2 - co2Target); // (移到了循环外更新，或者在下面更新)
-
-            // 如果加上这个建筑后的误差
+            // 3. 计算新误差
+            // 逻辑：加上这个建筑后，是不是离目标更近了？
             float newError = Mathf.Abs((_currentTotalCo2 + proposedEmission) - co2Target);
 
-            Debug.Log($"[CityGen] 尝试在 {zoneToGenerate.zoneName} 生成 {candidateType.name}...\n" +
-                      $"当前总排放: {_currentTotalCo2}, 目标: {co2Target}\n" +
-                      $"预测增量: {proposedEmission}\n" +
-                      $"当前误差: {currentError:F2} vs 新误差: {newError:F2}");
+            Debug.Log($"[Attempt {totalAttempts}] 当前误差: {currentError:F2}. 提议: {candidateType.name}({proposedEmission}). 预期误差: {newError:F2}");
 
-            // --- 步骤 E: 决策 (Decision Rule) ---
-            // 只有当新误差 < 当前误差 (或者这是第一个建筑，且误差肯定会变小) 时才生成
-            if (newError < currentError || _currentTotalCo2 == 0)
+            // 4. 决策逻辑：只有能减小误差（或保持不变），就接受！
+            // 这就是“梯度下降”：只要往坑底走，不管步子跨多大，都走。
+            if (newError < currentError)
             {
-                Debug.Log($"<color=green>[Accepted]</color> 方案通过！生成建筑。");
+                Debug.Log($"<color=green>[Accepted]</color> 误差减小 ({currentError:F2} -> {newError:F2})，生成！");
 
-                // 执行生成，并传入指定的建筑类型
                 GenerateOneZone(zoneToGenerate, candidateType);
 
-                // 更新累积值
                 _currentTotalCo2 += proposedEmission;
+                _placedCount++;
+                _stepCount++;
 
                 // 更新当前误差
                 currentError = newError;
+                float ratio = (float)_placedCount / maxBuildingLimit;
 
-                // <<< 7. 记录数据到 CSV >>>
-                _stepCount++;
-                WriteCSV(_stepCount, zoneToGenerate.zoneName, candidateType.name, _currentTotalCo2, currentError);
+                WriteCSV(_stepCount, zoneToGenerate.zoneName, candidateType.name, proposedEmission, _currentTotalCo2, ratio, currentError);
 
-                // <<< 8. 功能：如果达到目标，停止生成 >>>
-                if (currentError <= targetTolerance)
-                {
-                    Debug.Log($"<color=green>[Success]</color> 已达到目标 CO2 (误差 {currentError} <= {targetTolerance})！停止生成。");
-                    break; // 跳出循环
-                }
+                // 成功生成后，移除该地块索引（这块地用掉了）
+                availableIndices.RemoveAt(randomIndex);
             }
             else
             {
-                Debug.Log($"<color=red>[Rejected]</color> 方案拒绝！这会让排放量偏离目标。该区域将保持空置 (或跳过)。");
-                // 在这里我们选择“跳过”该区域的生成，即该区域为空。
+                Debug.Log($"<color=red>[Rejected]</color> 误差会变大 ({newError:F2})，不合适。换个建筑再试。");
+                // 失败时不移除索引！保留这块地给下次机会。
             }
 
-            // 移除已处理的区域索引
-            availableIndices.RemoveAt(randomIndex);
-
-            yield return new WaitForSeconds(2.0f); // 稍微加快一点演示速度
+            yield return new WaitForSeconds(0.1f);
         }
 
-        // <<< 9. 功能：循环结束后的失败判定 >>>
-        // 如果循环结束了（availableIndices 为空），但误差依然大于容忍度，说明没能达成目标
-        if (currentError > targetTolerance)
+        // --- 最终结算 ---
+        if (currentError <= targetTolerance)
         {
-            Debug.Log($"<color=red>[Failed]</color> 任务失败！所有区域已处理完毕，但未能达到目标 CO2。\n" +
-                      $"最终误差: {currentError}, 目标: {co2Target}");
+            Debug.Log($"<color=green>[Success]</color> 任务完成！\n" +
+                      $"最终误差: {currentError}\n" +
+                      $"消耗地块: {_placedCount} (限制 {maxBuildingLimit})\n" +
+                      $"优化评价: 极佳 (剩余名额 {maxBuildingLimit - _placedCount})");
         }
         else
         {
-            Debug.Log($"[CityGen] 生成流程结束。最终模拟计算总 CO2: {_currentTotalCo2}");
+            Debug.Log($"<color=red>[Failed]</color> 未能达成目标。\n" +
+                      $"原因可能是：尝试次数耗尽、地块用完、或者无法凑出精确数值。\n" +
+                      $"最终误差: {currentError}, 已用数量: {_placedCount}");
         }
     }
 
-    // --- 辅助方法：从 Prefab 读取数据而不实例化 --- (完全保持原样)
+    // --- 辅助方法保持不变 ---
     float GetBuildingCo2FromPrefab(GameObject prefab)
     {
         if (prefab == null) return 0f;
-
         BuildingEffect effect = prefab.GetComponent<BuildingEffect>();
         if (effect == null) return 0f;
-
-        // 根据类型读取你在 BuildingEffect 中定义的对应变量
         switch (effect.type)
         {
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.House:
-                return effect.houseCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Farm:
-                return effect.farmCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Institute:
-                return effect.instituteCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Bank:
-                return effect.bankCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.PowerPlant:
-                return effect.powerPlantCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Co2Storage:
-                return effect.storageCo2Change; // 这是负数
-            default:
-                return 0f;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.House: return effect.houseCo2Change;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Farm: return effect.farmCo2Change;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Institute: return effect.instituteCo2Change;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Bank: return effect.bankCo2Change;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.PowerPlant: return effect.powerPlantCo2Change;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Co2Storage: return effect.storageCo2Change;
+            default: return 0f;
         }
     }
 
-    // --- 修改后的生成方法，接收特定的 BuildingType --- (完全保持原样)
     void GenerateOneZone(GenerationZone zone, BuildingType specificBuildingType)
     {
+        // ... (保持原有的 GenerateOneZone 和 AttachAndInitialize 代码完全不变) ...
         int[,] mapData = new int[zone.width, zone.height];
         Vector3 startPos = zone.originPoint.position;
-
-        // 扫描地形 (保持不变)
         for (int x = 0; x < zone.width; x++)
         {
             for (int z = 0; z < zone.height; z++)
@@ -214,40 +181,26 @@ public class MultiZoneCityGenerator : MonoBehaviour
                 float worldX = startPos.x + x * cellSize + cellSize * 0.5f;
                 float worldZ = startPos.z + z * cellSize + cellSize * 0.5f;
                 Vector3 rayOrigin = new Vector3(worldX, 100f, worldZ);
-                if (Physics.Raycast(rayOrigin, Vector3.down, 200f, roadLayer))
-                    mapData[x, z] = 1;
-                else
-                    mapData[x, z] = 0;
+                if (Physics.Raycast(rayOrigin, Vector3.down, 200f, roadLayer)) mapData[x, z] = 1;
+                else mapData[x, z] = 0;
             }
         }
-
         bool[,] visited = new bool[zone.width, zone.height];
-
-        // 遍历格子生成建筑
         for (int x = 0; x < zone.width; x++)
         {
             for (int z = 0; z < zone.height; z++)
             {
                 if (mapData[x, z] == 1 || visited[x, z]) continue;
-
-                // 简单的分块算法 (保持不变)
                 int blockW = 0;
                 while ((x + blockW) < zone.width && mapData[x + blockW, z] == 0) blockW++;
                 int blockH = 0;
                 while ((z + blockH) < zone.height && mapData[x, z + blockH] == 0) blockH++;
-
-                for (int i = 0; i < blockW; i++)
-                    for (int j = 0; j < blockH; j++)
-                        visited[x + i, z + j] = true;
-
+                for (int i = 0; i < blockW; i++) for (int j = 0; j < blockH; j++) visited[x + i, z + j] = true;
                 float centerXIndex = x + blockW / 2.0f;
                 float centerZIndex = z + blockH / 2.0f;
                 float worldX = startPos.x + centerXIndex * cellSize;
                 float worldZ = startPos.z + centerZIndex * cellSize;
-
                 Vector3 spawnPos = new Vector3(worldX, startPos.y + buildingYOffset, worldZ);
-
-                // <<< --- 修改: 不再随机，而是使用传入的 specificBuildingType ---
                 if (specificBuildingType.prefab != null && specificBuildingType.data != null)
                 {
                     GameObject newBuilding = Instantiate(specificBuildingType.prefab, spawnPos, Quaternion.identity, zone.originPoint);
@@ -259,7 +212,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
     void AttachAndInitialize(GameObject building, Placeable placeableData, Vector3 worldPos)
     {
-        // 保持不变
         if (building.GetComponent<Collider>() == null) building.AddComponent<BoxCollider>();
         PlacedObject placedObj = building.GetComponent<PlacedObject>();
         if (placedObj == null) placedObj = building.AddComponent<PlacedObject>();
