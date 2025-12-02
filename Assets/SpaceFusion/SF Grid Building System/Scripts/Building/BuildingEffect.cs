@@ -9,270 +9,180 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
     {
         public BuildingType type;
 
-        [Header("Level Settings")]
-        public int buildingLevel = 1;
-        public int maxBuildingLevel = 10;
-        public float[] upgradeCostPerLevel = { 50, 100, 180, 300, 500, 800, 1300, 2100, 3400 };
-
         [Header("Health")]
-        [Tooltip("这个建筑 Prefab 的最大血量 (应匹配 Placeable.cs 中的设置)")]
         public float maxHealth = 100f;
         private float _currentHealth;
 
-        // <<< +++ 新增: 通用耗电设置 +++
         [Header("General Consumption")]
-        // <<< +++ (请在Inspector中为 *除PowerPlant外* 的所有建筑Prefab填充这10个值) +++
-        public float[] electricityConsumptionPerLevel = { 1f, 1.2f, 1.5f, 2f, 2.5f, 3f, 3.5f, 4f, 4.5f, 5f };
+        public float electricityConsumption = 1f;
+
+        // --- 各个建筑独立的 Co2 设置 (正数=排放, 负数=吸收) ---
 
         [Header("House Settings")]
-        public int[] populationCapacityPerLevel = { 5, 8, 12, 18, 25, 35, 50, 70, 100, 140 };
-        public int[] initialPopulationPerLevel = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+        public int populationCapacity = 5;
+        public int initialPopulation = 2;
+        [Tooltip("正数表示排放 Co2")]
+        public float houseCo2Change = 1f;
 
         [Header("Farm Settings")]
-        public float[] foodProductionPerLevel = { 2f, 3f, 4.5f, 6f, 8f, 10f, 12f, 14f, 16f, 18f };
+        public float foodProduction = 2f;
+        [Tooltip("正数表示排放 Co2")]
+        public float farmCo2Change = 2f;
+
+        [Header("Institute Settings")]
+        [Tooltip("正数表示排放 Co2")]
+        public float instituteCo2Change = 3f;
+
+        [Header("Bank Settings")]
+        [Tooltip("正数表示排放 Co2")]
+        public float bankCo2Change = 1.5f;
 
         [Header("PowerPlant Settings")]
-        // <<< --- 修改: 此数组已不再使用，因为电力是自动满足的 ---
-        public float[] electricityProductionPerLevel = { 10f, 15f, 22f, 30f, 40f, 55f, 70f, 90f, 115f, 150f };
-        public float[] co2EmissionPerLevel = { 2f, 2.5f, 3f, 3.5f, 4f, 4.5f, 5f, 5.5f, 6f, 6.5f };
+        [Tooltip("正数表示排放 Co2")]
+        public float powerPlantCo2Change = 10f;
 
         [Header("Co2 Storage Settings")]
-        public float[] co2AbsorptionRatePerLevel = { 0.5f, 0.7f, 1f, 1.4f, 1.9f, 2.5f, 3.2f, 4f, 5f, 6f };
-        public float[] co2CapacityPerLevel = { 100f, 130f, 170f, 220f, 280f, 350f, 440f, 550f, 700f, 900f };
+        [Tooltip("负数表示吸收/减少 Co2")]
+        public float storageCo2Change = -20f; // <<< 默认为负数，表示吸收
 
-        // --- 内部状态追踪变量 ---
+        // --- 内部状态变量 ---
         private bool _isInitialized = false;
-        private float _currentCo2Stored = 0f;
-        private bool _isStorageActive = false;
-        private float _currentAbsorptionRate = 0f;
-        private float _currentCapacity = 0f;
-        // <<< +++ 新增: 存储当前耗电量，用于RemoveEffect +++
+
+        // 运行时缓存
         private float _currentElectricityConsumption = 0f;
+
+        // 这个变量现在存储“净 Co2 变化量”，可能是正数也可能是负数
+        private float _currentCo2Change = 0f;
 
         private float _currentFoodProduction = 0f;
         private int _currentPopCapacity = 0;
         private int _currentPopInitial = 0;
-        private float _currentCo2Emission = 0f;
 
         private void Start()
         {
-            // 对于预先放置在场景中的建筑 (不是由玩家或加载程序放置的)，
-            // 它们也需要在游戏开始时应用其效果。
-            // _isInitialized 标志会防止 PlacementHandler (在放置新物体时) 再次调用它。
             if (!_isInitialized)
             {
                 ApplyEffect();
             }
         }
 
-        private void Update()
-        {
-            if (!_isStorageActive)
-            {
-                return;
-            }
-
-            _currentCo2Stored += _currentAbsorptionRate * Time.deltaTime;
-
-            if (_currentCo2Stored >= _currentCapacity)
-            {
-                _currentCo2Stored = _currentCapacity;
-                _isStorageActive = false;
-
-                ResourceManager.Instance.RemoveCo2Absorption(_currentAbsorptionRate);
-
-                Debug.Log("One Co2 Storage is Full!");
-            }
-        }
-
-        // 当建筑被成功放置时调用 (或升级后调用)
         public void ApplyEffect()
         {
-            // --- ADD THIS ---
-            if (_isInitialized) return; // 防止重复应用
-            _isInitialized = true;      // 标记为已初始化
-            // --- END ADD ---
+            if (_isInitialized) return;
+            _isInitialized = true;
 
-            // <<< +++ 新增: 向 ResourceManager 注册实例 +++
             ResourceManager.Instance.RegisterBuildingInstance(this);
-            // <<< +++ 新增: 初始化血量 +++
             _currentHealth = maxHealth;
-
             ResourceManager.Instance.RegisterBuilding(type);
 
-            int levelIndex = buildingLevel - 1;
-            if (levelIndex < 0) levelIndex = 0;
-
-            // <<< +++ 新增: (几乎)所有建筑都会耗电 +++
-            if (type != BuildingType.PowerPlant && levelIndex < electricityConsumptionPerLevel.Length)
+            // 1. 通用耗电 (PowerPlant 除外)
+            if (type != BuildingType.PowerPlant)
             {
-                _currentElectricityConsumption = electricityConsumptionPerLevel[levelIndex];
+                _currentElectricityConsumption = electricityConsumption;
                 ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
             }
-            // <<< +++ --------------------------- +++
 
+            // 2. 确定当前建筑的 Co2 变化值 (正/负)
             switch (type)
             {
                 case BuildingType.House:
-                    if (levelIndex < populationCapacityPerLevel.Length)
-                    {
-                        _currentPopCapacity = populationCapacityPerLevel[levelIndex];
-                        _currentPopInitial = initialPopulationPerLevel[levelIndex];
-                        ResourceManager.Instance.AddHouseEffect(_currentPopCapacity, _currentPopInitial);
-                    }
+                    _currentCo2Change = houseCo2Change;
+                    _currentPopCapacity = populationCapacity;
+                    _currentPopInitial = initialPopulation;
+                    ResourceManager.Instance.AddHouseEffect(_currentPopCapacity, _currentPopInitial);
                     break;
+
                 case BuildingType.Farm:
-                    if (levelIndex < foodProductionPerLevel.Length)
-                    {
-                        _currentFoodProduction = foodProductionPerLevel[levelIndex];
-                        ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
-                    }
+                    _currentCo2Change = farmCo2Change;
+                    _currentFoodProduction = foodProduction;
+                    ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
                     break;
-                case BuildingType.PowerPlant:
-                    if (levelIndex < co2EmissionPerLevel.Length)
-                    {
-                        _currentCo2Emission = co2EmissionPerLevel[levelIndex];
-                        ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Emission);
-                    }
-                    break;
-                case BuildingType.Co2Storage:
-                    if (levelIndex < co2AbsorptionRatePerLevel.Length && levelIndex < co2CapacityPerLevel.Length)
-                    {
-                        _currentAbsorptionRate = co2AbsorptionRatePerLevel[levelIndex];
-                        _currentCapacity = co2CapacityPerLevel[levelIndex];
-                        _currentCo2Stored = 0f;
-                        _isStorageActive = true;
-                        ResourceManager.Instance.AddCo2Absorption(_currentAbsorptionRate);
-                    }
-                    break;
+
                 case BuildingType.Institute:
-                    // (研究所现在也会耗电，已在上面处理)
+                    _currentCo2Change = instituteCo2Change;
                     break;
+
+                case BuildingType.Bank:
+                    _currentCo2Change = bankCo2Change;
+                    break;
+
+                case BuildingType.PowerPlant:
+                    _currentCo2Change = powerPlantCo2Change;
+                    break;
+
+                case BuildingType.Co2Storage:
+                    // 直接读取负值配置，不再处理 Capacity 或 Rate
+                    _currentCo2Change = storageCo2Change;
+                    break;
+            }
+
+            // 3. 将数值应用到 ResourceManager
+            // 无论正负，统一调用 AddPowerPlantEffect (或者你可以重命名为 AddCo2Effect)
+            // 如果是负数，ResourceManager 那边的总 Co2 就会减少
+            if (_currentCo2Change != 0)
+            {
+                ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Change);
             }
         }
 
-        // 当建筑被移除时调用 (或升级前调用)
         public void RemoveEffect()
         {
-            // <<< +++ 新增: 向 ResourceManager 注销实例 +++
             ResourceManager.Instance.UnregisterBuildingInstance(this);
-
             ResourceManager.Instance.UnregisterBuilding(type);
 
-            int levelIndex = buildingLevel - 1;
-            if (levelIndex < 0) levelIndex = 0;
-
-            // <<< +++ 新增: 移除建筑时，也移除其耗电量 +++
+            // 1. 移除耗电
             if (type != BuildingType.PowerPlant)
             {
                 ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
-                _currentElectricityConsumption = 0; // 重置
+                _currentElectricityConsumption = 0;
             }
-            // <<< +++ --------------------------- +++
 
+            // 2. 移除 Co2 影响
+            // 逻辑: 调用 Remove 传入原数值，ResourceManager 应该做减法
+            // (例如: 原本是 -20，Remove(-20) => 总量减去-20 => 总量+20，恢复原状)
+            if (_currentCo2Change != 0)
+            {
+                ResourceManager.Instance.RemovePowerPlantEffect(_currentCo2Change);
+                _currentCo2Change = 0;
+            }
+
+            // 3. 移除其他特定效果
             switch (type)
             {
                 case BuildingType.House:
-                    if (levelIndex < populationCapacityPerLevel.Length && levelIndex < initialPopulationPerLevel.Length)
-                    {
-                        ResourceManager.Instance.RemoveHouseEffect(
-                            populationCapacityPerLevel[levelIndex],
-                            initialPopulationPerLevel[levelIndex]);
-                    }
+                    ResourceManager.Instance.RemoveHouseEffect(_currentPopCapacity, _currentPopInitial);
                     break;
                 case BuildingType.Farm:
-                    if (levelIndex < foodProductionPerLevel.Length)
-                    {
-                        ResourceManager.Instance.RemoveFoodProduction(
-                            foodProductionPerLevel[levelIndex]);
-                    }
+                    ResourceManager.Instance.RemoveFoodProduction(_currentFoodProduction);
                     break;
                 case BuildingType.Bank:
                     ResourceManager.Instance.RemoveBank();
                     break;
-                case BuildingType.PowerPlant:
-                    // <<< --- 修改: 只移除CO2排放 ---
-                    // (我们使用 buildingLevel-1 来获取 *当前* 等级的索引，因为这是 Remove)
-                    if (levelIndex < co2EmissionPerLevel.Length)
-                    {
-                        ResourceManager.Instance.RemovePowerPlantEffect(
-                            co2EmissionPerLevel[levelIndex]);
-                    }
-                    break;
-                case BuildingType.Co2Storage:
-                    if (_isStorageActive)
-                    {
-                        ResourceManager.Instance.RemoveCo2Absorption(_currentAbsorptionRate);
-                    }
-                    _isStorageActive = false;
-                    _currentAbsorptionRate = 0;
-                    _currentCapacity = 0;
-                    break;
-                case BuildingType.Institute:
-                    // (耗电量已在上面移除)
-                    break;
+                    // Co2Storage 和 PowerPlant 的 Co2 逻辑已经在上面第2步统一处理了
             }
         }
 
-        // ... TryUpgradeBuilding 方法保持不变 (它会正确调用 RemoveEffect 和 ApplyEffect)
-        public void TryUpgradeBuilding()
-        {
-            // 检查1: 是否已达最高等级
-            if (buildingLevel >= maxBuildingLevel)
-            {
-                Debug.Log($"Building '{gameObject.name}' is already at max level ({maxBuildingLevel}).");
-                return;
-            }
-
-            // 检查2: 大学等级是否足够
-            if (buildingLevel >= ResourceManager.Instance.UniversityLevel)
-            {
-                Debug.Log($"Cannot upgrade building. University Level {ResourceManager.Instance.UniversityLevel + 1} is required to upgrade to Level {buildingLevel + 1}.");
-                return;
-            }
-
-            // 检查3: 检查升级成本
-            int costIndex = buildingLevel - 1;
-            if (costIndex >= upgradeCostPerLevel.Length)
-            {
-                Debug.LogError($"Missing upgrade cost data for Level {buildingLevel + 1} on building '{gameObject.name}'.");
-                return;
-            }
-
-            float cost = upgradeCostPerLevel[costIndex];
-
-            // 检查4: 钱是否足够
-            if (ResourceManager.Instance.SpendMoney(cost))
-            {
-                // 升级成功
-                // 1. 移除旧等级的效果
-                RemoveEffect();
-
-                // 2. 提升等级
-                buildingLevel++;
-                Debug.Log($"Building '{gameObject.name}' upgraded to Level {buildingLevel}!");
-
-                // 3. 应用新等级的效果
-                ApplyEffect();
-            }
-            else
-            {
-                Debug.Log($"Not enough money to upgrade. Need {cost:F0}.");
-            }
-        }
-        // <<< +++ 
-        // +++ 新增: 伤害和摧毁逻辑
-        // +++ 
         /// <summary>
-        /// 对这个建筑造成伤害
+        /// 动态修改 Co2 数值 (运行时升级或 Buff)
         /// </summary>
+        public void UpdateCo2Change(float newValue)
+        {
+            // 1. 移除旧值的影响
+            ResourceManager.Instance.RemovePowerPlantEffect(_currentCo2Change);
+
+            // 2. 更新数值
+            _currentCo2Change = newValue;
+
+            // 3. 应用新值
+            ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Change);
+
+            Debug.Log($"{gameObject.name} Co2 固定数值调整为: {newValue}");
+        }
+
         public void TakeDamage(float amount)
         {
-            if (_currentHealth <= 0) return; // 已经被摧毁了
-
+            if (_currentHealth <= 0) return;
             _currentHealth -= amount;
-            Debug.Log($"Building '{gameObject.name}' took {amount} damage. Current health: {_currentHealth}/{maxHealth}");
-
             if (_currentHealth <= 0)
             {
                 _currentHealth = 0;
@@ -280,89 +190,40 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             }
         }
 
-        /// <summary>
-        /// 动态修改耗电量
-        /// </summary>
         public void UpdateElectricityConsumption(float newValue)
         {
             if (type == BuildingType.PowerPlant) return;
-
-            // 1. 移除旧的数值
             ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
-            // 2. 更新数值
             _currentElectricityConsumption = newValue;
-            // 3. 应用新的数值
             ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
-
-            Debug.Log($"{gameObject.name} 耗电量调整为: {newValue}");
         }
 
-        /// <summary>
-        /// 动态修改食物产量 (Farm)
-        /// </summary>
         public void UpdateFoodProduction(float newValue)
         {
             if (type != BuildingType.Farm) return;
-
             ResourceManager.Instance.RemoveFoodProduction(_currentFoodProduction);
             _currentFoodProduction = newValue;
             ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
-
-            Debug.Log($"{gameObject.name} 食物产量调整为: {newValue}");
         }
 
-        /// <summary>
-        /// 动态修改 CO2 排放 (PowerPlant)
-        /// </summary>
-        public void UpdateCo2Emission(float newValue)
-        {
-            if (type != BuildingType.PowerPlant) return;
-
-            ResourceManager.Instance.RemovePowerPlantEffect(_currentCo2Emission);
-            _currentCo2Emission = newValue;
-            ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Emission);
-
-            Debug.Log($"{gameObject.name} CO2排放调整为: {newValue}");
-        }
-
-        // 获取当前数值供 UI 显示
         public float GetCurrentElectricity() => _currentElectricityConsumption;
         public float GetCurrentFood() => _currentFoodProduction;
-        public float GetCurrentCo2() => _currentCo2Emission;
 
-        // <<< --- END ADD BLOCK --- >>>
+        // 这个方法返回当前的 Co2 影响值 (可能是正数也可能是负数)
+        public float GetCurrentCo2Change() => _currentCo2Change;
 
-        /// <summary>
-        /// 建筑血量归零时调用
-        /// </summary>
         private void DestroyBuilding()
         {
-            Debug.Log($"Building '{gameObject.name}' has been destroyed by damage!");
-
-            // 1. 获取挂载在同一个 GameObject 上的 PlacedObject 组件
             PlacedObject placedObject = GetComponent<PlacedObject>();
-
             if (placedObject != null && PlacementSystem.Instance != null)
             {
-                // 2. 调用 PlacementSystem 的官方 "Remove" 功能
-                //    这会触发 RemoveState，然后正确调用 PlacementHandler，
-                //    它会为你处理 *所有* 事情：
-                //      - 注销独特建筑 (修复你的 BUG 2)
-                //      - 从 GridData 释放格子 (修复你的 BUG 1)
-                //      - 调用 RemoveEffect() (你的代码已包含)
-                //      - 从存档中移除
-                //      - 最后才 Destroy(gameObject)
                 PlacementSystem.Instance.Remove(placedObject);
             }
             else
             {
-                // 备用方案: 如果找不到 PlacementSystem 或 PlacedObject，
-                // 至少执行旧的逻辑，防止 GameObject 留在原地。
-                Debug.LogError($"无法通过 PlacementSystem 移除 {gameObject.name}！执行紧急销毁。");
                 RemoveEffect();
                 Destroy(gameObject);
             }
         }
-        // <<< +++ ---------------------------------- +++
     }
 }

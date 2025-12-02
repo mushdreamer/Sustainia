@@ -59,10 +59,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
                 // <<< +++ 
                 // +++ 2. 新增: 绑定新 "升级" 按钮的点击事件
                 // +++ 
-                if (upgradeButton != null) // (添加一个非空检查更安全)
+/*                if (upgradeButton != null) // (添加一个非空检查更安全)
                 {
                     upgradeButton.onClick.AddListener(UpgradeObject);
-                }
+                }*/
                 // <<< +++ ---------------------------------- +++
 
                 tooltipUI.gameObject.SetActive(false);
@@ -185,7 +185,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
         // <<< +++ 
         // +++ 4. 新增: 升级按钮调用的方法
         // +++ 
-        private void UpgradeObject()
+/*        private void UpgradeObject()
         {
             // 它会调用我们之前在 BuildingEffect.cs 中创建的 TryUpgradeBuilding 方法
             if (_placedObject != null && _placedObject.buildingEffect != null)
@@ -193,7 +193,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
                 _placedObject.buildingEffect.TryUpgradeBuilding();
             }
             HideTooltip(); // 无论升级是否成功 (比如钱不够)，都关闭菜单
-        }
+        }*/
         // <<< +++ ---------------------------------- +++
 
         private static void ShowTooltip(PlacedObject caller)
