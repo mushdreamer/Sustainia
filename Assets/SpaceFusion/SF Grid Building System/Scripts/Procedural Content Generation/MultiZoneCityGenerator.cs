@@ -1,10 +1,13 @@
-using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
-using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
-using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
+using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
+using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
 using System.IO;
-using UnityEngine;
+
+// 定义别名避免冲突
+using CoreBuildingType = SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType;
 
 public class MultiZoneCityGenerator : MonoBehaviour
 {
@@ -15,24 +18,19 @@ public class MultiZoneCityGenerator : MonoBehaviour
     {
         public string zoneName = "Area 1";
         public Transform originPoint;
-        public int width = 20;
-        public int height = 20;
+        [Tooltip("区域宽度（以格子数为单位）")]
+        public int width = 5;
+        [Tooltip("区域高度（以格子数为单位）")]
+        public int height = 5;
 
-        // --- 新增：占用标记 ---
         [HideInInspector]
         public bool isOccupied = false;
 
-        // 辅助方法：检查一个世界坐标点是否在这个区域内
         public bool Contains(Vector3 worldPos, float cellSize)
         {
             if (originPoint == null) return false;
-
-            // 将世界坐标转换为相对于原点的局部坐标（以 Grid 数量为单位）
-            // 假设 originPoint 在区域的左下角
             float relativeX = (worldPos.x - originPoint.position.x) / cellSize;
             float relativeZ = (worldPos.z - originPoint.position.z) / cellSize;
-
-            // 稍微增加一点容差(epsilon)，防止边缘判定问题
             return relativeX >= 0 && relativeX < width && relativeZ >= 0 && relativeZ < height;
         }
     }
@@ -66,24 +64,25 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-        }
+        if (Instance != null) { Destroy(gameObject); }
         Instance = this;
     }
 
     IEnumerator Start()
     {
-        // 等待一帧，确保其他单例初始化
         yield return null;
+
+        if (PlacementSystem.Instance == null)
+        {
+            Debug.LogError("PlacementSystem 尚未初始化！");
+            yield break;
+        }
 
         _currentCo2 = 0f;
         _currentCost = 0f;
         _currentEnergy = 0f;
         _stepCount = 0;
 
-        // 初始化所有 Zone 为未占用
         foreach (var zone in zones) zone.isOccupied = false;
 
         _csvFilePath = Path.Combine(Application.dataPath, $"TrainingData_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
@@ -92,50 +91,62 @@ public class MultiZoneCityGenerator : MonoBehaviour
         StartCoroutine(GenerateZonesSequence());
     }
 
-    // --- 新增 API：供 PlacementSystem 调用的核心逻辑 ---
-
-    /// <summary>
-    /// 检查指定位置所在的 Zone 是否允许建造（即是否存在 Zone 且未被占用）
-    /// </summary>
+    // --- API ---
     public bool IsZoneAvailableForBuilding(Vector3 worldPos)
     {
         GenerationZone zone = GetZoneAtPosition(worldPos);
-
-        // 如果点不在任何 Zone 里，或者 Zone 已经被占用，则不可建造
         if (zone == null) return false;
         if (zone.isOccupied) return false;
-
         return true;
     }
 
-    /// <summary>
-    /// 更新指定位置所在 Zone 的占用状态
-    /// </summary>
     public void SetZoneOccupiedState(Vector3 worldPos, bool isOccupied)
     {
         GenerationZone zone = GetZoneAtPosition(worldPos);
-        if (zone != null)
-        {
-            zone.isOccupied = isOccupied;
-            // Debug.Log($"Zone '{zone.zoneName}' status changed to: {(isOccupied ? "Occupied" : "Free")}");
-        }
+        if (zone != null) zone.isOccupied = isOccupied;
     }
 
-    /// <summary>
-    /// 根据位置查找对应的 Zone
-    /// </summary>
     private GenerationZone GetZoneAtPosition(Vector3 worldPos)
     {
         foreach (var zone in zones)
         {
-            if (zone.Contains(worldPos, cellSize))
-            {
-                return zone;
-            }
+            if (zone.Contains(worldPos, cellSize)) return zone;
         }
         return null;
     }
-    // ----------------------------------------------------
+
+    // --- 恢复可视化功能 (Fix Issue: Zone大小不可见) ---
+    private void OnDrawGizmos()
+    {
+        if (zones == null) return;
+
+        foreach (var zone in zones)
+        {
+            if (zone.originPoint == null) continue;
+
+            // 设置颜色：如果被占用显示红色，未占用显示绿色
+            Gizmos.color = zone.isOccupied ? new Color(1, 0, 0, 0.5f) : new Color(0, 1, 0, 0.5f);
+
+            // 计算中心点和尺寸
+            float realWidth = zone.width * cellSize;
+            float realHeight = zone.height * cellSize;
+
+            // Gizmos 的中心是在物体中心，所以要基于 Origin 偏移一半的宽和高
+            Vector3 center = zone.originPoint.position + new Vector3(realWidth / 2, 0, realHeight / 2);
+            Vector3 size = new Vector3(realWidth, 1f, realHeight);
+
+            // 绘制底座平面
+            Gizmos.DrawCube(center, new Vector3(realWidth, 0.1f, realHeight));
+
+            // 绘制线框
+            Gizmos.color = Color.white;
+            Gizmos.DrawWireCube(center, size);
+
+            // 绘制中心点标记
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(center, 0.5f);
+        }
+    }
 
     void InitCSV()
     {
@@ -167,7 +178,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
             int selectedZoneIndex = availableIndices[randomIndex];
             GenerationZone zoneToGenerate = zones[selectedZoneIndex];
 
-            // 如果这个 Zone 已经被占用了（不管是之前的循环还是其他原因），跳过
             if (zoneToGenerate.isOccupied)
             {
                 availableIndices.RemoveAt(randomIndex);
@@ -189,9 +199,8 @@ public class MultiZoneCityGenerator : MonoBehaviour
             {
                 Debug.Log($"<color=green>[Accepted]</color> {candidateType.name} in {zoneToGenerate.zoneName}");
 
-                // 生成建筑并标记占用
                 GenerateOneZone(zoneToGenerate, candidateType);
-                zoneToGenerate.isOccupied = true; // 标记占用！
+                zoneToGenerate.isOccupied = true;
 
                 _currentCo2 = nextCo2;
                 _currentCost = nextCost;
@@ -201,7 +210,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
                 currentWeightedError = nextWeightedError;
                 WriteCSV(_stepCount, zoneToGenerate.zoneName, candidateType.name, _currentCo2, _currentCost, _currentEnergy, _stepCount, currentWeightedError);
 
-                // 该 Zone 已完成，移出列表
                 availableIndices.RemoveAt(randomIndex);
             }
 
@@ -217,12 +225,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
         return (errCo2 * weightCo2) + (errCost * weightCost) + (errEnergy * weightEnergy);
     }
 
-    struct BuildingStats
-    {
-        public float co2;
-        public float cost;
-        public float energy;
-    }
+    struct BuildingStats { public float co2; public float cost; public float energy; }
 
     BuildingStats GetBuildingStats(GameObject prefab)
     {
@@ -234,53 +237,56 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
         switch (effect.type)
         {
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.House: stats.co2 = effect.houseCo2Change; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Farm: stats.co2 = effect.farmCo2Change; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Institute: stats.co2 = effect.instituteCo2Change; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Bank: stats.co2 = effect.bankCo2Change; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.PowerPlant: stats.co2 = effect.powerPlantCo2Change; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Co2Storage: stats.co2 = effect.storageCo2Change; break;
+            case CoreBuildingType.House: stats.co2 = effect.houseCo2Change; break;
+            case CoreBuildingType.Farm: stats.co2 = effect.farmCo2Change; break;
+            case CoreBuildingType.Institute: stats.co2 = effect.instituteCo2Change; break;
+            case CoreBuildingType.Bank: stats.co2 = effect.bankCo2Change; break;
+            case CoreBuildingType.PowerPlant: stats.co2 = effect.powerPlantCo2Change; break;
+            case CoreBuildingType.Co2Storage: stats.co2 = effect.storageCo2Change; break;
         }
 
         switch (effect.type)
         {
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.PowerPlant: stats.cost = 200f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Institute: stats.cost = 150f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Co2Storage: stats.cost = 100f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Bank: stats.cost = 80f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.House: stats.cost = 50f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Farm: stats.cost = 30f; break;
+            case CoreBuildingType.PowerPlant: stats.cost = 200f; break;
+            case CoreBuildingType.Institute: stats.cost = 150f; break;
+            case CoreBuildingType.Co2Storage: stats.cost = 100f; break;
+            case CoreBuildingType.Bank: stats.cost = 80f; break;
+            case CoreBuildingType.House: stats.cost = 50f; break;
+            case CoreBuildingType.Farm: stats.cost = 30f; break;
         }
 
         switch (effect.type)
         {
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.PowerPlant: stats.energy = 80f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Institute: stats.energy = -20f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Co2Storage: stats.energy = -10f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.House: stats.energy = -5f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Bank: stats.energy = -5f; break;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Farm: stats.energy = -2f; break;
+            case CoreBuildingType.PowerPlant: stats.energy = 80f; break;
+            case CoreBuildingType.Institute: stats.energy = -20f; break;
+            case CoreBuildingType.Co2Storage: stats.energy = -10f; break;
+            case CoreBuildingType.House: stats.energy = -5f; break;
+            case CoreBuildingType.Bank: stats.energy = -5f; break;
+            case CoreBuildingType.Farm: stats.energy = -2f; break;
         }
 
         return stats;
     }
 
+    // --- 修复功能：强制生成在 Zone 中心 (Fix Issue: 建筑不居中) ---
     void GenerateOneZone(GenerationZone zone, BuildingType specificBuildingType)
     {
-        // 简单化处理：既然一个 Zone 只有一个建筑，我们直接生成在区域中心附近，
-        // 或者保留原本的找空位逻辑，但只要生成成功就结束。
+        if (zone.originPoint == null) return;
 
-        // 计算区域中心
-        Vector3 centerPos = zone.originPoint.position + new Vector3(zone.width * cellSize / 2, 0, zone.height * cellSize / 2);
-        // 稍微随机一点偏移，不要死板地在正中心
-        float offsetX = Random.Range(-cellSize, cellSize);
-        float offsetZ = Random.Range(-cellSize, cellSize);
+        // 1. 计算绝对几何中心
+        // 宽度的一半 * 格子大小
+        float halfWidth = zone.width * cellSize * 0.5f;
+        float halfHeight = zone.height * cellSize * 0.5f;
 
-        Vector3 spawnPos = new Vector3(centerPos.x + offsetX, zone.originPoint.position.y + buildingYOffset, centerPos.z + offsetZ);
+        Vector3 centerWorldPos = zone.originPoint.position + new Vector3(halfWidth, 0, halfHeight);
 
-        // 简单的对齐到网格
-        spawnPos.x = Mathf.Round(spawnPos.x / cellSize) * cellSize;
-        spawnPos.z = Mathf.Round(spawnPos.z / cellSize) * cellSize;
+        // 2. 对齐到最近的格子中心 (Snap to Grid)
+        // 网格系统的格子中心通常是 cellSize * 0.5
+        // 我们需要计算当前坐标处于哪个格子索引，然后反推格子中心坐标
+        float snappedX = Mathf.Floor(centerWorldPos.x / cellSize) * cellSize + cellSize * 0.5f;
+        float snappedZ = Mathf.Floor(centerWorldPos.z / cellSize) * cellSize + cellSize * 0.5f;
+
+        Vector3 spawnPos = new Vector3(snappedX, zone.originPoint.position.y + buildingYOffset, snappedZ);
 
         if (specificBuildingType.prefab != null && specificBuildingType.data != null)
         {
@@ -300,8 +306,8 @@ public class MultiZoneCityGenerator : MonoBehaviour
         Vector3Int gridPos = GameManager.Instance.PlacementGrid.WorldToCell(worldPos);
         placedObj.Initialize(placeableData, gridPos);
 
+        PlacementSystem.Instance.RegisterExternalObject(building, placeableData, gridPos);
+
         building.SetActive(true);
-        // 注意：这里不需要手动调用 SetZoneOccupiedState，因为我们在 GenerateZonesSequence 循环里已经设为 true 了。
-        // 但为了保险（手动放置逻辑复用），保持一致性是好的。
     }
 }

@@ -21,7 +21,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         [SerializeField]
         private PlacementHandler placementHandler;
 
-        // EVENTS
         public event Action OnPlacementStateStart;
         public event Action OnPlacementStateEnd;
 
@@ -37,10 +36,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         private void Awake()
         {
-            if (Instance != null)
-            {
-                Destroy(this);
-            }
+            if (Instance != null) { Destroy(this); }
             Instance = this;
         }
 
@@ -56,8 +52,49 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             }
 
             StopState();
-            // Zone系统会接管主要的占用逻辑，但扫描场景依然有助于恢复Save/Load状态
-            // ScanAndRegisterSceneObjects(); 
+            // 扫描场景中的现有建筑（可选，用于Reload）
+            ScanAndRegisterSceneObjects();
+        }
+
+        private void ScanAndRegisterSceneObjects()
+        {
+            BuildingEffect[] sceneBuildings = FindObjectsOfType<BuildingEffect>();
+            foreach (var building in sceneBuildings)
+            {
+                PlacedObject existingPO = building.GetComponent<PlacedObject>();
+                if (existingPO != null && !string.IsNullOrEmpty(existingPO.data.guid)) continue;
+
+                string cleanName = building.gameObject.name.Replace("(Clone)", "").Trim();
+                Placeable data = _database.GetPlaceable(cleanName);
+
+                if (data == null) continue;
+
+                Vector3Int gridPos = _grid.WorldToCell(building.transform.position);
+                RegisterExternalObject(building.gameObject, data, gridPos);
+            }
+        }
+
+        /// <summary>
+        /// 供 PCG 调用：将物体注册进网格数据，使其可被选中/移除
+        /// </summary>
+        public void RegisterExternalObject(GameObject obj, Placeable data, Vector3Int gridPos)
+        {
+            // 1. 生成 GUID 并注册到 Handler
+            string guid = placementHandler.RegisterPrePlacedObject(obj, gridPos, data);
+
+            // 2. 标记网格占用
+            if (_gridDataMap.ContainsKey(data.GridType))
+            {
+                try
+                {
+                    Vector2Int occupiedCells = Vector2Int.RoundToInt(data.Size);
+                    _gridDataMap[data.GridType].Add(gridPos, occupiedCells, data.GetAssetIdentifier(), guid);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"Grid occupied warning at {gridPos}: {e.Message}");
+                }
+            }
         }
 
         public void InitializeLoadedObject(PlaceableObjectData podata)
@@ -125,10 +162,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public void StopState()
         {
             _grid.SetVisualizationState(false);
-            if (_stateHandler == null)
-            {
-                return;
-            }
+            if (_stateHandler == null) return;
             _stopStateAfterAction = false;
             _stateHandler.EndState();
             _inputManager.OnClicked -= StateAction;
@@ -143,17 +177,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         private void StateAction()
         {
-            if (InputManager.IsPointerOverUIObject())
-            {
-                return;
-            }
+            if (InputManager.IsPointerOverUIObject()) return;
             var mousePosition = _inputManager.GetSelectedMapPosition();
             var gridPosition = _grid.WorldToCell(mousePosition);
             _stateHandler.OnAction(gridPosition);
-            if (_stopStateAfterAction)
-            {
-                StopState();
-            }
+            if (_stopStateAfterAction) StopState();
         }
 
         private void RotateStructure()
@@ -163,16 +191,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         private void Update()
         {
-            if (_stateHandler == null)
-            {
-                return;
-            }
+            if (_stateHandler == null) return;
             var mousePosition = _inputManager.GetSelectedMapPosition();
             var gridPosition = _grid.WorldToCell(mousePosition);
-            if (_lastDetectedPosition == gridPosition)
-            {
-                return;
-            }
+            if (_lastDetectedPosition == gridPosition) return;
             _stateHandler.UpdateState(gridPosition);
             _lastDetectedPosition = gridPosition;
         }

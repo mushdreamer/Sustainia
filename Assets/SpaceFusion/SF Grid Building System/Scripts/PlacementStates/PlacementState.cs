@@ -10,9 +10,6 @@ using UnityEngine;
 
 namespace SpaceFusion.SF_Grid_Building_System.Scripts.PlacementStates
 {
-    /// <summary>
-    /// State handler for placements
-    /// </summary>
     public class PlacementState : IPlacementState
     {
         private readonly IPlacementGrid _grid;
@@ -33,10 +30,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.PlacementStates
             _placementHandler = placementHandler;
             _selectedObject = database.GetPlaceable(assetIdentifier);
             _selectedGridData = gridDataMap[_selectedObject.GridType];
-            if (!_selectedObject)
-            {
-                throw new Exception($"No placeable with identifier '{assetIdentifier}' found");
-            }
+            if (!_selectedObject) throw new Exception($"No placeable with identifier '{assetIdentifier}' found");
 
             _occupiedCells = PlaceableUtils.GetOccupiedCells(_selectedObject, _currentDirection, _grid.CellSize);
             _placeablePivotOffset = previewSystem.StartShowingPlacementPreview(_selectedObject, grid.CellSize);
@@ -50,16 +44,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.PlacementStates
         public void OnAction(Vector3Int gridPosition)
         {
             var worldPosition = _grid.CellToWorld(gridPosition);
-            var isValidPlacement = IsPlacementValid(gridPosition, worldPosition);
+            if (!IsPlacementValid(gridPosition, worldPosition)) return;
 
-            if (!isValidPlacement)
-            {
-                // 如果区域不可用（比如已经被占用了），播放一个错误音效或Debug
-                // Debug.Log("Invalid Placement: Zone occupied or out of bounds.");
-                return;
-            }
-
-            // 检查是否有足够的钱
             if (!ResourceManager.Instance.SpendMoney(_selectedObject.Cost))
             {
                 Debug.Log("金钱不足!");
@@ -69,7 +55,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.PlacementStates
             var guid = _placementHandler.PlaceObject(_selectedObject, worldPosition, gridPosition, _currentDirection, _placeablePivotOffset, _grid.CellSize);
             _selectedGridData.Add(gridPosition, _occupiedCells, _selectedObject.GetAssetIdentifier(), guid);
 
-            // --- 核心修改：锁定 Zone ---
+            // --- 关键：锁定 Zone ---
             if (MultiZoneCityGenerator.Instance != null)
             {
                 MultiZoneCityGenerator.Instance.SetZoneOccupiedState(worldPosition, true);
@@ -88,27 +74,20 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.PlacementStates
         public void UpdateState(Vector3Int gridPosition)
         {
             var worldPos = _grid.CellToWorld(gridPosition);
-            var isValidPlacement = IsPlacementValid(gridPosition, worldPos);
-            _previewSystem.UpdatePosition(worldPos, isValidPlacement, _selectedObject, _currentDirection);
+            _previewSystem.UpdatePosition(worldPos, IsPlacementValid(gridPosition, worldPos), _selectedObject, _currentDirection);
             _currentGridPosition = gridPosition;
         }
 
-        private bool IsPlacementValid(Vector3Int gridPosition, Vector3 worldPosition)
+        private bool IsPlacementValid(Vector3Int gridPosition, Vector3 worldPos)
         {
-            // 1. 基础的 GridData 检查（是否和其他物体碰撞）
+            // 1. Grid 检查
             bool gridValid = _selectedGridData.IsPlaceable(gridPosition, _occupiedCells) && _grid.IsWithinBounds(gridPosition, _occupiedCells);
 
-            // 2. --- 核心修改：Zone 独占性检查 ---
-            // 必须在某个 Zone 内，且该 Zone 必须为空
-            bool zoneValid = false;
+            // 2. Zone 检查
+            bool zoneValid = true;
             if (MultiZoneCityGenerator.Instance != null)
             {
-                zoneValid = MultiZoneCityGenerator.Instance.IsZoneAvailableForBuilding(worldPosition);
-            }
-            else
-            {
-                // 如果没有生成器（比如在测试场景），默认允许，或者你可以根据需求改为 false
-                zoneValid = true;
+                zoneValid = MultiZoneCityGenerator.Instance.IsZoneAvailableForBuilding(worldPos);
             }
 
             return gridValid && zoneValid;
