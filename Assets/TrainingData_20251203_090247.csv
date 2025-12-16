@@ -1,0 +1,4 @@
+Step,ZoneName,BuildingName,Added_Co2,Total_Co2,Count_Ratio,Error_Distance
+1,,,2,2,0.07,48
+2,,,2,4,0.13,46
+3,,,1,5,0.20,45

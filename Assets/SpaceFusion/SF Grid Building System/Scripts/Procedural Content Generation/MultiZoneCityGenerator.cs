@@ -19,14 +19,30 @@ public class MultiZoneCityGenerator : MonoBehaviour
     public List<BuildingType> buildingOptions;
     public float buildingYOffset = 0.0f;
 
-    [Header("Optimization Goals")]
-    public float co2Target = 50.0f;
-    public float targetTolerance = 1.0f;
-
-    [Tooltip("最大建筑数量限制 (Constraint: Count <= Limit)")]
+    // ==========================================
+    // 核心修改：多目标优化参数 (Multi-Objective Targets)
+    // ==========================================
+    [Header("Optimization Constraints (The Constraints)")]
+    [Tooltip("数量硬约束：最多允许多少个建筑")]
     public int maxBuildingLimit = 20;
 
-    private float _currentTotalCo2 = 0f;
+    [Header("Optimization Objectives (The Goals)")]
+    public float targetCo2 = 50.0f;       // 目标 CO2
+    public float targetCost = 1000.0f;    // 目标 预算/成本 (对应 Quiz Q7: Minimize Cost) 
+    public float targetEnergy = 100.0f;   // 目标 电力产出 (对应 Quiz Q4: Input - Demand) 
+
+    [Header("Weights (Teaching Trade-offs)")]
+    [Tooltip("CO2 目标的权重")]
+    public float weightCo2 = 1.0f;
+    [Tooltip("成本目标的权重")]
+    public float weightCost = 1.0f; // 如果设高，AI会倾向于造便宜的建筑
+    [Tooltip("电力目标的权重")]
+    public float weightEnergy = 1.5f; // 通常电力是硬指标，权重建议高一点
+
+    // 内部计数器 (Current State)
+    private float _currentCo2 = 0f;
+    private float _currentCost = 0f;
+    private float _currentEnergy = 0f;
     private int _placedCount = 0;
 
     private string _csvFilePath;
@@ -37,14 +53,13 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
     void Start()
     {
-        _currentTotalCo2 = 0f;
+        _currentCo2 = 0f;
+        _currentCost = 0f;
+        _currentEnergy = 0f;
         _placedCount = 0;
         _stepCount = 0;
 
-        // 安全检查：Limit 不能超过实际地块数
         if (maxBuildingLimit > zones.Count) maxBuildingLimit = zones.Count;
-
-        Debug.Log($"[Init] 目标 Co2: {co2Target}, 数量限制: <={maxBuildingLimit}");
 
         _csvFilePath = Path.Combine(Application.dataPath, $"TrainingData_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
         InitCSV();
@@ -54,14 +69,14 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
     void InitCSV()
     {
-        // 表头去掉了 Avg_Needed，因为不再需要那个逻辑了
-        string header = "Step,ZoneName,BuildingName,Added_Co2,Total_Co2,Count_Ratio,Error_Distance";
+        // 更新表头：记录所有维度的数值
+        string header = "Step,Zone,Building,Total_Co2,Total_Cost,Total_Energy,Count,Weighted_Error";
         File.WriteAllText(_csvFilePath, header + "\n");
     }
 
-    void WriteCSV(int step, string zone, string building, float added, float total, float ratio, float error)
+    void WriteCSV(int step, string zone, string building, float totalCo2, float totalCost, float totalEnergy, int count, float wError)
     {
-        string line = $"{step},{zone},{building},{added},{total},{ratio:F2},{error}";
+        string line = $"{step},{zone},{building},{totalCo2},{totalCost},{totalEnergy},{count},{wError:F4}";
         File.AppendAllText(_csvFilePath, line + "\n");
     }
 
@@ -70,22 +85,13 @@ public class MultiZoneCityGenerator : MonoBehaviour
         List<int> availableIndices = new List<int>();
         for (int i = 0; i < zones.Count; i++) availableIndices.Add(i);
 
-        // 重试机制：防止随机不到合适的建筑导致死循环
-        int maxRetries = 200;
+        int maxRetries = 300;
         int totalAttempts = 0;
 
-        // 记录初始误差
-        float currentError = Mathf.Abs(_currentTotalCo2 - co2Target);
+        // 计算初始的加权误差 (Initial Weighted Error)
+        float currentWeightedError = CalculateWeightedError(_currentCo2, _currentCost, _currentEnergy);
 
-        // 循环条件：
-        // 1. 还有空地
-        // 2. 没超过数量限制
-        // 3. 没超过最大尝试次数
-        // 4. 【重要】误差还没达标 (如果达标了就直接停，省地皮！)
-        while (availableIndices.Count > 0 &&
-               _placedCount < maxBuildingLimit &&
-               totalAttempts < maxRetries &&
-               currentError > targetTolerance)
+        while (availableIndices.Count > 0 && _placedCount < maxBuildingLimit && totalAttempts < maxRetries)
         {
             totalAttempts++;
 
@@ -94,84 +100,140 @@ public class MultiZoneCityGenerator : MonoBehaviour
             int selectedZoneIndex = availableIndices[randomIndex];
             GenerationZone zoneToGenerate = zones[selectedZoneIndex];
 
-            // 2. 随机提议
+            // 2. 随机提议建筑
             int buildTypeIndex = Random.Range(0, buildingOptions.Count);
             BuildingType candidateType = buildingOptions[buildTypeIndex];
-            float proposedEmission = GetBuildingCo2FromPrefab(candidateType.prefab);
 
-            // 3. 计算新误差
-            // 逻辑：加上这个建筑后，是不是离目标更近了？
-            float newError = Mathf.Abs((_currentTotalCo2 + proposedEmission) - co2Target);
+            // 获取该建筑的所有属性 (Co2, Cost, Energy)
+            BuildingStats stats = GetBuildingStats(candidateType.prefab);
 
-            Debug.Log($"[Attempt {totalAttempts}] 当前误差: {currentError:F2}. 提议: {candidateType.name}({proposedEmission}). 预期误差: {newError:F2}");
+            // 3. 预测生成后的状态 (State t+1)
+            float nextCo2 = _currentCo2 + stats.co2;
+            float nextCost = _currentCost + stats.cost;
+            float nextEnergy = _currentEnergy + stats.energy;
 
-            // 4. 决策逻辑：只有能减小误差（或保持不变），就接受！
-            // 这就是“梯度下降”：只要往坑底走，不管步子跨多大，都走。
-            if (newError < currentError)
+            // 4. 计算生成后的加权误差
+            float nextWeightedError = CalculateWeightedError(nextCo2, nextCost, nextEnergy);
+
+            // Debug 日志：让学生看到数值变化
+            // Debug.Log($"尝试: {candidateType.name}. 误差变化: {currentWeightedError:F3} -> {nextWeightedError:F3}");
+
+            // 5. 决策逻辑：多维度的贪婪算法
+            // 只要总的加权误差变小，就接受！
+            if (nextWeightedError < currentWeightedError)
             {
-                Debug.Log($"<color=green>[Accepted]</color> 误差减小 ({currentError:F2} -> {newError:F2})，生成！");
+                Debug.Log($"<color=green>[Accepted]</color> {candidateType.name} 优化了整体目标！\n" +
+                          $"CO2: {_currentCo2}->{nextCo2} | Cost: {_currentCost}->{nextCost} | Energy: {_currentEnergy}->{nextEnergy}");
 
                 GenerateOneZone(zoneToGenerate, candidateType);
 
-                _currentTotalCo2 += proposedEmission;
+                // 更新状态
+                _currentCo2 = nextCo2;
+                _currentCost = nextCost;
+                _currentEnergy = nextEnergy;
                 _placedCount++;
                 _stepCount++;
 
-                // 更新当前误差
-                currentError = newError;
-                float ratio = (float)_placedCount / maxBuildingLimit;
+                // 更新误差基准
+                currentWeightedError = nextWeightedError;
 
-                WriteCSV(_stepCount, zoneToGenerate.zoneName, candidateType.name, proposedEmission, _currentTotalCo2, ratio, currentError);
+                WriteCSV(_stepCount, zoneToGenerate.zoneName, candidateType.name, _currentCo2, _currentCost, _currentEnergy, _placedCount, currentWeightedError);
 
-                // 成功生成后，移除该地块索引（这块地用掉了）
                 availableIndices.RemoveAt(randomIndex);
             }
             else
             {
-                Debug.Log($"<color=red>[Rejected]</color> 误差会变大 ({newError:F2})，不合适。换个建筑再试。");
-                // 失败时不移除索引！保留这块地给下次机会。
+                // 即使拒绝，也稍微打印一下原因，方便教学分析
+                // 比如：虽然 CO2 降了，但是 Cost 超太多，导致总误差变大
+                // Debug.Log($"<color=red>[Rejected]</color> {candidateType.name} 导致偏离目标 (可能是太贵或电力溢出)。");
             }
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.05f); // 稍微快一点
         }
 
-        // --- 最终结算 ---
-        if (currentError <= targetTolerance)
-        {
-            Debug.Log($"<color=green>[Success]</color> 任务完成！\n" +
-                      $"最终误差: {currentError}\n" +
-                      $"消耗地块: {_placedCount} (限制 {maxBuildingLimit})\n" +
-                      $"优化评价: 极佳 (剩余名额 {maxBuildingLimit - _placedCount})");
-        }
-        else
-        {
-            Debug.Log($"<color=red>[Failed]</color> 未能达成目标。\n" +
-                      $"原因可能是：尝试次数耗尽、地块用完、或者无法凑出精确数值。\n" +
-                      $"最终误差: {currentError}, 已用数量: {_placedCount}");
-        }
+        Debug.Log($"[Finish] 最终结果: Co2({_currentCo2}/{targetCo2}), Cost({_currentCost}/{targetCost}), Energy({_currentEnergy}/{targetEnergy})");
     }
 
-    // --- 辅助方法保持不变 ---
-    float GetBuildingCo2FromPrefab(GameObject prefab)
+    // ==========================================
+    // 核心数学方法：计算加权误差 (The Objective Function)
+    // ==========================================
+    float CalculateWeightedError(float c, float m, float e)
     {
-        if (prefab == null) return 0f;
+        // 归一化误差 (Normalized Error): |Current - Target| / Target
+        // 这样可以让 Cost(1000) 和 Co2(50) 在同一个量级上比较
+
+        float errCo2 = Mathf.Abs(c - targetCo2) / (targetCo2 == 0 ? 1 : Mathf.Abs(targetCo2));
+        float errCost = Mathf.Abs(m - targetCost) / (targetCost == 0 ? 1 : Mathf.Abs(targetCost));
+        float errEnergy = Mathf.Abs(e - targetEnergy) / (targetEnergy == 0 ? 1 : Mathf.Abs(targetEnergy));
+
+        // 加权求和
+        return (errCo2 * weightCo2) + (errCost * weightCost) + (errEnergy * weightEnergy);
+    }
+
+    // ==========================================
+    // 数据结构与辅助方法
+    // ==========================================
+
+    // 一个临时的结构体，用来一次性返回建筑的三个属性
+    struct BuildingStats
+    {
+        public float co2;
+        public float cost;
+        public float energy;
+    }
+
+    BuildingStats GetBuildingStats(GameObject prefab)
+    {
+        BuildingStats stats = new BuildingStats();
+        if (prefab == null) return stats;
+
         BuildingEffect effect = prefab.GetComponent<BuildingEffect>();
-        if (effect == null) return 0f;
+        if (effect == null) return stats;
+
+        // 1. 获取 CO2 (保持之前的逻辑)
         switch (effect.type)
         {
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.House: return effect.houseCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Farm: return effect.farmCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Institute: return effect.instituteCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Bank: return effect.bankCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.PowerPlant: return effect.powerPlantCo2Change;
-            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Co2Storage: return effect.storageCo2Change;
-            default: return 0f;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.House: stats.co2 = effect.houseCo2Change; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Farm: stats.co2 = effect.farmCo2Change; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Institute: stats.co2 = effect.instituteCo2Change; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Bank: stats.co2 = effect.bankCo2Change; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.PowerPlant: stats.co2 = effect.powerPlantCo2Change; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Co2Storage: stats.co2 = effect.storageCo2Change; break;
         }
+
+        // 2. 获取 Cost (你需要确保 BuildingEffect 里有 cost 变量，这里我先模拟一下)
+        // 假设: 发电厂很贵，房子便宜，Co2Storage 中等
+        // 如果你的脚本里有 public float buildingCost，请直接替换下面的模拟值
+        switch (effect.type)
+        {
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.PowerPlant: stats.cost = 200f; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Institute: stats.cost = 150f; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Co2Storage: stats.cost = 100f; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Bank: stats.cost = 80f; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.House: stats.cost = 50f; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Farm: stats.cost = 30f; break;
+        }
+
+        // 3. 获取 Energy (正数产电，负数耗电)
+        // 对应 Quiz 中的 Supply - Demand 
+        // 如果你的脚本里有 electricityGeneration/Consumption，请替换
+        switch (effect.type)
+        {
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.PowerPlant: stats.energy = 80f; break; // 产电大户
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Institute: stats.energy = -20f; break; // 耗电大户
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Co2Storage: stats.energy = -10f; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.House: stats.energy = -5f; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Bank: stats.energy = -5f; break;
+            case SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType.Farm: stats.energy = -2f; break;
+        }
+
+        return stats;
     }
 
     void GenerateOneZone(GenerationZone zone, BuildingType specificBuildingType)
     {
-        // ... (保持原有的 GenerateOneZone 和 AttachAndInitialize 代码完全不变) ...
+        // ... (这部分代码保持你原本的 Raycast 和 Instantiate 逻辑不变) ...
+        // ... 请直接复制之前版本中的 GenerateOneZone 和 AttachAndInitialize ...
         int[,] mapData = new int[zone.width, zone.height];
         Vector3 startPos = zone.originPoint.position;
         for (int x = 0; x < zone.width; x++)

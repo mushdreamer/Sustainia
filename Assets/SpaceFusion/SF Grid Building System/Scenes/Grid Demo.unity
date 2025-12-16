@@ -8457,9 +8457,13 @@ MonoBehaviour:
     prefab: {fileID: 469319145464965748, guid: 1120784db9e3caa4bb08860df84e8609, type: 3}
     data: {fileID: 11400000, guid: fe0a1f711d5699b429363c5e7aac7f53, type: 2}
   buildingYOffset: 0
-  co2Target: 50
-  targetTolerance: 0
   maxBuildingLimit: 15
+  targetCo2: 50
+  targetCost: 1000
+  targetEnergy: 100
+  weightCo2: 1
+  weightCost: 1
+  weightEnergy: 1.5
   zones:
   - zoneName: 
     originPoint: {fileID: 597993826}
@@ -26999,31 +27003,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2571962017718635581, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.5423
+      value: 3.3
       objectReference: {fileID: 0}
     - target: {fileID: 2571962017718635581, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.2011
+      value: 2.13
       objectReference: {fileID: 0}
     - target: {fileID: 2842531702803140150, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_Size.x
-      value: 60
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 2842531702803140150, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_Size.z
-      value: 60
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 2842531702803140150, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_Center.x
-      value: 30
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2842531702803140150, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_Center.z
-      value: 30
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2903679703647974117, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2.5
+      value: 1.6914893
       objectReference: {fileID: 0}
     - target: {fileID: 2903679703647974117, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_LocalScale.y
@@ -27031,7 +27035,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2903679703647974117, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.5
+      value: 1.6633246
+      objectReference: {fileID: 0}
+    - target: {fileID: 2903679703647974117, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 11.62
+      objectReference: {fileID: 0}
+    - target: {fileID: 2903679703647974117, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 10.16
       objectReference: {fileID: 0}
     - target: {fileID: 3538527538145360962, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_Mesh
@@ -27087,11 +27099,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5821464609556470392, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: <Dimensions>k__BackingField.x
-      value: 60
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 5821464609556470392, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: <Dimensions>k__BackingField.y
-      value: 60
+      value: 40
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
