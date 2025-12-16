@@ -24,6 +24,9 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public event Action OnPlacementStateStart;
         public event Action OnPlacementStateEnd;
 
+        // --- 新增：专门用于教程检测的事件，传递具体的 Placeable 数据 ---
+        public event Action<Placeable> OnBuildingPlaced;
+
         private readonly Dictionary<GridDataType, GridData> _gridDataMap = new();
         private Vector3Int _lastDetectedPosition = Vector3Int.zero;
         private IPlacementState _stateHandler;
@@ -52,7 +55,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             }
 
             StopState();
-            // 扫描场景中的现有建筑（可选，用于Reload）
             ScanAndRegisterSceneObjects();
         }
 
@@ -74,15 +76,9 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             }
         }
 
-        /// <summary>
-        /// 供 PCG 调用：将物体注册进网格数据，使其可被选中/移除
-        /// </summary>
         public void RegisterExternalObject(GameObject obj, Placeable data, Vector3Int gridPos)
         {
-            // 1. 生成 GUID 并注册到 Handler
             string guid = placementHandler.RegisterPrePlacedObject(obj, gridPos, data);
-
-            // 2. 标记网格占用
             if (_gridDataMap.ContainsKey(data.GridType))
             {
                 try
@@ -92,9 +88,15 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"Grid occupied warning at {gridPos}: {e.Message}");
+                    Debug.LogWarning(e.Message);
                 }
             }
+        }
+
+        // --- 新增：供 PlacementState 调用以触发事件 ---
+        public void InvokeBuildingPlaced(Placeable data)
+        {
+            OnBuildingPlaced?.Invoke(data);
         }
 
         public void InitializeLoadedObject(PlaceableObjectData podata)

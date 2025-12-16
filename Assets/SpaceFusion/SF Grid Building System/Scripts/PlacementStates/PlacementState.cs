@@ -55,11 +55,13 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.PlacementStates
             var guid = _placementHandler.PlaceObject(_selectedObject, worldPosition, gridPosition, _currentDirection, _placeablePivotOffset, _grid.CellSize);
             _selectedGridData.Add(gridPosition, _occupiedCells, _selectedObject.GetAssetIdentifier(), guid);
 
-            // --- 关键：锁定 Zone ---
             if (MultiZoneCityGenerator.Instance != null)
             {
                 MultiZoneCityGenerator.Instance.SetZoneOccupiedState(worldPosition, true);
             }
+
+            // --- 修改点：通知系统物体已放置（用于教程严格检查）---
+            PlacementSystem.Instance.InvokeBuildingPlaced(_selectedObject);
 
             _previewSystem.UpdatePosition(worldPosition, false, _selectedObject, _currentDirection);
         }
@@ -80,16 +82,12 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.PlacementStates
 
         private bool IsPlacementValid(Vector3Int gridPosition, Vector3 worldPos)
         {
-            // 1. Grid 检查
             bool gridValid = _selectedGridData.IsPlaceable(gridPosition, _occupiedCells) && _grid.IsWithinBounds(gridPosition, _occupiedCells);
-
-            // 2. Zone 检查
             bool zoneValid = true;
             if (MultiZoneCityGenerator.Instance != null)
             {
                 zoneValid = MultiZoneCityGenerator.Instance.IsZoneAvailableForBuilding(worldPos);
             }
-
             return gridValid && zoneValid;
         }
     }

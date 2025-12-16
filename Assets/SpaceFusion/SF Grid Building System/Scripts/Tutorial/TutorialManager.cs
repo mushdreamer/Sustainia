@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
+using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables; // 引用 Placeable
 using UnityEngine;
 
 public class TutorialManager : MonoBehaviour
@@ -33,11 +34,10 @@ public class TutorialManager : MonoBehaviour
 
         tutorialUI.Initialize(this);
 
-        // 订阅 PlacementSystem 的事件
-        // 当放置状态结束（意味着玩家可能放置了东西）时检查
+        // --- 修改点：订阅 OnBuildingPlaced 事件以进行严格检查 ---
         if (PlacementSystem.Instance != null)
         {
-            PlacementSystem.Instance.OnPlacementStateEnd += CheckBuildingProgress;
+            PlacementSystem.Instance.OnBuildingPlaced += CheckBuildingProgress;
         }
 
         StartTutorial();
@@ -47,7 +47,7 @@ public class TutorialManager : MonoBehaviour
     {
         if (PlacementSystem.Instance != null)
         {
-            PlacementSystem.Instance.OnPlacementStateEnd -= CheckBuildingProgress;
+            PlacementSystem.Instance.OnBuildingPlaced -= CheckBuildingProgress;
         }
     }
 
@@ -66,6 +66,12 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
+        // --- 修改点：只要教程步骤显示，就暂停游戏模拟 ---
+        if (ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.isPaused = true;
+        }
+
         TutorialStep step = steps[_currentStepIndex];
         tutorialUI.ShowStep(step);
 
@@ -78,40 +84,47 @@ public class TutorialManager : MonoBehaviour
         ShowCurrentStep();
     }
 
-    // 当玩家完成一次放置操作后，系统会自动调用这个检查
-    private void CheckBuildingProgress()
+    // --- 修改点：接收 Placeable 参数，进行类型检查 ---
+    private void CheckBuildingProgress(Placeable placedData)
     {
         if (!_isTutorialActive || _currentStepIndex >= steps.Count) return;
 
         TutorialStep currentStep = steps[_currentStepIndex];
 
-        // 如果当前步骤不需要建造，忽略
+        // 1. 如果当前步骤不需要建造，直接忽略
         if (!currentStep.requireBuilding) return;
 
-        // 检查玩家刚刚造了什么
-        // 这里我们通过检查场景中最后生成的物体，或者简单检查 ResourceManager 中的计数
-        // 更严谨的方法是 PlacementSystem 发事件告诉我们要造了什么，这里用简单方法：
-        // 检查特定类型的建筑数量是否 > 0 (假设教程开始时是0)
-
-        if (ResourceManager.Instance.CanBuildBuilding(currentStep.targetBuildingType) == false)
+        // 2. --- 核心修改：严格检查建筑类型 ---
+        if (placedData != null && placedData.Prefab != null)
         {
-            // ResourceManager.CanBuildBuilding 返回 false 意味着已经有这个建筑了 (基于你的逻辑)
-            // 或者我们可以直接查数量
-            // 简单起见，只要玩家完成了放置动作，我们就假设他造对了 (在早期教程中通常只有一个选项)
-            // 更好的方式是检查 ResourceManager._buildingCounts
-
-            // 延迟一点点跳过，给玩家看一眼建造效果
-            Invoke(nameof(NextStep), 0.5f);
+            BuildingEffect effect = placedData.Prefab.GetComponent<BuildingEffect>();
+            if (effect != null)
+            {
+                // 如果建造的类型不匹配目标类型，直接返回，不进行下一步
+                if (effect.type != currentStep.targetBuildingType)
+                {
+                    Debug.Log($"教程：建造了错误的建筑类型 {effect.type}，目标是 {currentStep.targetBuildingType}");
+                    return;
+                }
+            }
         }
+
+        // 3. 如果类型匹配，延迟一小会儿跳到下一步
+        Invoke(nameof(NextStep), 0.5f);
     }
 
     private void CompleteTutorial()
     {
         _isTutorialActive = false;
         tutorialUI.Hide();
-        Debug.Log("Tutorial Completed!");
 
-        // 可以在这里给玩家发一笔奖金
+        // --- 修改点：教程完成，恢复游戏模拟 ---
+        if (ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.isPaused = false;
+        }
+
+        Debug.Log("Tutorial Completed!");
         ResourceManager.Instance.AddMoney(500);
     }
 }
