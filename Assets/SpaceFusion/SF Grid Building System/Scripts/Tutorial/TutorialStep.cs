@@ -1,5 +1,5 @@
 using UnityEngine;
-using SpaceFusion.SF_Grid_Building_System.Scripts.Core; // 引用 BuildingType
+using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 
 [System.Serializable]
 public class TutorialStep
@@ -8,8 +8,14 @@ public class TutorialStep
     [TextArea(3, 10)]
     public string instructionText; // 教程文字
 
-    public bool requireBuilding = false; // 是否需要建造特定建筑来完成
-    public BuildingType targetBuildingType; // 需要建造的类型
+    [Header("Building Requirements")]
+    public bool requireBuilding = false; // 是否需要建造
+    public bool allowAnyBuilding = false; // (新增) 是否允许建造任意建筑 (用于Step 2)
+    public BuildingType targetBuildingType; // 如果不允许任意，则检查特定类型
 
-    public bool requireInput = false; // 是否只需要点击“下一步”
+    [Header("Removal Requirements")]
+    public bool requireRemoval = false; // (新增) 是否需要执行删除操作 (用于Step 3)
+
+    [Header("Interaction")]
+    public bool requireInput = false; // 是否只需要点击“Next”按钮
 }

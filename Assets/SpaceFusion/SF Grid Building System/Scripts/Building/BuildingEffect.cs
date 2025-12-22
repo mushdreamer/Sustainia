@@ -1,198 +1,221 @@
-using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
+ï»¿using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
 using UnityEngine;
 
 namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 {
+    // ç¡®ä¿æšä¸¾åŒ…å«æ‰€æœ‰ç±»å‹
     public enum BuildingType { House, Farm, Institute, PowerPlant, Co2Storage, Bank }
 
     public class BuildingEffect : MonoBehaviour
     {
         public BuildingType type;
 
-        [Header("Health")]
+        [Header("Health & Combat")]
         public float maxHealth = 100f;
+        [SerializeField] // æ–¹ä¾¿åœ¨Inspectoré‡Œçœ‹è¡€é‡è°ƒè¯•
         private float _currentHealth;
 
         [Header("General Consumption")]
+        [Tooltip("åŸºç¡€è€—ç”µé‡ (æ­£æ•°=è€—ç”µ)")]
         public float electricityConsumption = 1f;
+        private float _currentElectricityConsumption;
 
-        // --- ¸÷¸ö½¨Öş¶ÀÁ¢µÄ Co2 ÉèÖÃ (ÕıÊı=ÅÅ·Å, ¸ºÊı=ÎüÊÕ) ---
+        // --- å„ä¸ªå»ºç­‘çš„å…·ä½“æ•°å€¼è®¾ç½® ---
 
         [Header("House Settings")]
         public int populationCapacity = 5;
         public int initialPopulation = 2;
-        [Tooltip("ÕıÊı±íÊ¾ÅÅ·Å Co2")]
+        [Tooltip("æ­£æ•°è¡¨ç¤ºæ’æ”¾ Co2")]
         public float houseCo2Change = 1f;
 
         [Header("Farm Settings")]
         public float foodProduction = 2f;
-        [Tooltip("ÕıÊı±íÊ¾ÅÅ·Å Co2")]
+        private float _currentFoodProduction;
+        [Tooltip("æ­£æ•°è¡¨ç¤ºæ’æ”¾ Co2")]
         public float farmCo2Change = 2f;
 
         [Header("Institute Settings")]
-        [Tooltip("ÕıÊı±íÊ¾ÅÅ·Å Co2")]
+        [Tooltip("æ­£æ•°è¡¨ç¤ºæ’æ”¾ Co2")]
         public float instituteCo2Change = 3f;
 
         [Header("Bank Settings")]
-        [Tooltip("ÕıÊı±íÊ¾ÅÅ·Å Co2")]
+        [Tooltip("æ­£æ•°è¡¨ç¤ºæ’æ”¾ Co2")]
         public float bankCo2Change = 1.5f;
 
-        [Header("PowerPlant Settings")]
-        [Tooltip("ÕıÊı±íÊ¾ÅÅ·Å Co2")]
+        // --- Q13 æ•™å­¦ç›¸å…³è®¾ç½® (æ–°å¢) ---
+
+        [Header("PowerPlant Settings (Emitter)")]
+        [Tooltip("å‘ç”µé‡ (å°†è¢«è½¬æ¢ä¸ºè´Ÿè€—ç”µ)")]
+        public float powerProduction = 20f;
+        [Tooltip("CO2 æ’æ”¾é‡")]
         public float powerPlantCo2Change = 10f;
 
-        [Header("Co2 Storage Settings")]
-        [Tooltip("¸ºÊı±íÊ¾ÎüÊÕ/¼õÉÙ Co2")]
-        public float storageCo2Change = -20f; // <<< Ä¬ÈÏÎª¸ºÊı£¬±íÊ¾ÎüÊÕ
+        [Header("Co2Storage Settings (Absorber)")]
+        [Tooltip("CCUS è€—ç”µé‡")]
+        public float storageConsumption = 5f;
+        [Tooltip("CO2 å¸æ”¶é‡ (æ­£æ•°)")]
+        public float storageCo2Change = 8f;
 
-        // --- ÄÚ²¿×´Ì¬±äÁ¿ ---
-        private bool _isInitialized = false;
-
-        // ÔËĞĞÊ±»º´æ
-        private float _currentElectricityConsumption = 0f;
-
-        // Õâ¸ö±äÁ¿ÏÖÔÚ´æ´¢¡°¾» Co2 ±ä»¯Á¿¡±£¬¿ÉÄÜÊÇÕıÊıÒ²¿ÉÄÜÊÇ¸ºÊı
+        // è¿è¡Œæ—¶è®°å½•å½“å‰çš„ CO2 å½±å“ (ç”¨äºç»Ÿè®¡)
         private float _currentCo2Change = 0f;
-
-        private float _currentFoodProduction = 0f;
-        private int _currentPopCapacity = 0;
-        private int _currentPopInitial = 0;
 
         private void Start()
         {
-            if (!_isInitialized)
-            {
-                ApplyEffect();
-            }
+            if (ResourceManager.Instance == null) return;
+
+            // åˆå§‹åŒ–è¡€é‡ (ä¹‹å‰æ¼æ‰çš„)
+            _currentHealth = maxHealth;
+
+            _currentElectricityConsumption = electricityConsumption;
+            _currentFoodProduction = foodProduction;
+
+            ApplyEffect();
+
+            // æ³¨å†Œåˆ°å…¨å±€åˆ—è¡¨
+            ResourceManager.Instance.RegisterBuildingInstance(this);
+            ResourceManager.Instance.RegisterBuilding(type);
         }
 
+        private void OnDestroy()
+        {
+            if (ResourceManager.Instance == null) return;
+
+            RemoveEffect();
+
+            ResourceManager.Instance.UnregisterBuildingInstance(this);
+            ResourceManager.Instance.UnregisterBuilding(type);
+        }
+
+        // --- æ ¸å¿ƒï¼šåº”ç”¨æ•ˆæœ (åˆå¹¶äº†åŸæœ‰é€»è¾‘å’ŒQ13é€»è¾‘) ---
         public void ApplyEffect()
         {
-            if (_isInitialized) return;
-            _isInitialized = true;
-
-            ResourceManager.Instance.RegisterBuildingInstance(this);
-            _currentHealth = maxHealth;
-            ResourceManager.Instance.RegisterBuilding(type);
-
-            // 1. Í¨ÓÃºÄµç (PowerPlant ³ıÍâ)
-            if (type != BuildingType.PowerPlant)
-            {
-                _currentElectricityConsumption = electricityConsumption;
-                ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
-            }
-
-            // 2. È·¶¨µ±Ç°½¨ÖşµÄ Co2 ±ä»¯Öµ (Õı/¸º)
             switch (type)
             {
                 case BuildingType.House:
+                    ResourceManager.Instance.AddHouseEffect(populationCapacity, initialPopulation);
+                    ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
+                    ResourceManager.Instance.AddPowerPlantEffect(houseCo2Change);
                     _currentCo2Change = houseCo2Change;
-                    _currentPopCapacity = populationCapacity;
-                    _currentPopInitial = initialPopulation;
-                    ResourceManager.Instance.AddHouseEffect(_currentPopCapacity, _currentPopInitial);
                     break;
 
                 case BuildingType.Farm:
-                    _currentCo2Change = farmCo2Change;
-                    _currentFoodProduction = foodProduction;
                     ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
+                    ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
+                    ResourceManager.Instance.AddPowerPlantEffect(farmCo2Change);
+                    _currentCo2Change = farmCo2Change;
                     break;
 
                 case BuildingType.Institute:
+                    ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
+                    ResourceManager.Instance.AddPowerPlantEffect(instituteCo2Change);
                     _currentCo2Change = instituteCo2Change;
                     break;
 
                 case BuildingType.Bank:
+                    ResourceManager.Instance.AddBank();
+                    ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
+                    ResourceManager.Instance.AddPowerPlantEffect(bankCo2Change);
                     _currentCo2Change = bankCo2Change;
                     break;
 
                 case BuildingType.PowerPlant:
+                    // Q13: äº§ç”Ÿå¤§é‡ CO2
+                    ResourceManager.Instance.AddPowerPlantEffect(powerPlantCo2Change);
                     _currentCo2Change = powerPlantCo2Change;
+                    // äº§ç”Ÿç”µåŠ› (è´Ÿæ¶ˆè€—)
+                    _currentElectricityConsumption = -powerProduction;
+                    ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
                     break;
 
                 case BuildingType.Co2Storage:
-                    // Ö±½Ó¶ÁÈ¡¸ºÖµÅäÖÃ£¬²»ÔÙ´¦Àí Capacity »ò Rate
-                    _currentCo2Change = storageCo2Change;
+                    // Q13: å¸æ”¶ CO2
+                    ResourceManager.Instance.AddCo2Absorption(storageCo2Change);
+                    _currentCo2Change = -storageCo2Change;
+                    // æ¶ˆè€—ç”µåŠ›
+                    _currentElectricityConsumption = storageConsumption;
+                    ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
                     break;
-            }
 
-            // 3. ½«ÊıÖµÓ¦ÓÃµ½ ResourceManager
-            // ÎŞÂÛÕı¸º£¬Í³Ò»µ÷ÓÃ AddPowerPlantEffect (»òÕßÄã¿ÉÒÔÖØÃüÃûÎª AddCo2Effect)
-            // Èç¹ûÊÇ¸ºÊı£¬ResourceManager ÄÇ±ßµÄ×Ü Co2 ¾Í»á¼õÉÙ
-            if (_currentCo2Change != 0)
-            {
-                ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Change);
+                default:
+                    ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
+                    break;
             }
         }
 
+        // --- æ ¸å¿ƒï¼šç§»é™¤æ•ˆæœ ---
         public void RemoveEffect()
         {
-            ResourceManager.Instance.UnregisterBuildingInstance(this);
-            ResourceManager.Instance.UnregisterBuilding(type);
-
-            // 1. ÒÆ³ıºÄµç
-            if (type != BuildingType.PowerPlant)
-            {
-                ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
-                _currentElectricityConsumption = 0;
-            }
-
-            // 2. ÒÆ³ı Co2 Ó°Ïì
-            // Âß¼­: µ÷ÓÃ Remove ´«ÈëÔ­ÊıÖµ£¬ResourceManager Ó¦¸Ã×ö¼õ·¨
-            // (ÀıÈç: Ô­±¾ÊÇ -20£¬Remove(-20) => ×ÜÁ¿¼õÈ¥-20 => ×ÜÁ¿+20£¬»Ö¸´Ô­×´)
-            if (_currentCo2Change != 0)
-            {
-                ResourceManager.Instance.RemovePowerPlantEffect(_currentCo2Change);
-                _currentCo2Change = 0;
-            }
-
-            // 3. ÒÆ³ıÆäËûÌØ¶¨Ğ§¹û
             switch (type)
             {
                 case BuildingType.House:
-                    ResourceManager.Instance.RemoveHouseEffect(_currentPopCapacity, _currentPopInitial);
+                    ResourceManager.Instance.RemoveHouseEffect(populationCapacity, initialPopulation);
+                    ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
+                    ResourceManager.Instance.RemovePowerPlantEffect(houseCo2Change);
                     break;
+
                 case BuildingType.Farm:
                     ResourceManager.Instance.RemoveFoodProduction(_currentFoodProduction);
+                    ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
+                    ResourceManager.Instance.RemovePowerPlantEffect(farmCo2Change);
                     break;
+
+                case BuildingType.Institute:
+                    ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
+                    ResourceManager.Instance.RemovePowerPlantEffect(instituteCo2Change);
+                    break;
+
                 case BuildingType.Bank:
                     ResourceManager.Instance.RemoveBank();
+                    ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
+                    ResourceManager.Instance.RemovePowerPlantEffect(bankCo2Change);
                     break;
-                    // Co2Storage ºÍ PowerPlant µÄ Co2 Âß¼­ÒÑ¾­ÔÚÉÏÃæµÚ2²½Í³Ò»´¦ÀíÁË
+
+                case BuildingType.PowerPlant:
+                    ResourceManager.Instance.RemovePowerPlantEffect(powerPlantCo2Change);
+                    ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
+                    break;
+
+                case BuildingType.Co2Storage:
+                    ResourceManager.Instance.RemoveCo2Absorption(storageCo2Change);
+                    ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
+                    break;
+
+                default:
+                    ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
+                    break;
             }
         }
 
         /// <summary>
-        /// ¶¯Ì¬ĞŞ¸Ä Co2 ÊıÖµ (ÔËĞĞÊ±Éı¼¶»ò Buff)
+        /// å—åˆ°ä¼¤å®³
         /// </summary>
-        public void UpdateCo2Change(float newValue)
+        public void TakeDamage(float damage)
         {
-            // 1. ÒÆ³ı¾ÉÖµµÄÓ°Ïì
-            ResourceManager.Instance.RemovePowerPlantEffect(_currentCo2Change);
+            _currentHealth -= damage;
+            // å¦‚æœéœ€è¦è°ƒè¯•å¯ä»¥å–æ¶ˆæ³¨é‡Š
+            // Debug.Log($"{gameObject.name} took {damage} damage. Current HP: {_currentHealth}");
 
-            // 2. ¸üĞÂÊıÖµ
-            _currentCo2Change = newValue;
-
-            // 3. Ó¦ÓÃĞÂÖµ
-            ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Change);
-
-            Debug.Log($"{gameObject.name} Co2 ¹Ì¶¨ÊıÖµµ÷ÕûÎª: {newValue}");
-        }
-
-        public void TakeDamage(float amount)
-        {
-            if (_currentHealth <= 0) return;
-            _currentHealth -= amount;
             if (_currentHealth <= 0)
             {
-                _currentHealth = 0;
                 DestroyBuilding();
             }
         }
 
+        /// <summary>
+        /// æ²»ç–—/ä¿®å¤
+        /// </summary>
+        public void Heal(float amount)
+        {
+            _currentHealth += amount;
+            if (_currentHealth > maxHealth) _currentHealth = maxHealth;
+        }
+
+        // --- å…¶ä»–å·¥å…·æ–¹æ³• ---
+
         public void UpdateElectricityConsumption(float newValue)
         {
             if (type == BuildingType.PowerPlant) return;
+
             ResourceManager.Instance.RemoveElectricityConsumption(_currentElectricityConsumption);
             _currentElectricityConsumption = newValue;
             ResourceManager.Instance.AddElectricityConsumption(_currentElectricityConsumption);
@@ -201,6 +224,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public void UpdateFoodProduction(float newValue)
         {
             if (type != BuildingType.Farm) return;
+
             ResourceManager.Instance.RemoveFoodProduction(_currentFoodProduction);
             _currentFoodProduction = newValue;
             ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
@@ -208,19 +232,19 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         public float GetCurrentElectricity() => _currentElectricityConsumption;
         public float GetCurrentFood() => _currentFoodProduction;
-
-        // Õâ¸ö·½·¨·µ»Øµ±Ç°µÄ Co2 Ó°ÏìÖµ (¿ÉÄÜÊÇÕıÊıÒ²¿ÉÄÜÊÇ¸ºÊı)
         public float GetCurrentCo2Change() => _currentCo2Change;
 
-        private void DestroyBuilding()
+        public void DestroyBuilding()
         {
             PlacedObject placedObject = GetComponent<PlacedObject>();
             if (placedObject != null && PlacementSystem.Instance != null)
             {
+                // é€šè¿‡ç³»ç»Ÿç§»é™¤ï¼Œä¿è¯ GridData æ¸…ç†
                 PlacementSystem.Instance.Remove(placedObject);
             }
             else
             {
+                // å¼ºåˆ¶é”€æ¯
                 RemoveEffect();
                 Destroy(gameObject);
             }

@@ -24,8 +24,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public event Action OnPlacementStateStart;
         public event Action OnPlacementStateEnd;
 
-        // --- 新增：专门用于教程检测的事件，传递具体的 Placeable 数据 ---
+        // --- 现有事件：建造 ---
         public event Action<Placeable> OnBuildingPlaced;
+
+        // --- 新增事件：删除 ---
+        public event Action OnBuildingRemoved;
 
         private readonly Dictionary<GridDataType, GridData> _gridDataMap = new();
         private Vector3Int _lastDetectedPosition = Vector3Int.zero;
@@ -93,7 +96,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             }
         }
 
-        // --- 新增：供 PlacementState 调用以触发事件 ---
         public void InvokeBuildingPlaced(Placeable data)
         {
             OnBuildingPlaced?.Invoke(data);
@@ -147,6 +149,9 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             _stateHandler.OnAction(placedObject.data.gridPosition);
             _stateHandler.EndState();
             _stateHandler = null;
+
+            // --- 新增：通知外部发生了移除事件 (用于教程 Step 3) ---
+            OnBuildingRemoved?.Invoke();
         }
 
         public void StartMoving(PlacedObject target)

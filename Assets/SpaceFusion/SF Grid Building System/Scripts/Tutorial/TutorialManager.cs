@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
-using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables; // 引用 Placeable
+using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
 using UnityEngine;
 
 public class TutorialManager : MonoBehaviour
@@ -34,10 +34,10 @@ public class TutorialManager : MonoBehaviour
 
         tutorialUI.Initialize(this);
 
-        // --- 修改点：订阅 OnBuildingPlaced 事件以进行严格检查 ---
         if (PlacementSystem.Instance != null)
         {
             PlacementSystem.Instance.OnBuildingPlaced += CheckBuildingProgress;
+            PlacementSystem.Instance.OnBuildingRemoved += CheckRemovalProgress;
         }
 
         StartTutorial();
@@ -48,6 +48,7 @@ public class TutorialManager : MonoBehaviour
         if (PlacementSystem.Instance != null)
         {
             PlacementSystem.Instance.OnBuildingPlaced -= CheckBuildingProgress;
+            PlacementSystem.Instance.OnBuildingRemoved -= CheckRemovalProgress;
         }
     }
 
@@ -66,7 +67,6 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        // --- 修改点：只要教程步骤显示，就暂停游戏模拟 ---
         if (ResourceManager.Instance != null)
         {
             ResourceManager.Instance.isPaused = true;
@@ -74,8 +74,6 @@ public class TutorialManager : MonoBehaviour
 
         TutorialStep step = steps[_currentStepIndex];
         tutorialUI.ShowStep(step);
-
-        Debug.Log($"Tutorial Step: {step.stepName}");
     }
 
     public void NextStep()
@@ -84,33 +82,41 @@ public class TutorialManager : MonoBehaviour
         ShowCurrentStep();
     }
 
-    // --- 修改点：接收 Placeable 参数，进行类型检查 ---
     private void CheckBuildingProgress(Placeable placedData)
     {
         if (!_isTutorialActive || _currentStepIndex >= steps.Count) return;
 
         TutorialStep currentStep = steps[_currentStepIndex];
 
-        // 1. 如果当前步骤不需要建造，直接忽略
         if (!currentStep.requireBuilding) return;
 
-        // 2. --- 核心修改：严格检查建筑类型 ---
+        if (currentStep.allowAnyBuilding)
+        {
+            Invoke(nameof(NextStep), 0.5f);
+            return;
+        }
+
         if (placedData != null && placedData.Prefab != null)
         {
             BuildingEffect effect = placedData.Prefab.GetComponent<BuildingEffect>();
-            if (effect != null)
+            // 严格检查类型
+            if (effect != null && effect.type == currentStep.targetBuildingType)
             {
-                // 如果建造的类型不匹配目标类型，直接返回，不进行下一步
-                if (effect.type != currentStep.targetBuildingType)
-                {
-                    Debug.Log($"教程：建造了错误的建筑类型 {effect.type}，目标是 {currentStep.targetBuildingType}");
-                    return;
-                }
+                Invoke(nameof(NextStep), 0.5f);
             }
         }
+    }
 
-        // 3. 如果类型匹配，延迟一小会儿跳到下一步
-        Invoke(nameof(NextStep), 0.5f);
+    private void CheckRemovalProgress()
+    {
+        if (!_isTutorialActive || _currentStepIndex >= steps.Count) return;
+
+        TutorialStep currentStep = steps[_currentStepIndex];
+
+        if (currentStep.requireRemoval)
+        {
+            Invoke(nameof(NextStep), 0.5f);
+        }
     }
 
     private void CompleteTutorial()
@@ -118,13 +124,11 @@ public class TutorialManager : MonoBehaviour
         _isTutorialActive = false;
         tutorialUI.Hide();
 
-        // --- 修改点：教程完成，恢复游戏模拟 ---
         if (ResourceManager.Instance != null)
         {
             ResourceManager.Instance.isPaused = false;
         }
 
         Debug.Log("Tutorial Completed!");
-        ResourceManager.Instance.AddMoney(500);
     }
 }
