@@ -34,8 +34,9 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             ObjectGrouper.Instance.AddToGroup(obj, placeableObj.GridType);
             _placedObjectDictionary.Add(placedObject.data.guid, obj);
 
-            // 放置后应用建筑效果
-            obj.GetComponent<BuildingEffect>()?.ApplyEffect();
+            // [已删除] 手动调用 ApplyEffect
+            // 原因：Instantiate 出来的物体会在下一帧自动执行 Start() -> ApplyEffect()
+            // 如果在这里手动调用，会抢在 Start() 赋值之前运行，导致数值为 0
 
             return placedObject.data.guid;
         }
@@ -46,9 +47,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             obj.AddComponent<PlacedObject>();
             var placedObject = obj.GetComponent<PlacedObject>();
             placedObject.buildingEffect = obj.GetComponent<BuildingEffect>();
-            placedObject.data.gridPosition = podata.gridPosition;
-            placedObject.placeable = placeableObj;
-            placedObject.Initialize(podata);
+
+            placedObject.InitializeLoadedData(placeableObj, podata);
 
             var offset = PlaceableUtils.CalculateOffset(obj, cellSize);
             obj.transform.position = worldPosition + PlaceableUtils.GetTotalOffset(offset, podata.direction);
@@ -61,8 +61,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             _placedObjectDictionary.Add(placedObject.data.guid, obj);
             ObjectGrouper.Instance.AddToGroup(obj, placeableObj.GridType);
 
-            // 加载的物体也需要应用效果
-            obj.GetComponent<BuildingEffect>()?.ApplyEffect();
+            // [已删除] 同上，不要手动调用
 
             return podata.guid;
         }
@@ -94,9 +93,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             Destroy(obj);
         }
 
-        /// <summary>
-        /// 注册一个已经在场景中存在的物体（非运行时生成的）
-        /// </summary>
         public string RegisterPrePlacedObject(GameObject obj, Vector3Int gridPos, Placeable placeableObj)
         {
             var placedObject = obj.GetComponent<PlacedObject>();
@@ -113,8 +109,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                 _placedObjectDictionary.Add(placedObject.data.guid, obj);
             }
 
-            // 应用效果
-            obj.GetComponent<BuildingEffect>()?.ApplyEffect();
+            // [已删除] 对于场景中预置的物体，它们的 Start() 也会在游戏开始时自动运行
+            // 不需要手动干预
 
             return placedObject.data.guid;
         }

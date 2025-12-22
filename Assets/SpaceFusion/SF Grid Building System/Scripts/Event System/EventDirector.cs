@@ -21,7 +21,7 @@ public class EventDirector : MonoBehaviour
     // --- 关键修改：从 ResourceManager 获取真实状态 ---
     // 我们不再使用自己的变量，而是创建属性来“转发”真实数据
 
-    private ResourceManager _res; // 对 ResourceManager 的引用
+    private ResourceManager _res => ResourceManager.Instance; // 简化引用
 
     // --- 公开的游戏状态属性 (供 GameEvent 读取) ---
     public int currentGameDay => _res != null ? _res._currentDay : 0;
@@ -29,7 +29,9 @@ public class EventDirector : MonoBehaviour
     public float money => _res != null ? _res.Money : 0;
     public float happiness => _res != null ? _res._happiness : 0;
     public float airQuality => _res != null ? _res._airQuality : 0;
-    // ... 你可以在这里转发任何 GameEvent 需要的状态
+
+    // --- 新增：转发电力平衡 ---
+    public float electricityBalance => _res != null ? _res.ElectricityBalance : 0;
 
     private float timer;
 

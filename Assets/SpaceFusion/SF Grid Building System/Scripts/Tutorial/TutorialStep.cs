@@ -6,16 +6,33 @@ public class TutorialStep
 {
     public string stepName;
     [TextArea(3, 10)]
-    public string instructionText; // 教程文字
+    public string instructionText;
 
-    [Header("Building Requirements")]
-    public bool requireBuilding = false; // 是否需要建造
-    public bool allowAnyBuilding = false; // (新增) 是否允许建造任意建筑 (用于Step 2)
-    public BuildingType targetBuildingType; // 如果不允许任意，则检查特定类型
+    // --- 新增：触发条件 ---
+    public enum StartCondition
+    {
+        Immediate,
+        WaitForElectricityDeficit
+    }
 
-    [Header("Removal Requirements")]
-    public bool requireRemoval = false; // (新增) 是否需要执行删除操作 (用于Step 3)
+    [Header("Start Conditions")]
+    public StartCondition startCondition = StartCondition.Immediate;
 
-    [Header("Interaction")]
-    public bool requireInput = false; // 是否只需要点击“Next”按钮
+    [Header("Game State Control")]
+    [Tooltip("此步骤是否需要暂停游戏资源模拟？(默认True，对于需要观察数值变化的步骤可设为False)")]
+    public bool shouldPauseGame = true; // <--- 新增字段
+
+    [Header("Completion - Building")]
+    public bool requireBuilding = false;
+    public bool allowAnyBuilding = false;
+    public BuildingType targetBuildingType;
+
+    [Header("Completion - Removal")]
+    public bool requireRemoval = false;
+
+    [Header("Completion - Simulation")]
+    public bool requirePositiveEnergyBalance = false;
+
+    [Header("Completion - Interaction")]
+    public bool requireInput = false;
 }

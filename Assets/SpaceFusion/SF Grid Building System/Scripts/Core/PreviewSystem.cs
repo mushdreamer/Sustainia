@@ -3,11 +3,13 @@ using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Utils;
 using UnityEngine;
 
-namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
+namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
+{
     /// <summary>
     /// handles showing the cell indicators and the placeable object preview on the grid
     /// </summary>
-    public class PreviewSystem : MonoBehaviour {
+    public class PreviewSystem : MonoBehaviour
+    {
         private GameObject _cellIndicatorPrefab;
         private Material _previewMaterialPrefab;
         private Material _previewMaterialInstance;
@@ -18,13 +20,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
         private GameConfig _config;
         private float _cellSize;
 
-        /// <summary>
-        /// objects with dynamic size always use exactly 1 grid cell and their transform scale will be modified to fit into 1 cell, independent of the cellSize
-        /// This is pretty useful for terrain objects when playing around with different cell sizes
-        /// </summary>
         private bool _isDynamicSize;
 
-        private void Start() {
+        private void Start()
+        {
             _config = GameConfig.Instance;
             _previewMaterialPrefab = _config.PreviewMaterialPrefab;
             _cellIndicatorPrefab = _config.CellIndicatorPrefab;
@@ -37,16 +36,35 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
         /// <summary>
         /// Initializes the placement preview
         /// </summary>
-        public Vector3 StartShowingPlacementPreview(Placeable selectedObject, float gridCellSize) {
+        public Vector3 StartShowingPlacementPreview(Placeable selectedObject, float gridCellSize)
+        {
             _previewObject = Instantiate(selectedObject.Prefab);
+
+            // --- 核心修改：蓝图模式下，销毁物体上的逻辑脚本，防止扣费/产出 ---
+            // 这样它就只是一个纯粹的视觉模型，Start() 方法永远不会有机会执行
+            var effects = _previewObject.GetComponentsInChildren<BuildingEffect>();
+            foreach (var effect in effects)
+            {
+                Destroy(effect);
+            }
+            // 顺便把 PlacedObject 也清理掉，防止产生干扰
+            var placedObjects = _previewObject.GetComponentsInChildren<PlacedObject>();
+            foreach (var po in placedObjects)
+            {
+                Destroy(po);
+            }
+            // -------------------------------------------------------------
+
             _isDynamicSize = selectedObject.DynamicSize;
-            if (_isDynamicSize) {
+            if (_isDynamicSize)
+            {
                 _previewObject.transform.localScale = new Vector3(gridCellSize, gridCellSize, gridCellSize);
             }
 
             _pivotOffset = PlaceableUtils.CalculateOffset(_previewObject, gridCellSize);
             _cellSize = gridCellSize;
-            if (_config.UsePreviewMaterial) {
+            if (_config.UsePreviewMaterial)
+            {
                 PreparePreview(_previewObject);
             }
 
@@ -58,33 +76,32 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
         /// <summary>
         /// Initializes the remove preview
         /// </summary>
-        public void StartShowingRemovePreview(float gridCellSize) {
+        public void StartShowingRemovePreview(float gridCellSize)
+        {
             _cellIndicator.SetActive(true);
             _cellSize = gridCellSize;
             PrepareCellIndicator(new Vector2(_cellSize, _cellSize));
-            // just assume the first position is incorrect --> pass false
             UpdateCellIndicator(false, true);
         }
 
-        /// <summary>
-        /// Prepares the cell indicator size, based on the predefined cellSize
-        /// </summary>
-        private void PrepareCellIndicator(Vector2 size) {
-            if (size is { x: <= 0, y: <= 0 }) {
+        private void PrepareCellIndicator(Vector2 size)
+        {
+            if (size is { x: <= 0, y: <= 0 })
+            {
                 return;
             }
             _cellIndicator.transform.localScale = new Vector3(size.x, _cellIndicator.transform.localScale.y, size.y);
             _cellIndicatorRenderer.material.mainTextureScale = size;
         }
 
-        /// <summary>
-        /// swaps out all materials of the preview object with the selected preview material
-        /// </summary>
-        private void PreparePreview(GameObject obj) {
+        private void PreparePreview(GameObject obj)
+        {
             var renderers = obj.GetComponentsInChildren<Renderer>();
-            foreach (var r in renderers) {
+            foreach (var r in renderers)
+            {
                 var materials = r.materials;
-                for (var i = 0; i < materials.Length; i++) {
+                for (var i = 0; i < materials.Length; i++)
+                {
                     materials[i] = _previewMaterialInstance;
                 }
 
@@ -92,31 +109,29 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             }
         }
 
-        /// <summary>
-        /// destroy preview object and disable cell indicator
-        /// </summary>
-        public void StopShowingPreview() {
+        public void StopShowingPreview()
+        {
             _cellIndicator.SetActive(false);
-            if (_previewObject != null) {
+            if (_previewObject != null)
+            {
                 Destroy(_previewObject);
             }
         }
 
-        /// <summary>
-        /// Updates the cellIndicator and the previewObject based on the validity and rotation
-        /// </summary>
-        public void UpdatePosition(Vector3 position, bool isValid, Placeable placeable, ObjectDirection direction = ObjectDirection.Down) {
-            if (_previewObject) {
-                // only if obj is passed, RemoveState actually passes null because it's not needed there
-                if (placeable) {
+        public void UpdatePosition(Vector3 position, bool isValid, Placeable placeable, ObjectDirection direction = ObjectDirection.Down)
+        {
+            if (_previewObject)
+            {
+                if (placeable)
+                {
                     _previewObject.transform.position =
                         position + new Vector3(0, _config.PreviewYOffset, 0) + PlaceableUtils.GetTotalOffset(_pivotOffset, direction);
                     _previewObject.transform.rotation = Quaternion.Euler(0, PlaceableUtils.GetRotationAngle(direction), 0);
-                    // RotationBasedObject size for cellIndicator
                     PrepareCellIndicator(PlaceableUtils.GetCorrectedObjectSize(placeable, direction, _cellSize));
                 }
 
-                if (_config.UsePreviewMaterial) {
+                if (_config.UsePreviewMaterial)
+                {
                     UpdatePreviewMaterial(isValid);
                 }
             }
@@ -125,30 +140,27 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             UpdateCellIndicator(isValid);
         }
 
-        /// <summary>
-        ///  UpdatePosition function to handle removal states
-        /// </summary>
-        public void UpdateRemovalPosition(Vector3 position, bool isValid) {
+        public void UpdateRemovalPosition(Vector3 position, bool isValid)
+        {
             MoveCellIndicator(position);
             UpdateCellIndicator(isValid, true);
         }
 
-        /// <summary>
-        /// updates the color of the preview material, depending on if it is placeable/removable or not
-        /// </summary>
-        private void UpdatePreviewMaterial(bool isValid) {
+        private void UpdatePreviewMaterial(bool isValid)
+        {
             var color = isValid ? _config.ValidPlacementColor : _config.InValidPlacementColor;
             _previewMaterialInstance.color = color;
         }
 
-        /// <summary>
-        /// updates the color of the cellIndicator material, depending on if it is placeable/removable or not
-        /// </summary>
-        private void UpdateCellIndicator(bool isValid, bool removing = false) {
+        private void UpdateCellIndicator(bool isValid, bool removing = false)
+        {
             Color color;
-            if (removing) {
+            if (removing)
+            {
                 color = isValid ? _config.ValidRemovalColor : _config.InValidRemovalColor;
-            } else {
+            }
+            else
+            {
                 color = isValid ? _config.ValidPlacementColor : _config.InValidPlacementColor;
             }
 
@@ -156,10 +168,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
             _cellIndicatorRenderer.material.color = color;
         }
 
-        /// <summary>
-        /// moves the cellIndicator to the next position
-        /// </summary>
-        private void MoveCellIndicator(Vector3 position) {
+        private void MoveCellIndicator(Vector3 position)
+        {
             _cellIndicator.transform.position = position;
         }
     }

@@ -23,11 +23,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         public event Action OnPlacementStateStart;
         public event Action OnPlacementStateEnd;
-
-        // --- 现有事件：建造 ---
         public event Action<Placeable> OnBuildingPlaced;
-
-        // --- 新增事件：删除 ---
         public event Action OnBuildingRemoved;
 
         private readonly Dictionary<GridDataType, GridData> _gridDataMap = new();
@@ -63,7 +59,9 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         private void ScanAndRegisterSceneObjects()
         {
-            BuildingEffect[] sceneBuildings = FindObjectsOfType<BuildingEffect>();
+            // --- 修复 Warning CS0618: 使用新 API ---
+            BuildingEffect[] sceneBuildings = FindObjectsByType<BuildingEffect>(FindObjectsSortMode.None);
+
             foreach (var building in sceneBuildings)
             {
                 PlacedObject existingPO = building.GetComponent<PlacedObject>();
@@ -149,8 +147,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             _stateHandler.OnAction(placedObject.data.gridPosition);
             _stateHandler.EndState();
             _stateHandler = null;
-
-            // --- 新增：通知外部发生了移除事件 (用于教程 Step 3) ---
             OnBuildingRemoved?.Invoke();
         }
 

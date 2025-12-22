@@ -31,8 +31,12 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private int _basePopulation;
         private float _food;
         private float _foodProductionRate;
-        private float _baseElectricityProduction;
-        private float _electricityProduction;
+
+        // --- 新能源系统变量 ---
+        private float _currentLocalGeneration = 0f; // 本地发电量
+        private float _currentTotalDemand = 0f;     // 总电力需求
+        public float ElectricityBalance => _currentLocalGeneration - _currentTotalDemand; // 净差额
+
         public float _happiness;
         private float _baseCarbonDioxideEmission;
         private float _carbonDioxideEmission;
@@ -40,15 +44,13 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private float _carbonDioxideAbsorption = 0f;
         private int _bankCount = 0;
         private int _universityLevel = 1;
-        private float _totalElectricityConsumption = 0f;
 
         private List<BuildingEffect> _allPlacedBuildings = new List<BuildingEffect>();
         private Dictionary<BuildingType, int> _buildingCounts = new Dictionary<BuildingType, int>();
 
-        private float _powerEfficiencyModifier = 1.0f;
         private float _co2EmissionModifier = 1.0f;
 
-        // --- 新增：游戏暂停控制（用于教程） ---
+        // --- 游戏暂停控制（用于教程） ---
         public bool isPaused = false;
 
         [Header("Game Balance Settings")]
@@ -95,7 +97,9 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             _happiness = 100f;
             _airQuality = 100f;
             _universityLevel = 1;
-            _totalElectricityConsumption = 0f;
+
+            _currentLocalGeneration = 0f;
+            _currentTotalDemand = 0f;
 
             _buildingCounts.Clear();
             foreach (BuildingType type in System.Enum.GetValues(typeof(BuildingType)))
@@ -112,13 +116,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         // 每秒执行一次的核心游戏逻辑
         private void Tick()
         {
-            // --- 修改点：如果暂停，跳过模拟 ---
+            // 如果暂停，跳过模拟
             if (isPaused) return;
 
             _currentDay++;
 
-            _baseElectricityProduction = _totalElectricityConsumption;
-            _electricityProduction = _baseElectricityProduction * _powerEfficiencyModifier;
             _carbonDioxideEmission = _baseCarbonDioxideEmission * _co2EmissionModifier;
 
             _food += _foodProductionRate;
@@ -185,7 +187,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             moneyText.text = $"Money: {_money:F0}";
             populationText.text = $"Population: {_currentPopulation} / {_populationCapacity}";
             foodText.text = $"Food: {_food:F0}";
-            electricityText.text = $"Electricity Demand: {_totalElectricityConsumption:F1}";
+
+            // 更新电力UI，显示更详细的信息
+            string sign = ElectricityBalance >= 0 ? "+" : "";
+            string color = ElectricityBalance >= 0 ? "<color=green>" : "<color=red>";
+            electricityText.text = $"Elec Balance: {color}{sign}{ElectricityBalance:F1}</color>\n<size=70%>(Gen: {_currentLocalGeneration:F1} | Dem: {_currentTotalDemand:F1})</size>";
 
             float currentNetCo2 = (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
 
@@ -317,16 +323,31 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             return _buildingCounts.ContainsKey(type) && _buildingCounts[type] == 0;
         }
 
-        public void AddElectricityConsumption(float amount)
+        // --- 新的电力管理方法 ---
+
+        public void AddGeneration(float amount)
         {
-            _totalElectricityConsumption += amount;
+            _currentLocalGeneration += amount;
             UpdateUI();
         }
 
-        public void RemoveElectricityConsumption(float amount)
+        public void RemoveGeneration(float amount)
         {
-            _totalElectricityConsumption -= amount;
-            if (_totalElectricityConsumption < 0) _totalElectricityConsumption = 0;
+            _currentLocalGeneration -= amount;
+            if (_currentLocalGeneration < 0) _currentLocalGeneration = 0;
+            UpdateUI();
+        }
+
+        public void AddConsumption(float amount)
+        {
+            _currentTotalDemand += amount;
+            UpdateUI();
+        }
+
+        public void RemoveConsumption(float amount)
+        {
+            _currentTotalDemand -= amount;
+            if (_currentTotalDemand < 0) _currentTotalDemand = 0;
             UpdateUI();
         }
 
