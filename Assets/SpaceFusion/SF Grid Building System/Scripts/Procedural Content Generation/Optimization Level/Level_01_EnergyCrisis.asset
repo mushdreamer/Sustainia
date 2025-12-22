@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6accf8f32b6ddf409dc669cbd869c0c, type: 3}
+  m_Name: Level_01_EnergyCrisis
+  m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables.OptimizationLevelData
+  levelName: 
+  levelBrief: 
+  genTargetCo2: 50
+  genTargetCost: 1000
+  genTargetEnergy: 50
+  goalCo2: 50
+  goalCost: 1200
+  goalEnergy: 100
+  weightCo2: 1
+  weightCost: 1
+  weightEnergy: 1.5
+  successTolerancePercent: 0.05

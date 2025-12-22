@@ -78,16 +78,50 @@ public class MultiZoneCityGenerator : MonoBehaviour
             yield break;
         }
 
+        // 初始化 CSV 也可以放在这里
+        _csvFilePath = Path.Combine(Application.dataPath, $"TrainingData_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        InitCSV();
+
+        // 开始默认的生成流程
+        StartCoroutine(GenerateZonesSequence());
+    }
+
+    // --- 新增：允许外部调用来重置并重新生成 ---
+    public void ClearAndRestartGeneration()
+    {
+        // 1. 停止当前正在进行的任何生成协程
+        StopAllCoroutines();
+
+        // 2. 清理场景中已生成的建筑
+        foreach (var zone in zones)
+        {
+            zone.isOccupied = false;
+            // 销毁 Zone 原点下的所有子物体（即之前的建筑）
+            if (zone.originPoint != null)
+            {
+                foreach (Transform child in zone.originPoint)
+                {
+                    // 注意：这里直接Destroy可能会有延迟，如果需要立即清理可能要用DestroyImmediate，
+                    // 但运行时一般建议用Destroy。为了防止ResourceManager里的数据残留，
+                    // 最好确保BuildingEffect的OnDestroy能正确处理反注册。
+                    Destroy(child.gameObject);
+                }
+            }
+        }
+
+        // 3. 强制 ResourceManager 清理数据（可选，视你的架构而定）
+        // 如果 BuildingEffect 的 OnDestroy 已经处理了 Unregister，这里可能不需要手动调用。
+        // 但为了保险，可以重置 ResourceManager 的部分计数。
+
+        // 4. 重置内部计数器
         _currentCo2 = 0f;
         _currentCost = 0f;
         _currentEnergy = 0f;
         _stepCount = 0;
 
-        foreach (var zone in zones) zone.isOccupied = false;
+        Debug.Log("[Generator] 场景已清理，准备重新生成...");
 
-        _csvFilePath = Path.Combine(Application.dataPath, $"TrainingData_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
-        InitCSV();
-
+        // 5. 重新启动生成序列
         StartCoroutine(GenerateZonesSequence());
     }
 
@@ -115,7 +149,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
         return null;
     }
 
-    // --- 恢复可视化功能 (Fix Issue: Zone大小不可见) ---
     private void OnDrawGizmos()
     {
         if (zones == null) return;
@@ -123,26 +156,14 @@ public class MultiZoneCityGenerator : MonoBehaviour
         foreach (var zone in zones)
         {
             if (zone.originPoint == null) continue;
-
-            // 设置颜色：如果被占用显示红色，未占用显示绿色
             Gizmos.color = zone.isOccupied ? new Color(1, 0, 0, 0.5f) : new Color(0, 1, 0, 0.5f);
-
-            // 计算中心点和尺寸
             float realWidth = zone.width * cellSize;
             float realHeight = zone.height * cellSize;
-
-            // Gizmos 的中心是在物体中心，所以要基于 Origin 偏移一半的宽和高
             Vector3 center = zone.originPoint.position + new Vector3(realWidth / 2, 0, realHeight / 2);
             Vector3 size = new Vector3(realWidth, 1f, realHeight);
-
-            // 绘制底座平面
             Gizmos.DrawCube(center, new Vector3(realWidth, 0.1f, realHeight));
-
-            // 绘制线框
             Gizmos.color = Color.white;
             Gizmos.DrawWireCube(center, size);
-
-            // 绘制中心点标记
             Gizmos.color = Color.yellow;
             Gizmos.DrawSphere(center, 0.5f);
         }
@@ -150,18 +171,23 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
     void InitCSV()
     {
+        if (string.IsNullOrEmpty(_csvFilePath)) return;
         string header = "Step,Zone,Building,Total_Co2,Total_Cost,Total_Energy,Count,Weighted_Error";
-        File.WriteAllText(_csvFilePath, header + "\n");
+        try { File.WriteAllText(_csvFilePath, header + "\n"); } catch { }
     }
 
     void WriteCSV(int step, string zone, string building, float totalCo2, float totalCost, float totalEnergy, int count, float wError)
     {
+        if (string.IsNullOrEmpty(_csvFilePath)) return;
         string line = $"{step},{zone},{building},{totalCo2},{totalCost},{totalEnergy},{count},{wError:F4}";
-        File.AppendAllText(_csvFilePath, line + "\n");
+        try { File.AppendAllText(_csvFilePath, line + "\n"); } catch { }
     }
 
     IEnumerator GenerateZonesSequence()
     {
+        // 稍微等待一帧，确保Destroy操作完成，避免位置冲突
+        yield return new WaitForEndOfFrame();
+
         List<int> availableIndices = new List<int>();
         for (int i = 0; i < zones.Count; i++) availableIndices.Add(i);
 
@@ -197,7 +223,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
             if (nextWeightedError < currentWeightedError)
             {
-                Debug.Log($"<color=green>[Accepted]</color> {candidateType.name} in {zoneToGenerate.zoneName}");
+                // Debug.Log($"<color=green>[Accepted]</color> {candidateType.name} in {zoneToGenerate.zoneName}");
 
                 GenerateOneZone(zoneToGenerate, candidateType);
                 zoneToGenerate.isOccupied = true;
@@ -215,6 +241,8 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
             yield return new WaitForSeconds(0.05f);
         }
+
+        Debug.Log("生成序列完成。");
     }
 
     float CalculateWeightedError(float c, float m, float e)
@@ -268,21 +296,15 @@ public class MultiZoneCityGenerator : MonoBehaviour
         return stats;
     }
 
-    // --- 修复功能：强制生成在 Zone 中心 (Fix Issue: 建筑不居中) ---
     void GenerateOneZone(GenerationZone zone, BuildingType specificBuildingType)
     {
         if (zone.originPoint == null) return;
 
-        // 1. 计算绝对几何中心
-        // 宽度的一半 * 格子大小
         float halfWidth = zone.width * cellSize * 0.5f;
         float halfHeight = zone.height * cellSize * 0.5f;
 
         Vector3 centerWorldPos = zone.originPoint.position + new Vector3(halfWidth, 0, halfHeight);
 
-        // 2. 对齐到最近的格子中心 (Snap to Grid)
-        // 网格系统的格子中心通常是 cellSize * 0.5
-        // 我们需要计算当前坐标处于哪个格子索引，然后反推格子中心坐标
         float snappedX = Mathf.Floor(centerWorldPos.x / cellSize) * cellSize + cellSize * 0.5f;
         float snappedZ = Mathf.Floor(centerWorldPos.z / cellSize) * cellSize + cellSize * 0.5f;
 
@@ -303,10 +325,13 @@ public class MultiZoneCityGenerator : MonoBehaviour
         BuildingEffect effect = building.GetComponent<BuildingEffect>();
         if (effect != null) placedObj.buildingEffect = effect;
 
-        Vector3Int gridPos = GameManager.Instance.PlacementGrid.WorldToCell(worldPos);
-        placedObj.Initialize(placeableData, gridPos);
-
-        PlacementSystem.Instance.RegisterExternalObject(building, placeableData, gridPos);
+        if (GameManager.Instance != null && GameManager.Instance.PlacementGrid != null)
+        {
+            Vector3Int gridPos = GameManager.Instance.PlacementGrid.WorldToCell(worldPos);
+            placedObj.Initialize(placeableData, gridPos);
+            if (PlacementSystem.Instance != null)
+                PlacementSystem.Instance.RegisterExternalObject(building, placeableData, gridPos);
+        }
 
         building.SetActive(true);
     }

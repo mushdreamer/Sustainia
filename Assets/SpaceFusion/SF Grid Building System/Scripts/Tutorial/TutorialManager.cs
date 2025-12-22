@@ -67,7 +67,6 @@ public class TutorialManager : MonoBehaviour
             switch (currentStep.startCondition)
             {
                 case TutorialStep.StartCondition.WaitForElectricityDeficit:
-                    // 只有当电力确实小于0时才触发
                     if (ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < -0.1f)
                     {
                         conditionMet = true;
@@ -89,18 +88,31 @@ public class TutorialManager : MonoBehaviour
         // --- 逻辑 B: 检查“完成条件” ---
         else
         {
-            // 检查电力是否回正
+            bool stepComplete = false;
+
+            // 1. 检查电力是否回正
             if (currentStep.requirePositiveEnergyBalance)
             {
-                if (ResourceManager.Instance != null)
+                if (ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance >= 0f)
                 {
-                    // 只要电力 >= 0 就算通过
-                    if (ResourceManager.Instance.ElectricityBalance >= 0f)
-                    {
-                        Debug.Log("[Tutorial] 电力平衡已恢复，步骤完成！");
-                        NextStep();
-                    }
+                    Debug.Log("[Tutorial] 电力平衡已恢复，步骤完成！");
+                    stepComplete = true;
                 }
+            }
+
+            // 2. 新增：检查是否达到 Mathematical Optimization 目标
+            if (currentStep.requireOptimizationGoal)
+            {
+                if (LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.IsOptimizationGoalMet())
+                {
+                    Debug.Log("[Tutorial] 优化目标已达成 (Optimization Goal Met)！");
+                    stepComplete = true;
+                }
+            }
+
+            if (stepComplete)
+            {
+                NextStep();
             }
         }
     }
@@ -127,8 +139,6 @@ public class TutorialManager : MonoBehaviour
             Debug.Log($"[Tutorial] Step {index + 1} 等待电力赤字...");
             _isWaitingForStartCondition = true;
             tutorialUI.Hide();
-
-            // 等待期间，强制允许游戏运行，否则玩家没法把电用超
             if (ResourceManager.Instance != null) ResourceManager.Instance.isPaused = false;
         }
         else
@@ -142,13 +152,16 @@ public class TutorialManager : MonoBehaviour
         _isWaitingForStartCondition = false;
         tutorialUI.ShowStep(step);
 
-        // --- 核心修改：根据配置决定是否暂停游戏 ---
         if (ResourceManager.Instance != null)
         {
             ResourceManager.Instance.isPaused = step.shouldPauseGame;
-
-            // 为了防止UI不刷新，我们在进入步骤时强制刷新一次UI（可选）
-            // ResourceManager.Instance.UpdateUI(); 
+            // 如果是检查优化目标，通常需要游戏运行起来让数值变化，或者至少允许操作
+            if (step.requireOptimizationGoal)
+            {
+                // 保持暂停可能无法更新数值，具体视 ResourceManager 逻辑而定
+                // 如果 ResourceManager 的数值是实时计算的（非 Tick），则可以暂停
+                // 这里为了保险，如果是优化任务，建议不要完全暂停，或者只暂停时间流逝但不暂停数值计算
+            }
         }
     }
 
@@ -163,7 +176,6 @@ public class TutorialManager : MonoBehaviour
         if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) return;
 
         TutorialStep currentStep = steps[_currentStepIndex];
-
         if (!currentStep.requireBuilding) return;
 
         if (currentStep.allowAnyBuilding)
@@ -185,7 +197,6 @@ public class TutorialManager : MonoBehaviour
     private void CheckRemovalProgress()
     {
         if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) return;
-
         TutorialStep currentStep = steps[_currentStepIndex];
 
         if (currentStep.requireRemoval)
@@ -198,7 +209,6 @@ public class TutorialManager : MonoBehaviour
     {
         _isTutorialActive = false;
         tutorialUI.Hide();
-
         if (ResourceManager.Instance != null)
         {
             ResourceManager.Instance.isPaused = false;

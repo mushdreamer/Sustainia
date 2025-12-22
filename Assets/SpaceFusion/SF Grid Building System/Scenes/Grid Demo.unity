@@ -16120,6 +16120,51 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5026172333621812674, guid: bcf155ad418a60f4c8610479392af38f, type: 3}
   m_PrefabInstance: {fileID: 1327576101}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1338027424
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1338027426}
+  - component: {fileID: 1338027425}
+  m_Layer: 0
+  m_Name: LevelScenarioLoader
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1338027425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1338027424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02681c9d1bdd37f4090eec6ab3bdbfe0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Managers.LevelScenarioLoader
+  currentLevel: {fileID: 11400000, guid: 4dc21d53fe9d3ad4d9b90294d8b57919, type: 2}
+--- !u!4 &1338027426
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1338027424}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 415.51508, y: 164.50877, z: -391.6967}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1344415089
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17287,6 +17332,7 @@ MonoBehaviour:
     targetBuildingType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
     requireInput: 1
   - stepName: Build Anything
     instructionText: Let's start building. Select ANY building from the shop panel
@@ -17298,6 +17344,7 @@ MonoBehaviour:
     targetBuildingType: 3
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
     requireInput: 0
   - stepName: Remove Building
     instructionText: Great! Now let's try to remove it. Click and HOLD the Left Mouse
@@ -17310,6 +17357,7 @@ MonoBehaviour:
     targetBuildingType: 1
     requireRemoval: 1
     requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
     requireInput: 0
   - stepName: Finish
     instructionText: Good Job! Press Next to Continue!
@@ -17320,6 +17368,7 @@ MonoBehaviour:
     targetBuildingType: 1
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
     requireInput: 1
   - stepName: The Emitter
     instructionText: Let's generate some power. Build a Power Plant from the shop
@@ -17331,6 +17380,7 @@ MonoBehaviour:
     targetBuildingType: 3
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
     requireInput: 0
   - stepName: Build CCUS
     instructionText: CO2 is rising! We need to fix this. According to Question 13,
@@ -17343,6 +17393,7 @@ MonoBehaviour:
     targetBuildingType: 4
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
     requireInput: 0
   - stepName: BatteryDrainCrisis
     instructionText: According to the formula, surplus electricity will be converted
@@ -17355,6 +17406,20 @@ MonoBehaviour:
     targetBuildingType: 4
     requireRemoval: 0
     requirePositiveEnergyBalance: 1
+    requireOptimizationGoal: 0
+    requireInput: 0
+  - stepName: Fix Energy Supply
+    instructionText: Current urban planning faces a severe energy deficit (50/100),
+      which is a typical optimization problem.  Please design new power generation
+      facilities to meet energy demands without exceeding carbon emission limits.
+    startCondition: 0
+    shouldPauseGame: 0
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 4
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 1
     requireInput: 0
   tutorialUI: {fileID: 8443747025398637877}
 --- !u!4 &1413932882
@@ -25909,6 +25974,36 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2713824522019482910, guid: a5ca6f845b4ce374e9f4f9823d756965, type: 3}
   m_PrefabInstance: {fileID: 2129995723}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2135559343 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1285604520155399939, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+  m_PrefabInstance: {fileID: 8443747025398637874}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2135559345 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7003770842102887576, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+  m_PrefabInstance: {fileID: 8443747025398637874}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2135559343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!114 &2135559348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2135559343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c6cacbe7e71ddf45a242419e5f3a63d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.UI.SolutionRevealer
+  showSolutionButton: {fileID: 2135559345}
+  disableAfterClick: 1
 --- !u!1001 &2146748700
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -26493,54 +26588,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 157858706225913336, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 157858706225913336, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 157858706225913336, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 157858706225913336, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 157858706225913336, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 157858706225913336, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 425174004757621193, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 425174004757621193, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 425174004757621193, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 425174004757621193, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 425174004757621193, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 425174004757621193, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2232338049669128568, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -26625,30 +26672,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI
       objectReference: {fileID: 0}
-    - target: {fileID: 4586432826691276540, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4586432826691276540, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4586432826691276540, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4586432826691276540, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4586432826691276540, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4586432826691276540, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5334684401398966170, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -26656,10 +26679,6 @@ PrefabInstance:
     - target: {fileID: 5334684401398966170, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6004075199062573184, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -3.5108032
       objectReference: {fileID: 0}
     - target: {fileID: 6569676552646896936, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMax.x
@@ -26672,7 +26691,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1285604520155399939, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2135559348}
   m_SourcePrefab: {fileID: 100100000, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
 --- !u!114 &8443747025398637877 stripped
 MonoBehaviour:
@@ -26703,4 +26725,5 @@ SceneRoots:
   - {fileID: 1905785285}
   - {fileID: 358660826}
   - {fileID: 635179578}
+  - {fileID: 1338027426}
   - {fileID: 731120586}
