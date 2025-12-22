@@ -1,8 +1,10 @@
-﻿using System;
-using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
+﻿using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
 using SpaceFusion.SF_Grid_Building_System.Scripts.SaveSystem;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
+using SpaceFusion.SF_Grid_Building_System.Scripts.UI;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Utils;
+using System;
+using System.Text;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -79,6 +81,94 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public void Initialize(PlaceableObjectData podata)
         {
             data = podata;
+        }
+
+        private void OnMouseEnter()
+        {
+            // 如果处于放置状态（手上正拿着东西准备造），或者是点击了UI，就不显示建筑信息
+            if (InputManager.IsPointerOverUIObject() || PlacementSystem.Instance == null) return;
+
+            // 只有当 UI 单例存在时才显示
+            if (BuildingInfoUI.Instance != null)
+            {
+                string info = GetBuildingStats();
+                BuildingInfoUI.Instance.Show(placeable.GetAssetIdentifier(), info);
+            }
+        }
+
+        private void OnMouseExit()
+        {
+            if (BuildingInfoUI.Instance != null)
+            {
+                BuildingInfoUI.Instance.Hide();
+            }
+        }
+
+        private string GetBuildingStats()
+        {
+            if (buildingEffect == null) return "No Effect";
+
+            StringBuilder sb = new StringBuilder();
+            BuildingType type = buildingEffect.type; // 获取当前建筑类型
+
+            // --- 1. 电力显示逻辑 ---
+            // 几乎所有建筑都耗电，或者产电，所以这部分通常可以保留
+            // 但如果你希望有些装饰性建筑不显示，也可以加 if 限制
+            float energy = buildingEffect.GetCurrentElectricity();
+            if (Mathf.Abs(energy) > 0.01f) // 使用微小阈值防止浮点数误差
+            {
+                // 负数代表产电（在 BuildingEffect.cs 的 PowerPlant 逻辑中是负数）
+                // 正数代表耗电
+                bool isProduction = energy < 0;
+                string color = isProduction ? "<color=green>" : "<color=red>";
+                string label = isProduction ? "Energy Production" : "Energy Consumption";
+                sb.AppendLine($"{color}{label}: {Mathf.Abs(energy):F1}</color>");
+            }
+
+            // --- 2. CO2 显示逻辑 ---
+            // 只有特定建筑会产生或吸收 CO2
+            float co2 = buildingEffect.GetCurrentCo2Change();
+            if (Mathf.Abs(co2) > 0.01f)
+            {
+                bool isEmission = co2 > 0;
+                string color = isEmission ? "<color=red>" : "<color=green>";
+                string label = isEmission ? "CO2 Emission" : "CO2 Absorption";
+                sb.AppendLine($"{color}{label}: {Mathf.Abs(co2):F1}</color>");
+            }
+
+            // --- 3. 食物 (仅限 Farm) ---
+            if (type == BuildingType.Farm)
+            {
+                float food = buildingEffect.GetCurrentFood();
+                sb.AppendLine($"<color=green>Food Production: {food:F1}</color>");
+            }
+
+            // --- 4. 人口 (仅限 House) ---
+            if (type == BuildingType.House)
+            {
+                sb.AppendLine($"Population: {buildingEffect.initialPopulation} / {buildingEffect.populationCapacity}");
+            }
+
+            // --- 5. 科研 (仅限 Institute) ---
+            if (type == BuildingType.Institute)
+            {
+                sb.AppendLine($"<color=#00FFFF>Research: Active</color>"); // 使用青色高亮
+            }
+
+            // --- 6. 银行 (仅限 Bank) ---
+            if (type == BuildingType.Bank)
+            {
+                sb.AppendLine($"<color=#FFD700>Economy: Trade Center</color>"); // 使用金色高亮
+            }
+
+            // --- 7. CCUS (仅限 Co2Storage) ---
+            // 虽然上面有 CO2 显示逻辑，但这里可以加个额外说明
+            if (type == BuildingType.Co2Storage)
+            {
+                sb.AppendLine($"<color=green>Status: Capturing</color>");
+            }
+
+            return sb.ToString();
         }
 
         private void HandleMousePress(Vector2 mousePosition)
