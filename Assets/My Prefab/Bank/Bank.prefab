@@ -14,15 +14,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 83fe0e970e1d8b3489f1eeb8784a6179, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.25
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 83fe0e970e1d8b3489f1eeb8784a6179, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.25
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 83fe0e970e1d8b3489f1eeb8784a6179, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.25
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 83fe0e970e1d8b3489f1eeb8784a6179, type: 3}
       propertyPath: m_LocalPosition.x
@@ -127,6 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingEffect
   type: 5
   maxHealth: 100
+  _currentHealth: 0
   electricityConsumption: 1
   populationCapacity: 5
   initialPopulation: 2
@@ -135,5 +136,7 @@ MonoBehaviour:
   farmCo2Change: 2
   instituteCo2Change: 3
   bankCo2Change: 2
+  powerProduction: 20
   powerPlantCo2Change: 10
+  storageConsumption: 5
   storageCo2Change: -20

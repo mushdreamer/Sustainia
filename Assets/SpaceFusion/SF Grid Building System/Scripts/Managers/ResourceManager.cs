@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
+using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
 
 namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 {
@@ -15,12 +16,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public TextMeshProUGUI populationText;
         public TextMeshProUGUI foodText;
         public TextMeshProUGUI electricityText;
-        public TextMeshProUGUI happinessText;
-        public Slider happinessSlider;
-        public TextMeshProUGUI airQualityText;
-        public Slider airQualitySlider;
+        // [Removed] Happiness Text & Slider
+        // [Removed] Air Quality Text & Slider
         public TextMeshProUGUI dayText;
-        public TextMeshProUGUI universityLevelText;
+        // [Removed] University Level Text
         public TextMeshProUGUI co2EmissionText;
 
         // --- 核心全局变量 ---
@@ -37,6 +36,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private float _currentTotalDemand = 0f;     // 总电力需求
         public float ElectricityBalance => _currentLocalGeneration - _currentTotalDemand; // 净差额
 
+        // 依然保留内部变量，防止破坏逻辑计算
         public float _happiness;
         private float _baseCarbonDioxideEmission;
         private float _carbonDioxideEmission;
@@ -159,6 +159,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
                 }
             }
 
+            // --- 虽然不显示 UI，但保留原有逻辑运算，以免破坏可能存在的事件条件 ---
             if (_airQuality > 70)
             {
                 _happiness += happinessChangeRate;
@@ -184,30 +185,73 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
         private void UpdateUI()
         {
-            moneyText.text = $"Money: {_money:F0}";
-            populationText.text = $"Population: {_currentPopulation} / {_populationCapacity}";
-            foodText.text = $"Food: {_food:F0}";
-
-            // 更新电力UI，显示更详细的信息
-            string sign = ElectricityBalance >= 0 ? "+" : "";
-            string color = ElectricityBalance >= 0 ? "<color=green>" : "<color=red>";
-            electricityText.text = $"Elec Balance: {color}{sign}{ElectricityBalance:F1}</color>\n<size=70%>(Gen: {_currentLocalGeneration:F1} | Dem: {_currentTotalDemand:F1})</size>";
-
-            float currentNetCo2 = (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
-
-            if (co2EmissionText != null)
+            // 尝试获取当前的关卡目标数据
+            OptimizationLevelData currentLevel = null;
+            if (LevelScenarioLoader.Instance != null)
             {
-                co2EmissionText.text = $"CO2 Emission: {currentNetCo2:F1}";
+                currentLevel = LevelScenarioLoader.Instance.currentLevel;
             }
 
-            happinessText.text = $"{_happiness:F0}%";
-            if (happinessSlider != null) happinessSlider.value = _happiness;
+            // 1. 基础 UI 更新
+            if (moneyText != null) moneyText.text = $"Money: {_money:F0}";
+            if (populationText != null) populationText.text = $"Population: {_currentPopulation} / {_populationCapacity}";
+            if (foodText != null) foodText.text = $"Food: {_food:F0}";
 
-            airQualityText.text = $"{_airQuality:F0}%";
-            if (airQualitySlider != null) airQualitySlider.value = _airQuality;
+            // 2. 电力 UI (包含目标显示)
+            if (electricityText != null)
+            {
+                string sign = ElectricityBalance >= 0 ? "+" : "";
+                string elecColor = ElectricityBalance >= 0 ? "<color=green>" : "<color=red>";
 
+                string elecString = $"Elec Balance: {elecColor}{sign}{ElectricityBalance:F1}</color>";
+
+                if (currentLevel != null)
+                {
+                    bool isEnergyMet = IsGoalMet(ElectricityBalance, currentLevel.goalEnergy, currentLevel.successTolerancePercent, true);
+                    string goalColor = isEnergyMet ? "<color=#00FF00>" : "<color=#FF8888>";
+                    elecString += $" / {goalColor}Goal: {currentLevel.goalEnergy:F0}</color>";
+                }
+
+                elecString += $"\n<size=70%>(Gen: {_currentLocalGeneration:F1} | Dem: {_currentTotalDemand:F1})</size>";
+                electricityText.text = elecString;
+            }
+
+            // 3. CO2 UI (包含目标显示)
+            if (co2EmissionText != null)
+            {
+                float currentNetCo2 = (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
+                string co2String = $"CO2 Emission: {currentNetCo2:F1}";
+
+                if (currentLevel != null)
+                {
+                    bool isCo2Met = IsGoalMet(currentNetCo2, currentLevel.goalCo2, currentLevel.successTolerancePercent, false);
+                    if (currentNetCo2 <= currentLevel.goalCo2 * (1 + currentLevel.successTolerancePercent)) isCo2Met = true;
+
+                    string goalColor = isCo2Met ? "<color=#00FF00>" : "<color=#FF8888>";
+                    co2String += $" / {goalColor}Goal: <{currentLevel.goalCo2:F0}</color>";
+                }
+                co2EmissionText.text = co2String;
+            }
+
+            // 4. Day Text
             if (dayText != null) dayText.text = $"Day {_currentDay}";
-            if (universityLevelText != null) universityLevelText.text = $"R&D Level: {_universityLevel}";
+
+            // [Removed] Happiness / AirQuality / University UI updates
+        }
+
+        // 辅助方法：判断是否达标 (仅用于UI变色)
+        private bool IsGoalMet(float current, float target, float tolerancePercent, bool requireHigher)
+        {
+            float diff = Mathf.Abs(current - target);
+            float allowedDiff = Mathf.Abs(target * tolerancePercent);
+            if (target == 0) allowedDiff = 2f;
+
+            if (diff <= allowedDiff) return true;
+
+            if (requireHigher)
+                return current > target;
+            else
+                return current < target;
         }
 
         public bool SpendMoney(float amount)
