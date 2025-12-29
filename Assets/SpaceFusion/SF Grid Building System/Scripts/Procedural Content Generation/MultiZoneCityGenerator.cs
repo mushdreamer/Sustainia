@@ -23,14 +23,22 @@ public class MultiZoneCityGenerator : MonoBehaviour
         [Tooltip("区域高度（以格子数为单位）")]
         public int height = 5;
 
-        [HideInInspector]
+        // 这里的 isOccupied 现在不仅仅表示“生成器生成了东西”，也表示“玩家放了东西”
         public bool isOccupied = false;
 
         public bool Contains(Vector3 worldPos, float cellSize)
         {
             if (originPoint == null) return false;
-            float relativeX = (worldPos.x - originPoint.position.x) / cellSize;
-            float relativeZ = (worldPos.z - originPoint.position.z) / cellSize;
+
+            // 计算相对于原点的偏移
+            float diffX = worldPos.x - originPoint.position.x;
+            float diffZ = worldPos.z - originPoint.position.z;
+
+            // 转换成格子坐标
+            float relativeX = diffX / cellSize;
+            float relativeZ = diffZ / cellSize;
+
+            // 简单的 AABB 包围盒检测
             return relativeX >= 0 && relativeX < width && relativeZ >= 0 && relativeZ < height;
         }
     }
@@ -101,19 +109,12 @@ public class MultiZoneCityGenerator : MonoBehaviour
             {
                 foreach (Transform child in zone.originPoint)
                 {
-                    // 注意：这里直接Destroy可能会有延迟，如果需要立即清理可能要用DestroyImmediate，
-                    // 但运行时一般建议用Destroy。为了防止ResourceManager里的数据残留，
-                    // 最好确保BuildingEffect的OnDestroy能正确处理反注册。
                     Destroy(child.gameObject);
                 }
             }
         }
 
-        // 3. 强制 ResourceManager 清理数据（可选，视你的架构而定）
-        // 如果 BuildingEffect 的 OnDestroy 已经处理了 Unregister，这里可能不需要手动调用。
-        // 但为了保险，可以重置 ResourceManager 的部分计数。
-
-        // 4. 重置内部计数器
+        // 3. 重置内部计数器
         _currentCo2 = 0f;
         _currentCost = 0f;
         _currentEnergy = 0f;
@@ -125,7 +126,39 @@ public class MultiZoneCityGenerator : MonoBehaviour
         StartCoroutine(GenerateZonesSequence());
     }
 
-    // --- API ---
+    // --- API for PlacementSystem ---
+
+    /// <summary>
+    /// 检查该世界坐标是否在某个 Zone 内，且该 Zone 目前是空的
+    /// </summary>
+    public bool IsZoneValidAndEmpty(Vector3 worldPos)
+    {
+        GenerationZone zone = GetZoneAtPosition(worldPos);
+
+        // 1. 如果不在任何 Zone 里，不允许建造
+        if (zone == null) return false;
+
+        // 2. 如果 Zone 已经被占用了，不允许建造（必须先拆除）
+        if (zone.isOccupied) return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// 更新某个位置所在 Zone 的占用状态
+    /// </summary>
+    public void SetZoneOccupiedStatus(Vector3 worldPos, bool occupied)
+    {
+        GenerationZone zone = GetZoneAtPosition(worldPos);
+        if (zone != null)
+        {
+            zone.isOccupied = occupied;
+            Debug.Log($"[Generator] Zone '{zone.zoneName}' status updated: Occupied = {occupied}");
+        }
+    }
+
+    // --- Internal Helpers ---
+
     public bool IsZoneAvailableForBuilding(Vector3 worldPos)
     {
         GenerationZone zone = GetZoneAtPosition(worldPos);
@@ -164,8 +197,10 @@ public class MultiZoneCityGenerator : MonoBehaviour
             Gizmos.DrawCube(center, new Vector3(realWidth, 0.1f, realHeight));
             Gizmos.color = Color.white;
             Gizmos.DrawWireCube(center, size);
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(center, 0.5f);
+
+#if UNITY_EDITOR
+            UnityEditor.Handles.Label(center + Vector3.up * 2, $"{zone.zoneName}\n{(zone.isOccupied ? "Occupied" : "Empty")}");
+#endif
         }
     }
 

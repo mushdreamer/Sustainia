@@ -96,6 +96,14 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         public void InvokeBuildingPlaced(Placeable data)
         {
+            // --- 新增逻辑：放置成功后，通知生成器锁定该区域 ---
+            if (_stateHandler is PlacementState && MultiZoneCityGenerator.Instance != null)
+            {
+                var mousePosition = _inputManager.GetSelectedMapPosition();
+                MultiZoneCityGenerator.Instance.SetZoneOccupiedStatus(mousePosition, true);
+            }
+            // ------------------------------------------------
+
             OnBuildingPlaced?.Invoke(data);
         }
 
@@ -142,6 +150,15 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public void Remove(PlacedObject placedObject)
         {
             var gridType = placedObject.placeable.GridType;
+
+            // --- 新增逻辑：在移除前，获取位置并通知生成器释放区域 ---
+            Vector3 worldPos = placedObject.transform.position;
+            if (MultiZoneCityGenerator.Instance != null)
+            {
+                MultiZoneCityGenerator.Instance.SetZoneOccupiedStatus(worldPos, false);
+            }
+            // ----------------------------------------------------
+
             StopState();
             _stateHandler = new RemoveState(_grid, previewSystem, _gridDataMap[gridType], placementHandler);
             _stateHandler.OnAction(placedObject.data.gridPosition);
@@ -183,6 +200,22 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             if (InputManager.IsPointerOverUIObject()) return;
             var mousePosition = _inputManager.GetSelectedMapPosition();
             var gridPosition = _grid.WorldToCell(mousePosition);
+
+            // --- 核心修改：如果是放置模式，强制检查生成器区域 ---
+            if (_stateHandler is PlacementState)
+            {
+                if (MultiZoneCityGenerator.Instance != null)
+                {
+                    // 检查两个条件：1. 是否在 Zone 内； 2. 该 Zone 是否已被占用
+                    if (!MultiZoneCityGenerator.Instance.IsZoneValidAndEmpty(mousePosition))
+                    {
+                        Debug.Log("这里不能建造：要么不在生成区域内，要么该区域已经有建筑了。");
+                        return; // 直接返回，不执行放置逻辑
+                    }
+                }
+            }
+            // ------------------------------------------------
+
             _stateHandler.OnAction(gridPosition);
             if (_stopStateAfterAction) StopState();
         }
