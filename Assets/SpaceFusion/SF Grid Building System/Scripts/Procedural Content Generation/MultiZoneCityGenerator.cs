@@ -6,6 +6,10 @@ using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
 using System.IO;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 // 定义别名避免冲突
 using CoreBuildingType = SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType;
 
@@ -23,13 +27,17 @@ public class MultiZoneCityGenerator : MonoBehaviour
         [Tooltip("区域高度（以格子数为单位）")]
         public int height = 5;
 
+        [Header("Visual Adjustment")]
+        [Tooltip("【编辑器实时调节】针对该区域的高度微调。拖动此值，Scene窗口中的圆环会实时变化。")]
+        public float visualHeightOffset = 0.0f;
+
         public bool isOccupied = false;
 
-        // --- 视觉引用 ---
-        [HideInInspector] public LineRenderer groundOutline; // 地面线框
-        [HideInInspector] public TextMesh statusText;        // 头顶文字
-        [HideInInspector] public Transform arrowObj;         // 跳动箭头
-        [HideInInspector] public Material instanceLineMat;   // 线条材质实例
+        // --- 视觉引用 (Runtime Only) ---
+        [HideInInspector] public LineRenderer groundOutline;
+        [HideInInspector] public TextMesh statusText;
+        [HideInInspector] public Transform arrowObj;
+        [HideInInspector] public Material instanceLineMat;
 
         public bool Contains(Vector3 worldPos, float cellSize)
         {
@@ -61,18 +69,26 @@ public class MultiZoneCityGenerator : MonoBehaviour
     public float weightCost = 1.0f;
     public float weightEnergy = 1.5f;
 
-    [Header("Visual Feedback (Holographic UI)")]
-    [Tooltip("空闲区域颜色（建议亮绿色）")]
+    [Header("Visual Feedback (Holographic Ring)")]
+    [Tooltip("空闲区域颜色")]
     public Color validColor = Color.green;
-    [Tooltip("占用区域颜色（建议亮橙色）")]
+    [Tooltip("占用区域颜色")]
     public Color occupiedColor = new Color(1f, 0.6f, 0f); // Orange
 
-    [Tooltip("线框宽度")]
-    public float lineWidth = 0.5f;
-    [Tooltip("文字和箭头的高度")]
-    public float uiHeight = 12.0f;
+    [Tooltip("圆环线条宽度 (0.05 非常细，像线框)")]
+    public float lineWidth = 0.05f; // 【修改】默认变得非常细
+
+    [Tooltip("圆环距离地面的高度偏移")]
+    public float lineYOffset = 0.1f;
+
+    [Tooltip("UI的基础高度")]
+    public float baseUiHeight = 12.0f;
+
     [Tooltip("动画速度")]
     public float animSpeed = 2.0f;
+
+    [Tooltip("圆环的圆滑程度 (点数越多越圆)")]
+    public int circleSegments = 128; // 【修改】增加段数，让圆更圆
 
     private float _currentCo2 = 0f;
     private float _currentCost = 0f;
@@ -92,9 +108,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
     IEnumerator Start()
     {
-        // 1. 初始化区域视觉效果
         InitZoneVisuals();
-
         yield return null;
 
         if (PlacementSystem.Instance == null)
@@ -103,11 +117,8 @@ public class MultiZoneCityGenerator : MonoBehaviour
             yield break;
         }
 
-        // 初始化 CSV
         _csvFilePath = Path.Combine(Application.dataPath, $"TrainingData_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
         InitCSV();
-
-        // 开始默认的生成流程
         StartCoroutine(GenerateZonesSequence());
     }
 
@@ -122,50 +133,88 @@ public class MultiZoneCityGenerator : MonoBehaviour
     {
         if (zones == null) return;
 
-        // 动画参数
-        float bounceY = Mathf.Sin(Time.time * animSpeed) * 1.5f; // 上下跳动幅度
-        float rotateAngle = Time.time * 90f; // 旋转速度
-
-        // 颜色呼吸 (在 0.5 到 1.0 之间波动，保持高亮)
+        float bounceY = Mathf.Sin(Time.time * animSpeed) * 1.5f;
+        float rotateAngle = Time.time * 90f;
         float emissionMult = 0.8f + Mathf.PingPong(Time.time, 0.4f);
 
         foreach (var zone in zones)
         {
-            // 确定当前目标颜色
             Color targetColor = zone.isOccupied ? occupiedColor : validColor;
+            float finalHeight = baseUiHeight + zone.visualHeightOffset;
 
-            // 1. 箭头动画：旋转 + 跳动
+            // 1. 箭头动画
             if (zone.arrowObj != null)
             {
-                // 箭头始终保持在中心点上方一定高度 + 跳动偏移
                 Vector3 center = GetZoneCenter(zone);
-                zone.arrowObj.position = center + Vector3.up * (uiHeight + bounceY);
-                zone.arrowObj.rotation = Quaternion.Euler(0, rotateAngle, 180); // 180度翻转让圆锥尖端朝下
+                zone.arrowObj.position = center + Vector3.up * (finalHeight + bounceY);
+                zone.arrowObj.rotation = Quaternion.Euler(0, rotateAngle, 180);
 
-                // 更新箭头颜色
                 var renderers = zone.arrowObj.GetComponentsInChildren<Renderer>();
                 foreach (var r in renderers) r.material.color = targetColor;
             }
 
-            // 2. 文字朝向摄像机
+            // 2. 文字位置
             if (zone.statusText != null)
             {
                 if (Camera.main != null)
                 {
-                    // 让文字始终正对摄像机
                     zone.statusText.transform.rotation = Quaternion.LookRotation(zone.statusText.transform.position - Camera.main.transform.position);
                 }
+
+                Vector3 center = GetZoneCenter(zone);
+                zone.statusText.transform.position = center + Vector3.up * (finalHeight - 2.5f);
+
                 zone.statusText.color = targetColor;
                 zone.statusText.text = zone.isOccupied ? "EDITABLE\nBUILDING" : "OPEN\nSLOT";
             }
 
-            // 3. 线框颜色更新
+            // 3. 线框颜色
             if (zone.instanceLineMat != null)
             {
-                // 使用 SetColor 确保自发光
                 zone.instanceLineMat.color = targetColor;
                 zone.instanceLineMat.SetColor("_EmissionColor", targetColor * emissionMult);
+
+                // 实时更新圆环
+                UpdateCirclePositions(zone);
             }
+        }
+    }
+
+    // --- 画细线圈 ---
+    private void UpdateCirclePositions(GenerationZone zone)
+    {
+        if (zone.groundOutline == null) return;
+
+        // 实时更新宽度（如果你在Inspector调了）
+        zone.groundOutline.startWidth = lineWidth;
+        zone.groundOutline.endWidth = lineWidth;
+
+        float realWidth = zone.width * cellSize;
+        float realHeight = zone.height * cellSize;
+
+        // 半径取宽高的各一半
+        float radiusX = realWidth * 0.5f;
+        float radiusZ = realHeight * 0.5f;
+
+        // 中心点（相对于Zone Origin的局部坐标）
+        float centerX = realWidth * 0.5f;
+        float centerZ = realHeight * 0.5f;
+
+        float y = lineYOffset;
+        int steps = circleSegments;
+
+        zone.groundOutline.positionCount = steps + 1;
+
+        for (int i = 0; i <= steps; i++)
+        {
+            // 计算角度 (0 到 2PI)
+            float angle = (float)i / steps * Mathf.PI * 2f;
+
+            // 椭圆公式
+            float x = centerX + Mathf.Cos(angle) * radiusX;
+            float z = centerZ + Mathf.Sin(angle) * radiusZ;
+
+            zone.groundOutline.SetPosition(i, new Vector3(x, y, z));
         }
     }
 
@@ -175,49 +224,46 @@ public class MultiZoneCityGenerator : MonoBehaviour
         {
             if (zone.originPoint == null) continue;
 
-            // 清理旧物体
             if (zone.groundOutline != null) Destroy(zone.groundOutline.gameObject);
             if (zone.statusText != null) Destroy(zone.statusText.gameObject);
             if (zone.arrowObj != null) Destroy(zone.arrowObj.gameObject);
 
-            // 计算区域中心和尺寸
-            float realWidth = zone.width * cellSize;
-            float realHeight = zone.height * cellSize;
             Vector3 centerPos = GetZoneCenter(zone);
 
-            // 创建容器
             GameObject container = new GameObject($"{zone.zoneName}_Visuals");
             container.transform.SetParent(this.transform);
 
-            // --- A. 创建地面线框 (LineRenderer) ---
-            GameObject lineObj = new GameObject("Outline");
+            // A. 圆环 (LineRenderer)
+            GameObject lineObj = new GameObject("RingOutline");
             lineObj.transform.SetParent(container.transform);
-            lineObj.transform.position = zone.originPoint.position; // 局部坐标系原点
+            lineObj.transform.position = zone.originPoint.position;
 
             LineRenderer lr = lineObj.AddComponent<LineRenderer>();
-            lr.useWorldSpace = false; // 跟随物体移动
-            lr.loop = true; // 闭环
-            lr.positionCount = 4;
+            lr.useWorldSpace = false;
+            lr.loop = true;
+
+            // 使用 Sprite/Default 材质，这对于画细线是最干净的
+            lr.material = new Material(Shader.Find("Sprites/Default"));
             lr.startWidth = lineWidth;
             lr.endWidth = lineWidth;
-            lr.material = new Material(Shader.Find("Sprites/Default")); // 使用Sprite Shader，无视光照，永远高亮
+
+            // 【关键修改】关闭阴影，让它看起来像纯粹的UI
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+
             zone.instanceLineMat = lr.material;
             zone.groundOutline = lr;
 
-            // 设置四个角的位置 (稍微抬高 y=0.5 防止穿模)
-            float yOffset = 0.5f;
-            lr.SetPosition(0, new Vector3(0, yOffset, 0));
-            lr.SetPosition(1, new Vector3(realWidth, yOffset, 0));
-            lr.SetPosition(2, new Vector3(realWidth, yOffset, realHeight));
-            lr.SetPosition(3, new Vector3(0, yOffset, realHeight));
+            // 初始化圆环形状
+            UpdateCirclePositions(zone);
 
-            // --- B. 创建浮动文字 (TextMesh) ---
+            // B. 文字
             GameObject textObj = new GameObject("StatusLabel");
             textObj.transform.SetParent(container.transform);
-            textObj.transform.position = centerPos + Vector3.up * (uiHeight - 2.0f); // 比箭头低一点
+            textObj.transform.position = centerPos;
 
             TextMesh tm = textObj.AddComponent<TextMesh>();
-            tm.text = "Initializing...";
+            tm.text = "Init...";
             tm.anchor = TextAnchor.MiddleCenter;
             tm.alignment = TextAlignment.Center;
             tm.characterSize = 0.5f;
@@ -225,27 +271,15 @@ public class MultiZoneCityGenerator : MonoBehaviour
             tm.fontStyle = FontStyle.Bold;
             zone.statusText = tm;
 
-            // --- C. 创建跳动箭头 (Cone Primitive) ---
-            // 既然没有美术资源，我们用 Unity 的 Cylinder 捏一个简单的形状
-            GameObject arrow = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            arrow.name = "ArrowIndicator";
-            arrow.transform.SetParent(container.transform);
-            Destroy(arrow.GetComponent<Collider>()); // 移除碰撞
-
-            // 把它捏成尖的 (圆锥体效果不好模拟，直接用细长的圆柱或者倒金字塔)
-            // 这里我们用一个简单的方块旋转 45 度，看起来像菱形水晶，这很常见
+            // C. 箭头
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            marker.name = "ArrowIndicator";
             Destroy(marker.GetComponent<Collider>());
             marker.transform.SetParent(container.transform);
             marker.transform.localScale = new Vector3(2f, 2f, 2f);
             zone.arrowObj = marker.transform;
-
-            // 销毁临时的 arrow，改用 marker
-            Destroy(arrow);
-
-            // 给 marker 设置无光照材质
-            Renderer markerRend = marker.GetComponent<Renderer>();
-            markerRend.material = new Material(Shader.Find("Sprites/Default")); // 同样使用高亮材质
+            marker.GetComponent<Renderer>().material = new Material(Shader.Find("Sprites/Default"));
+            marker.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
     }
 
@@ -256,9 +290,55 @@ public class MultiZoneCityGenerator : MonoBehaviour
         return zone.originPoint.position + new Vector3(realWidth / 2f, 0, realHeight / 2f);
     }
 
+    // -------------------------------------------------------------------
+    // EDITOR VISUALIZATION (Scene窗口可视化)
+    // -------------------------------------------------------------------
+    private void OnDrawGizmos()
+    {
+        if (zones == null) return;
+
+        foreach (var zone in zones)
+        {
+            if (zone.originPoint == null) continue;
+
+            float realWidth = zone.width * cellSize;
+            float realHeight = zone.height * cellSize;
+            Vector3 center = zone.originPoint.position + new Vector3(realWidth / 2, 0, realHeight / 2);
+
+            // 半径
+            float radiusX = realWidth * 0.5f;
+            float radiusZ = realHeight * 0.5f;
+
+            // 1. 画地面圆环 (在编辑器里看个大概)
+#if UNITY_EDITOR
+            UnityEditor.Handles.color = zone.isOccupied ? occupiedColor : validColor;
+            Vector3 discCenter = center;
+            discCenter.y = zone.originPoint.position.y + lineYOffset;
+
+            // 画圆 (如果长宽不同，Unity Handles只支持圆，这里取平均值示意)
+            float avgRadius = (radiusX + radiusZ) * 0.5f;
+            UnityEditor.Handles.DrawWireDisc(discCenter, Vector3.up, avgRadius);
+#endif
+
+            // 2. 画 UI 高度指示器 (黄色)
+            float finalUiHeight = baseUiHeight + zone.visualHeightOffset;
+            Vector3 uiPos = center + Vector3.up * finalUiHeight;
+
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(center, uiPos);
+            Gizmos.DrawWireSphere(uiPos, 0.5f);
+
+#if UNITY_EDITOR
+            string labelInfo = $"{zone.zoneName}\nUI Height: {finalUiHeight:F1}";
+            UnityEditor.Handles.Label(uiPos + Vector3.up * 1.5f, labelInfo);
+#endif
+        }
+    }
+
+    // ----------------------
+    // 外部接口 & 逻辑
     // ----------------------
 
-    // --- 外部调用接口 ---
     public void ClearAndRestartGeneration()
     {
         StopAllCoroutines();
@@ -271,8 +351,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
                 foreach (Transform child in zone.originPoint) Destroy(child.gameObject);
             }
         }
-
-        // 重新初始化视觉效果
         InitZoneVisuals();
 
         _currentCo2 = 0f;
@@ -292,11 +370,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
         return true;
     }
 
-    // 兼容旧接口
-    public void SetZoneOccupiedState(Vector3 worldPos, bool isOccupied)
-    {
-        SetZoneOccupiedStatus(worldPos, isOccupied);
-    }
+    public void SetZoneOccupiedState(Vector3 worldPos, bool isOccupied) => SetZoneOccupiedStatus(worldPos, isOccupied);
 
     public void SetZoneOccupiedStatus(Vector3 worldPos, bool occupied)
     {
@@ -304,12 +378,9 @@ public class MultiZoneCityGenerator : MonoBehaviour
         if (zone != null)
         {
             zone.isOccupied = occupied;
-            // Visual update happens automatically in Update loop
             Debug.Log($"[Generator] Zone '{zone.zoneName}' status updated: Occupied = {occupied}");
         }
     }
-
-    // --- 内部辅助 ---
 
     public bool IsZoneAvailableForBuilding(Vector3 worldPos)
     {
@@ -326,23 +397,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
             if (zone.Contains(worldPos, cellSize)) return zone;
         }
         return null;
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (zones == null) return;
-
-        foreach (var zone in zones)
-        {
-            if (zone.originPoint == null) continue;
-            // Gizmos Draw ...
-            Gizmos.color = zone.isOccupied ? occupiedColor : validColor;
-            float realWidth = zone.width * cellSize;
-            float realHeight = zone.height * cellSize;
-            Vector3 center = zone.originPoint.position + new Vector3(realWidth / 2, 0, realHeight / 2);
-            Vector3 size = new Vector3(realWidth, 1f, realHeight);
-            Gizmos.DrawWireCube(center, size);
-        }
     }
 
     void InitCSV()
@@ -374,7 +428,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
         while (availableIndices.Count > 0 && totalAttempts < maxRetries)
         {
             totalAttempts++;
-
             int randomIndex = Random.Range(0, availableIndices.Count);
             int selectedZoneIndex = availableIndices[randomIndex];
             GenerationZone zoneToGenerate = zones[selectedZoneIndex];
@@ -387,34 +440,27 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
             int buildTypeIndex = Random.Range(0, buildingOptions.Count);
             BuildingType candidateType = buildingOptions[buildTypeIndex];
-
             BuildingStats stats = GetBuildingStats(candidateType.prefab);
 
             float nextCo2 = _currentCo2 + stats.co2;
             float nextCost = _currentCost + stats.cost;
             float nextEnergy = _currentEnergy + stats.energy;
-
             float nextWeightedError = CalculateWeightedError(nextCo2, nextCost, nextEnergy);
 
             if (nextWeightedError < currentWeightedError)
             {
                 GenerateOneZone(zoneToGenerate, candidateType);
                 zoneToGenerate.isOccupied = true;
-
                 _currentCo2 = nextCo2;
                 _currentCost = nextCost;
                 _currentEnergy = nextEnergy;
                 _stepCount++;
-
                 currentWeightedError = nextWeightedError;
                 WriteCSV(_stepCount, zoneToGenerate.zoneName, candidateType.name, _currentCo2, _currentCost, _currentEnergy, _stepCount, currentWeightedError);
-
                 availableIndices.RemoveAt(randomIndex);
             }
-
             yield return new WaitForSeconds(0.05f);
         }
-
         Debug.Log("生成序列完成。");
     }
 
@@ -445,7 +491,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
             case CoreBuildingType.PowerPlant: stats.co2 = effect.powerPlantCo2Change; break;
             case CoreBuildingType.Co2Storage: stats.co2 = effect.storageCo2Change; break;
         }
-
         switch (effect.type)
         {
             case CoreBuildingType.PowerPlant: stats.cost = 200f; break;
@@ -455,7 +500,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
             case CoreBuildingType.House: stats.cost = 50f; break;
             case CoreBuildingType.Farm: stats.cost = 30f; break;
         }
-
         switch (effect.type)
         {
             case CoreBuildingType.PowerPlant: stats.energy = 80f; break;
@@ -465,22 +509,17 @@ public class MultiZoneCityGenerator : MonoBehaviour
             case CoreBuildingType.Bank: stats.energy = -5f; break;
             case CoreBuildingType.Farm: stats.energy = -2f; break;
         }
-
         return stats;
     }
 
     void GenerateOneZone(GenerationZone zone, BuildingType specificBuildingType)
     {
         if (zone.originPoint == null) return;
-
         float halfWidth = zone.width * cellSize * 0.5f;
         float halfHeight = zone.height * cellSize * 0.5f;
-
         Vector3 centerWorldPos = zone.originPoint.position + new Vector3(halfWidth, 0, halfHeight);
-
         float snappedX = Mathf.Floor(centerWorldPos.x / cellSize) * cellSize + cellSize * 0.5f;
         float snappedZ = Mathf.Floor(centerWorldPos.z / cellSize) * cellSize + cellSize * 0.5f;
-
         Vector3 spawnPos = new Vector3(snappedX, zone.originPoint.position.y + buildingYOffset, snappedZ);
 
         if (specificBuildingType.prefab != null && specificBuildingType.data != null)
@@ -505,7 +544,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
             if (PlacementSystem.Instance != null)
                 PlacementSystem.Instance.RegisterExternalObject(building, placeableData, gridPos);
         }
-
         building.SetActive(true);
     }
 }

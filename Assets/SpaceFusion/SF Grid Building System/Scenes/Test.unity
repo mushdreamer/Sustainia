@@ -6688,132 +6688,264 @@ MonoBehaviour:
   weightCo2: 1
   weightCost: 1
   weightEnergy: 1
+  validColor: {r: 0, g: 1, b: 0, a: 1}
+  occupiedColor: {r: 1, g: 0.6, b: 0, a: 1}
+  lineWidth: 0.05
+  lineYOffset: 0.35
+  baseUiHeight: 16
+  animSpeed: 2
+  circleSegments: 64
   zones:
   - zoneName: 
     originPoint: {fileID: 597993826}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 97609124}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 1113102202}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 331275198}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 1743267688}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 1060047926}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 275863816}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 684343371}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 2003936942}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 2120787671}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 1379751900}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 1514185862}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 2127959733}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 558073357}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 2084004414}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 148006651}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 439922255}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 242903670}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 1785977930}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 593900481}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 1493810168}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 660104885}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 1558357971}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 1453688337}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
   - zoneName: 
     originPoint: {fileID: 312317519}
     width: 2
     height: 2
+    visualHeightOffset: 0
     isOccupied: 0
+    groundOutline: {fileID: 0}
+    statusText: {fileID: 0}
+    arrowObj: {fileID: 0}
+    instanceLineMat: {fileID: 0}
 --- !u!1001 &650360011
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7773,7 +7905,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &731120586
 Transform:
   m_ObjectHideFlags: 0
@@ -21869,6 +22001,10 @@ PrefabInstance:
     - target: {fileID: 4558609043293530277, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_Layer
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4558609043293530277, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5821464609556470392, guid: a7392c1ac5f45d146af7ad49cd335e36, type: 3}
       propertyPath: m_Enabled
