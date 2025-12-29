@@ -25,15 +25,15 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public float referenceHeight = 20f;
         public float maxSpeedMultiplier = 4f;
 
-        [Header("Limits (可调节的限制)")]
+        [Header("Limits (角度与范围限制)")]
         [Tooltip("最小高度 (防止钻地)")]
         public float minHeight = 2.0f;
         [Tooltip("最大高度")]
         public float maxHeight = 500.0f;
 
-        [Tooltip("最小俯仰角 (防止平视穿模)")]
+        [Tooltip("最小俯仰角 (10度=平视，90度=垂直俯视)")]
         public float minPitchAngle = 10f;
-        [Tooltip("最大俯仰角 (防止甚至翻转，建议不超过89)")]
+        [Tooltip("最大俯仰角 (建议85度，不要超过90度)")]
         public float maxPitchAngle = 85f;
 
         [Tooltip("是否启用 X/Z 轴的地图边界限制")]
@@ -41,9 +41,14 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         [Tooltip("地图边界范围 (MinX, MinZ, MaxX, MaxZ)")]
         public Vector4 mapBounds = new Vector4(-500, -500, 500, 500);
 
-        // 内部变量
+        // --- 核心修改：使用 Euler 角度来控制旋转，而不是 Quaternion 累乘 ---
+        private float _targetYaw;   // 水平旋转 (Y轴)
+        private float _targetPitch; // 俯仰旋转 (X轴)
+        // ----------------------------------------------------------------
+
         private Vector3 _targetPosition;
-        private Quaternion _targetRotation;
+        private Quaternion _targetRotation; // 这个现在由 Yaw/Pitch 计算得出
+
         private Vector3 _groundCamOffset;
         private Camera _sceneCamera;
         private bool _startedHoldingOverUI;
@@ -56,7 +61,13 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             _sceneCamera = GetComponent<Camera>();
 
             _targetPosition = transform.position;
+
+            // --- 初始化角度 ---
+            Vector3 angles = transform.eulerAngles;
+            _targetYaw = angles.y;
+            _targetPitch = angles.x;
             _targetRotation = transform.rotation;
+            // ----------------
 
             var groundPos = GetWorldPosAtViewportPoint(0.5f, 0.5f);
             _groundCamOffset = _sceneCamera.transform.position - groundPos;
@@ -105,21 +116,20 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             float v = Input.GetAxis("Vertical");
             float rotate = 0f;
 
-            // --- 修复：Q键设为负值(向左转)，E键设为正值(向右转) ---
+            // Q/E 旋转现在直接修改 Yaw 值
             if (Input.GetKey(KeyCode.Q)) rotate = -1f;
             if (Input.GetKey(KeyCode.E)) rotate = 1f;
-            // ----------------------------------------------------
 
+            // 1. 处理移动
             float speedMult = 1f;
             if (Input.GetKey(KeyCode.LeftShift)) speedMult = sprintMultiplier;
             speedMult *= GetHeightSpeedMultiplier();
 
-            Vector3 forward = transform.forward;
-            Vector3 right = transform.right;
-            forward.y = 0;
-            right.y = 0;
-            forward.Normalize();
-            right.Normalize();
+            // 计算移动方向 (基于当前的 Yaw，忽略 Pitch)
+            // 这样无论你看哪里，按W都是向前飞
+            Quaternion yawRotation = Quaternion.Euler(0, _targetYaw, 0);
+            Vector3 forward = yawRotation * Vector3.forward;
+            Vector3 right = yawRotation * Vector3.right;
 
             Vector3 moveDir = (forward * v + right * h).normalized;
 
@@ -129,11 +139,12 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                 ClampTargetPosition();
             }
 
+            // 2. 处理键盘旋转
             if (Mathf.Abs(rotate) > 0.01f)
             {
-                float angle = rotate * keyboardRotateSpeed * Time.deltaTime;
-                Quaternion yRotation = Quaternion.AngleAxis(angle, Vector3.up);
-                _targetRotation = yRotation * _targetRotation;
+                _targetYaw += rotate * keyboardRotateSpeed * Time.deltaTime;
+                // 更新目标旋转
+                UpdateTargetRotationFromEuler();
             }
         }
 
@@ -143,6 +154,17 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             transform.position = Vector3.Lerp(transform.position, _targetPosition, positionLerpTime * dt);
             transform.rotation = Quaternion.Slerp(transform.rotation, _targetRotation, rotationLerpTime * dt);
         }
+
+        // --- 核心方法：根据 Yaw 和 Pitch 重新计算 Quaternion ---
+        private void UpdateTargetRotationFromEuler()
+        {
+            // 1. 限制俯仰角 (Clamp Pitch)
+            _targetPitch = Mathf.Clamp(_targetPitch, minPitchAngle, maxPitchAngle);
+
+            // 2. 重建 Quaternion (Z轴 Roll 永远为 0)
+            _targetRotation = Quaternion.Euler(_targetPitch, _targetYaw, 0f);
+        }
+        // -----------------------------------------------------
 
         private float GetHeightSpeedMultiplier()
         {
@@ -170,8 +192,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             if (_startedHoldingOverUI) return;
 
             float adaptiveMult = GetHeightSpeedMultiplier();
-            var moveDirection = transform.right * mouseDelta.x + transform.forward * mouseDelta.y;
-            moveDirection.y = 0;
+
+            // 拖拽时也需要基于当前的 Yaw 计算方向
+            Quaternion yawRotation = Quaternion.Euler(0, _targetYaw, 0);
+            Vector3 moveDirection = yawRotation * Vector3.right * mouseDelta.x + yawRotation * Vector3.forward * mouseDelta.y;
 
             _targetPosition -= moveDirection * (_config.DragSpeed * adaptiveMult * Time.deltaTime);
             ClampTargetPosition();
@@ -181,25 +205,17 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         {
             var rotationSpeed = _config.RotationSpeed;
 
-            // Y轴旋转 (左右)
-            float yAngle = mouseDelta.x * rotationSpeed * Time.deltaTime;
-            Quaternion yRot = Quaternion.AngleAxis(yAngle, Vector3.up);
-            _targetRotation = yRot * _targetRotation;
+            // 1. 水平旋转 (修改 Yaw)
+            _targetYaw += mouseDelta.x * rotationSpeed * Time.deltaTime;
 
-            // X轴旋转 (俯仰)
-            float xAngle = -mouseDelta.y * rotationSpeed * Time.deltaTime;
-            Quaternion xRot = Quaternion.AngleAxis(xAngle, transform.right);
-            Quaternion potentialRot = xRot * _targetRotation;
+            // 2. 垂直旋转 (修改 Pitch)
+            // 注意：鼠标向上推(y>0)，视角应该抬头(Pitch变小/负)，还是低头？
+            // 通常鼠标上推视角抬头（Pitch减小），鼠标下推视角低头（Pitch增加）
+            // 如果觉得反了，把这里的 '-' 改成 '+'
+            _targetPitch -= mouseDelta.y * rotationSpeed * Time.deltaTime;
 
-            // --- 限制逻辑 ---
-            float angleX = potentialRot.eulerAngles.x;
-            if (angleX > 180) angleX -= 360;
-
-            // 使用面板上的变量进行限制
-            if (angleX > minPitchAngle && angleX < maxPitchAngle)
-            {
-                _targetRotation = potentialRot;
-            }
+            // 3. 应用并限制
+            UpdateTargetRotationFromEuler();
         }
 
         private void HandleMouseAtScreenCorner(Vector2 direction)
@@ -208,7 +224,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             if (_config.RestrictAutoMoveForPlacement && !_isInPlacementState) return;
 
             float adaptiveMult = GetHeightSpeedMultiplier();
-            Vector3 moveVec = new Vector3(direction.x, 0, direction.y);
+
+            // 屏幕边缘移动也需要基于 Yaw
+            Quaternion yawRotation = Quaternion.Euler(0, _targetYaw, 0);
+            Vector3 moveVec = yawRotation * new Vector3(direction.x, 0, direction.y);
 
             _targetPosition += moveVec * (_config.DragSpeed * adaptiveMult * Time.deltaTime);
             ClampTargetPosition();
@@ -248,7 +267,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             _targetPosition = new Vector3(x, _targetPosition.y, z);
         }
 
-        // ------------------------------
         private void PlacementStateActivated()
         {
             _isInPlacementState = true;
@@ -258,7 +276,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         {
             _isInPlacementState = false;
         }
-        // ------------------------------
 
         public void FocusOnPosition(Vector3 target, float duration)
         {
