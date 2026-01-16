@@ -90,6 +90,12 @@ public class MultiZoneCityGenerator : MonoBehaviour
     [Tooltip("圆环的圆滑程度 (点数越多越圆)")]
     public int circleSegments = 128; // 【修改】增加段数，让圆更圆
 
+    // <<< --- 新增：控制开关 ---
+    [Header("Control")]
+    [Tooltip("是否在Start时自动生成？如果使用IntroManager，请取消勾选")]
+    public bool autoStartGeneration = false;
+    // <<< ---------------------
+
     private float _currentCo2 = 0f;
     private float _currentCost = 0f;
     private float _currentEnergy = 0f;
@@ -119,8 +125,23 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
         _csvFilePath = Path.Combine(Application.dataPath, $"TrainingData_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
         InitCSV();
+
+        // <<< --- 修改：只有勾选了自动开始才执行 ---
+        if (autoStartGeneration)
+        {
+            StartCoroutine(GenerateZonesSequence());
+        }
+        // <<< ------------------------------------
+    }
+
+    // <<< --- 新增：供外部调用的开始方法 ---
+    public void BeginGeneration()
+    {
+        Debug.Log("[Generator] 收到开始指令，开始生成城市...");
+        StopAllCoroutines(); //以此确保不会重复运行
         StartCoroutine(GenerateZonesSequence());
     }
+    // <<< --------------------------------
 
     private void Update()
     {
@@ -133,9 +154,13 @@ public class MultiZoneCityGenerator : MonoBehaviour
     {
         if (zones == null) return;
 
-        float bounceY = Mathf.Sin(Time.time * animSpeed) * 1.5f;
-        float rotateAngle = Time.time * 90f;
-        float emissionMult = 0.8f + Mathf.PingPong(Time.time, 0.4f);
+        // 如果Time.timeScale是0（暂停中），Time.time不会增加，动画会静止
+        // 如果你希望在暂停时动画依然播放，可以使用 Time.unscaledTime
+        float timeVar = Time.time;
+
+        float bounceY = Mathf.Sin(timeVar * animSpeed) * 1.5f;
+        float rotateAngle = timeVar * 90f;
+        float emissionMult = 0.8f + Mathf.PingPong(timeVar, 0.4f);
 
         foreach (var zone in zones)
         {
