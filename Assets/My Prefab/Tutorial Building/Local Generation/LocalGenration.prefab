@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 275141266117938938}
   - component: {fileID: 5317539875055035211}
   - component: {fileID: -8696157154977723048}
+  - component: {fileID: 4433695249196801359}
   m_Layer: 0
   m_Name: LocalGenration
   m_TagString: Untagged
@@ -106,3 +107,24 @@ MonoBehaviour:
   energyValue: 20
   storageCapacity: 100
   co2Effect: 0
+--- !u!65 &4433695249196801359
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6843844809132474225}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 14.559999, y: 9.6489105, z: 9.682468}
+  m_Center: {x: 0.00000023841858, y: 4.3909893, z: 0.00000166893}
