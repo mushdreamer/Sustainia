@@ -13562,29 +13562,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
   enableTutorial: 1
   steps:
-  - stepName: 00000
-    instructionText: 
+  - stepName: Start
+    instructionText: Let's Start!
     clearSceneBeforeStart: 1
     layoutToLoad: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
-    showIndicator: 1
+    showIndicator: 0
     indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
     startCondition: 0
-    shouldPauseGame: 1
-    requireBuilding: 1
-    allowAnyBuilding: 1
+    shouldPauseGame: 0
+    requireBuilding: 0
+    allowAnyBuilding: 0
     isTutorialBuilding: 0
     targetBuildingType: 3
     targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: Build Anything
-    instructionText: Let's start building. Select ANY building from the shop panel
-      below and place it on an empty grid.
+    instructionText: Select ANY building from the shop panel below and place it on
+      an empty grid.
     clearSceneBeforeStart: 1
     layoutToLoad: -1
     focusTarget: {fileID: 0}
