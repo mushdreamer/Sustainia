@@ -13658,10 +13658,9 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 0
-  - stepName: 'Event 1: Energy Balance'
-    instructionText: 'Observe the energy panel. Formula: Grid Input + Local Generation
-      - Demand = Storage Change[cite: 5, 50]. Currently: 60 + 20 - 40 = +40[cite:
-      5]. Surplus energy is now stored in the battery[cite: 6, 52].'
+  - stepName: Power Plant
+    instructionText: "City management begins with power. The game is now paused.
+      Look at the Power Plant\u2014it provides electricity from the main grid."
     clearSceneBeforeStart: 1
     layoutToLoad: 1
     focusTarget: {fileID: 597993825}
@@ -13678,28 +13677,9 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: E1.1 - Power Station Check
-    instructionText: First, let's look at the Power Station. It provides Local Generation.
-      Click it to see its output (+60).
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
-    focusTarget: {fileID: 597993825}
-    cameraDistance: 15
-    cameraAngle: 45
-    showIndicator: 1
-    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
-    startCondition: 0
-    shouldPauseGame: 1
-    requireBuilding: 0
-    allowAnyBuilding: 0
-    targetBuildingType: 0
-    requireRemoval: 0
-    requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 0
-    requireInput: 1
-  - stepName: E1.2 - Battery Check
-    instructionText: Now check the Grid Connection point. It imports energy from
-      the main grid (+20).
+  - stepName: Local Generation
+    instructionText: Next, notice the Local Generation facility. Small-scale renewable
+      sources also contribute to our total supply.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 97609123}
@@ -13716,11 +13696,31 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: E1.3 - Demand Check
-    instructionText: The Residential Area consumes energy. Check its Demand (-40).
+  - stepName: Residential Area
+    instructionText: Finally, the Residential Area defines how much power our citizens
+      need right now.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1113102201}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: Battery Storage
+    instructionText: The surplus energy is $+40$. Since we have more supply than
+      demand, this energy flows into the Battery Storage.
+    clearSceneBeforeStart: 0
+    layoutToLoad: -1
+    focusTarget: {fileID: 331275197}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
