@@ -11,24 +11,20 @@ public class TutorialLevelPreparer : MonoBehaviour
     {
         if (MultiZoneCityGenerator.Instance == null) return;
 
-        foreach (var zone in MultiZoneCityGenerator.Instance.zones)
-        {
-            zone.isOccupied = false;
-            foreach (Transform child in zone.originPoint)
-                if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator")
-                    Destroy(child.gameObject);
-        }
-
         if (eventIndex == 1)
         {
-            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(0, BuildingType.PowerPlant);
-            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(1, BuildingType.Co2Storage);
-            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(2, BuildingType.House);
-        }
-        else if (eventIndex == 2)
-        {
-            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(0, BuildingType.PowerPlant);
-            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(1, BuildingType.Institute);
+            // 1. 生成电网输入 (Grid Input: +60)
+            // 这里的名称必须与你 Inspector 里的 Placeable 资产名称完全一致
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(0, "PowerPlant");
+
+            // 2. 生成本地发电 (Local Generation: +20)
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(1, "LocalGenration");
+
+            // 3. 生成住宅消耗 (Demand: -40)
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(2, "House");
+
+            // 4. 生成储能电池 (Battery Storage)
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(3, "Battery");
         }
     }
 }

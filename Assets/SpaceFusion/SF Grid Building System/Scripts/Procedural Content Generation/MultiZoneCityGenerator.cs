@@ -77,6 +77,10 @@ public class MultiZoneCityGenerator : MonoBehaviour
     [Header("Zones Configuration")]
     public List<GenerationZone> zones;
 
+    [Header("Special Buildings (Tutorial Only)")]
+    [Tooltip("这些建筑不会出现在玩家建造栏，仅供教学 PCG 生成")]
+    public List<BuildingType> specialBuildingOptions;
+
     private void Awake() { if (Instance != null) Destroy(gameObject); Instance = this; }
 
     IEnumerator Start()
@@ -103,16 +107,29 @@ public class MultiZoneCityGenerator : MonoBehaviour
         return null;
     }
 
-    public void ForceSpawnBuildingInZone(int zoneIndex, CoreBuildingType type)
+    public void ForceSpawnBuildingInZone(int zoneIndex, string buildingName)
     {
-        if (zoneIndex < 0 || zoneIndex >= zones.Count) return;
-        var opt = buildingOptions.Find(b => b.data.Prefab.GetComponent<BuildingEffect>().type == type);
+        // 改用名称查找，这样可以更灵活地处理两套列表
+        var opt = buildingOptions.Find(b => b.data.name == buildingName);
+        if (opt.prefab == null)
+            opt = specialBuildingOptions.Find(b => b.data.name == buildingName);
+
         if (opt.prefab != null)
         {
             var zone = zones[zoneIndex];
             foreach (Transform child in zone.originPoint)
-                if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator") Destroy(child.gameObject);
-            GenerateOneZone(zone, opt);
+                if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator")
+                    Destroy(child.gameObject);
+
+            GameObject b = Instantiate(opt.prefab, GetZoneCenter(zone), Quaternion.identity, zone.originPoint);
+
+            // 核心修改：判断这到底是一个普通建筑还是教学建筑
+            var normalEffect = b.GetComponent<BuildingEffect>();
+            var tutorialEffect = b.GetComponent<TutorialBuildingEffect>();
+
+            if (normalEffect != null) normalEffect.ApplyEffect();
+            if (tutorialEffect != null) tutorialEffect.ApplyTutorialEffect();
+
             zone.isOccupied = true;
         }
     }
