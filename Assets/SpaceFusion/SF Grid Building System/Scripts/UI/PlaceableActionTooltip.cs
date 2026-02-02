@@ -92,46 +92,44 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
         private void Show(PlacedObject caller)
         {
             _placedObject = caller;
-            var buildingType = _placedObject.buildingEffect.type;
+
+            // --- 修复逻辑：处理可能的组件缺失 ---
+            BuildingType buildingType;
+
+            // 检查是否是普通建筑
+            if (_placedObject.buildingEffect != null)
+            {
+                buildingType = _placedObject.buildingEffect.type;
+            }
+            else
+            {
+                // 如果是教学建筑（没有 BuildingEffect），我们给它一个默认行为
+                // 或者你可以根据 TutorialBuildingEffect 的类型来决定显示什么
+                Debug.Log("[Tooltip] 检测到教学建筑，使用通用 UI 逻辑。");
+
+                // 这里暂时设为 House 类型以显示基础的 移动/拆除 按钮
+                buildingType = BuildingType.House;
+            }
 
             moveButton.gameObject.SetActive(true);
             removeButton.gameObject.SetActive(true);
 
-            // <<< --- 
-            // --- 3. 修改: 这里的逻辑需要更新
-            // ---
-
-            // 旧逻辑:
-            // researchButton.gameObject.SetActive(buildingType == BuildingType.Institute);
-
-            // 新逻辑:
+            // 按钮显示逻辑
             if (buildingType == BuildingType.Institute)
             {
-                // 如果是大学，显示 "科研" 按钮，隐藏 "升级" 按钮
                 researchButton.gameObject.SetActive(true);
-                if (upgradeButton != null)
-                {
-                    upgradeButton.gameObject.SetActive(false);
-                }
+                if (upgradeButton != null) upgradeButton.gameObject.SetActive(false);
             }
             else
             {
-                // 如果是其他建筑 (房子, 农场等)，隐藏 "科研" 按钮，显示 "升级" 按钮
                 researchButton.gameObject.SetActive(false);
-                if (upgradeButton != null)
-                {
-                    upgradeButton.gameObject.SetActive(true);
-                }
+                if (upgradeButton != null) upgradeButton.gameObject.SetActive(true);
             }
-            // <<< --- 
-            // --- 修改结束
-            // --- 
 
             var screenPosition = _targetCamera.WorldToScreenPoint(caller.transform.position);
             tooltipUI.gameObject.SetActive(true);
             tooltipUI.transform.position = RecalculatePositionWithinBounds(screenPosition);
             blockerUI.SetActive(true);
-
         }
 
         private Vector3 RecalculatePositionWithinBounds(Vector3 screenPosition)
