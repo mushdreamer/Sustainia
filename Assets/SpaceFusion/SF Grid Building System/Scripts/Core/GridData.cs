@@ -87,6 +87,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core {
                 instantiatedObjects.Remove(pos);
             }
         }
+        public void ClearAll()
+        {
+            instantiatedObjects.Clear();
+        }
     }
 
 

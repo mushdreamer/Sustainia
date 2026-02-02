@@ -195,6 +195,16 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             OnPlacementStateEnd?.Invoke();
         }
 
+        public void ResetAllGridData()
+        {
+            foreach (var gridData in _gridDataMap.Values)
+            {
+                // 这里的清除需要我们在 GridData 类里加个方法，或者直接重新 new
+                // 考虑到性能和引用，直接清空字典最安全
+                gridData.ClearAll();
+            }
+        }
+
         private void StateAction()
         {
             if (InputManager.IsPointerOverUIObject()) return;

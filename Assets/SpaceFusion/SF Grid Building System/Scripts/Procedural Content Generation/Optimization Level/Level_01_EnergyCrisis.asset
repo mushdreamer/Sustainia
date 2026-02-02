@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables.OptimizationLevelData
   levelName: 
   levelBrief: 
-  genTargetCo2: 50
+  genTargetCo2: 100
   genTargetCost: 1000
-  genTargetEnergy: 50
+  genTargetEnergy: -100
   goalCo2: 50
   goalCost: 1200
   goalEnergy: 100
