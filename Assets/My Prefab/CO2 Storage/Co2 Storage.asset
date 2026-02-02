@@ -14,10 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables.Placeable
   <Size>k__BackingField: {x: 1.770269, y: 0.851442}
   <Prefab>k__BackingField: {fileID: 4417588646843519417, guid: c62664927b31bb8418c2793f6366c3d1, type: 3}
-  <Icon>k__BackingField: {fileID: 21300000, guid: 5b694c0105118a04484c16e0533cc3a9, type: 3}
+  <Icon>k__BackingField: {fileID: 0}
   <Cost>k__BackingField: 100
   Health: 100
-  <IsUnique>k__BackingField: 1
+  <BaseEnergyFlow>k__BackingField: 0
+  <CO2Effect>k__BackingField: 0
+  <StorageCapacity>k__BackingField: 0
   <GridType>k__BackingField: 0
   <ObjectGroupInfo>k__BackingField: 0
   <DynamicSize>k__BackingField: 0

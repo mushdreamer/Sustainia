@@ -2,9 +2,9 @@
 using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
 using SpaceFusion.SF_Grid_Building_System.Scripts.SaveSystem;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
-using SpaceFusion.SF_Grid_Building_System.Scripts.UI; // 引入 UI 命名空间 (Tooltip用)
-using SpaceFusion.SF_Grid_Building_System.Scripts.Core; // 引入 BuildingType (BuildingEffect用)
-using System.Text; // StringBuilder
+using SpaceFusion.SF_Grid_Building_System.Scripts.UI;
+using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
+using System.Text;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -63,7 +63,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             data.guid = Guid.NewGuid().ToString();
         }
 
-        // --- 修复：添加此方法以支持存档加载 ---
         public void InitializeLoadedData(Placeable scriptable, PlaceableObjectData podata)
         {
             placeable = scriptable;
@@ -104,7 +103,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             holdComplete?.Invoke(this);
         }
 
-        // --- 鼠标悬停显示信息逻辑 (Turn 13/14 Added) ---
         private void OnMouseEnter()
         {
             if (InputManager.IsPointerOverUIObject() || PlacementSystem.Instance == null) return;
@@ -122,52 +120,71 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         private string GetBuildingStats()
         {
-            if (buildingEffect == null) return "No Effect";
-
             StringBuilder sb = new StringBuilder();
-            BuildingType type = buildingEffect.type;
 
-            float energy = buildingEffect.GetCurrentElectricity();
-            if (Mathf.Abs(energy) > 0.01f)
+            // 1. 优先处理普通建筑逻辑
+            if (buildingEffect != null)
             {
-                // 注意：这里负数是产电，正数是耗电
-                bool isProduction = energy < 0;
-                string color = isProduction ? "<color=green>" : "<color=red>";
-                string label = isProduction ? "Energy Production" : "Energy Consumption";
-                sb.AppendLine($"{color}{label}: {Mathf.Abs(energy):F1}</color>");
+                BuildingType type = buildingEffect.type;
+
+                float energy = buildingEffect.GetCurrentElectricity();
+                if (Mathf.Abs(energy) > 0.01f)
+                {
+                    bool isProduction = energy < 0;
+                    string color = isProduction ? "<color=green>" : "<color=red>";
+                    string label = isProduction ? "Energy Production" : "Energy Consumption";
+                    sb.AppendLine($"{color}{label}: {Mathf.Abs(energy):F1}</color>");
+                }
+
+                float co2 = buildingEffect.GetCurrentCo2Change();
+                if (Mathf.Abs(co2) > 0.01f)
+                {
+                    bool isEmission = co2 > 0;
+                    string color = isEmission ? "<color=red>" : "<color=green>";
+                    string label = isEmission ? "CO2 Emission" : "CO2 Absorption";
+                    sb.AppendLine($"{color}{label}: {Mathf.Abs(co2):F1}</color>");
+                }
+
+                if (type == BuildingType.Farm)
+                {
+                    float food = buildingEffect.GetCurrentFood();
+                    sb.AppendLine($"<color=green>Food Production: {food:F1}</color>");
+                }
+                if (type == BuildingType.House)
+                {
+                    sb.AppendLine($"Population: {buildingEffect.initialPopulation} / {buildingEffect.populationCapacity}");
+                }
+                if (type == BuildingType.Institute)
+                {
+                    sb.AppendLine($"<color=#00FFFF>Research: Active</color>");
+                }
+                if (type == BuildingType.Bank)
+                {
+                    sb.AppendLine($"<color=#FFD700>Economy: Trade Center</color>");
+                }
+                if (type == BuildingType.Co2Storage)
+                {
+                    sb.AppendLine($"<color=green>Status: Capturing</color>");
+                }
             }
 
-            float co2 = buildingEffect.GetCurrentCo2Change();
-            if (Mathf.Abs(co2) > 0.01f)
+            // 2. 新增：处理教学建筑逻辑 (Battery & LocalGeneration)
+            var tutorialEffect = GetComponent<TutorialBuildingEffect>();
+            if (tutorialEffect != null)
             {
-                bool isEmission = co2 > 0;
-                string color = isEmission ? "<color=red>" : "<color=green>";
-                string label = isEmission ? "CO2 Emission" : "CO2 Absorption";
-                sb.AppendLine($"{color}{label}: {Mathf.Abs(co2):F1}</color>");
+                if (tutorialEffect.tutorialType == TutorialBuildingType.LocalGen)
+                {
+                    sb.AppendLine($"<color=green>Local Gen: +{tutorialEffect.energyValue:F1}</color>");
+                    if (tutorialEffect.co2Effect > 0.01f)
+                        sb.AppendLine($"<color=red>CO2: +{tutorialEffect.co2Effect:F1}</color>");
+                }
+                else if (tutorialEffect.tutorialType == TutorialBuildingType.Battery)
+                {
+                    sb.AppendLine($"<color=#FFD700>Storage Cap: {tutorialEffect.storageCapacity:F0} kWh</color>");
+                }
             }
 
-            if (type == BuildingType.Farm)
-            {
-                float food = buildingEffect.GetCurrentFood();
-                sb.AppendLine($"<color=green>Food Production: {food:F1}</color>");
-            }
-            if (type == BuildingType.House)
-            {
-                sb.AppendLine($"Population: {buildingEffect.initialPopulation} / {buildingEffect.populationCapacity}");
-            }
-            if (type == BuildingType.Institute)
-            {
-                sb.AppendLine($"<color=#00FFFF>Research: Active</color>");
-            }
-            if (type == BuildingType.Bank)
-            {
-                sb.AppendLine($"<color=#FFD700>Economy: Trade Center</color>");
-            }
-            if (type == BuildingType.Co2Storage)
-            {
-                sb.AppendLine($"<color=green>Status: Capturing</color>");
-            }
-
+            if (sb.Length == 0) return "No Effect";
             return sb.ToString();
         }
 
