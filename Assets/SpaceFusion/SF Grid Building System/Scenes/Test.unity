@@ -13659,8 +13659,8 @@ MonoBehaviour:
       - Demand = Storage Change[cite: 5, 50]. Currently: 60 + 20 - 40 = +40[cite:
       5]. Surplus energy is now stored in the battery[cite: 6, 52].'
     focusTarget: {fileID: 597993825}
-    cameraDistance: 20
-    cameraAngle: 60
+    cameraDistance: 15
+    cameraAngle: 45
     showIndicator: 1
     indicatorColor: {r: 1, g: 0, b: 0, a: 1}
     startCondition: 0
@@ -13676,8 +13676,8 @@ MonoBehaviour:
     instructionText: First, let's look at the Power Station. It provides Local Generation.
       Click it to see its output (+60).
     focusTarget: {fileID: 597993825}
-    cameraDistance: 10
-    cameraAngle: 35
+    cameraDistance: 15
+    cameraAngle: 45
     showIndicator: 1
     indicatorColor: {r: 1, g: 0, b: 0, a: 1}
     startCondition: 0
@@ -13693,7 +13693,7 @@ MonoBehaviour:
     instructionText: Now check the Grid Connection point. It imports energy from
       the main grid (+20).
     focusTarget: {fileID: 97609123}
-    cameraDistance: 10
+    cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
     indicatorColor: {r: 1, g: 0, b: 0, a: 1}
@@ -13709,7 +13709,7 @@ MonoBehaviour:
   - stepName: E1.3 - Demand Check
     instructionText: The Residential Area consumes energy. Check its Demand (-40).
     focusTarget: {fileID: 1113102201}
-    cameraDistance: 12
+    cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
     indicatorColor: {r: 1, g: 0, b: 0, a: 1}
