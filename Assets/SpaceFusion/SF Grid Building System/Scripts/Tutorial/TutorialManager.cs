@@ -66,10 +66,21 @@ public class TutorialManager : MonoBehaviour
     private void PrepareStep(int index)
     {
         if (index >= steps.Count) { CompleteTutorial(); return; }
-        if (index == 0) TutorialLevelPreparer.Instance.PrepareLayoutForEvent(1);
-        else if (index == 4) TutorialLevelPreparer.Instance.PrepareLayoutForEvent(2);
 
         TutorialStep step = steps[index];
+
+        // --- 核心修改：清场逻辑响应 ---
+        if (step.clearSceneBeforeStart && TutorialLevelPreparer.Instance != null)
+        {
+            TutorialLevelPreparer.Instance.ClearAllBuildings();
+
+            // 如果填入了有效的 layout ID，则加载对应布局
+            if (step.layoutToLoad > 0)
+            {
+                TutorialLevelPreparer.Instance.PrepareLayoutForEvent(step.layoutToLoad);
+            }
+        }
+
         if (step.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit)
         {
             _isWaitingForStartCondition = true;
@@ -135,7 +146,6 @@ public class TutorialManager : MonoBehaviour
 
         if (controller)
         {
-            // 传递当前计算好的 targetPos 和 旋转参数
             controller.SyncTutorialFocus(targetPos, step.cameraDistance, step.cameraAngle, mainCam.transform.eulerAngles.y);
             controller.enabled = true;
         }

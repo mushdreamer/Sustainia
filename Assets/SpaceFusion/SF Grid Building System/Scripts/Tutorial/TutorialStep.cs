@@ -8,6 +8,12 @@ public class TutorialStep
     [TextArea(3, 10)]
     public string instructionText;
 
+    [Header("Clean Slate Logic")]
+    [Tooltip("进入此步骤前是否清空场景所有建筑")]
+    public bool clearSceneBeforeStart = false;
+    [Tooltip("清空后加载的布局索引 (对应 Preparer 中的 eventIndex)")]
+    public int layoutToLoad = -1;
+
     [Header("Camera Control")]
     [Tooltip("镜头聚焦的目标建筑或位置")]
     public GameObject focusTarget;
