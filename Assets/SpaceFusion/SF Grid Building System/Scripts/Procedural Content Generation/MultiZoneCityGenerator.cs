@@ -107,9 +107,12 @@ public class MultiZoneCityGenerator : MonoBehaviour
         return null;
     }
 
+    // --- 修改重点：确保建筑生成在中心并正确注册 ---
     public void ForceSpawnBuildingInZone(int zoneIndex, string buildingName)
     {
-        // 改用名称查找，这样可以更灵活地处理两套列表
+        if (zoneIndex < 0 || zoneIndex >= zones.Count) return;
+
+        // 改用名称查找
         var opt = buildingOptions.Find(b => b.data.name == buildingName);
         if (opt.prefab == null)
             opt = specialBuildingOptions.Find(b => b.data.name == buildingName);
@@ -117,13 +120,20 @@ public class MultiZoneCityGenerator : MonoBehaviour
         if (opt.prefab != null)
         {
             var zone = zones[zoneIndex];
+
+            // 1. 清理该区域原有的所有建筑
             foreach (Transform child in zone.originPoint)
                 if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator")
                     Destroy(child.gameObject);
 
-            GameObject b = Instantiate(opt.prefab, GetZoneCenter(zone), Quaternion.identity, zone.originPoint);
+            // 2. 计算生成位置：必须是 OriginPoint 的本地中心，并加上偏移
+            Vector3 spawnPos = GetZoneCenter(zone) + Vector3.up * buildingYOffset;
+            GameObject b = Instantiate(opt.prefab, spawnPos, Quaternion.identity, zone.originPoint);
 
-            // 核心修改：判断这到底是一个普通建筑还是教学建筑
+            // 3. 核心初始化：由于是强制生成，必须手动调用初始化
+            AttachAndInitialize(b, opt.data, spawnPos);
+
+            // 4. 判断逻辑脚本激活
             var normalEffect = b.GetComponent<BuildingEffect>();
             var tutorialEffect = b.GetComponent<TutorialBuildingEffect>();
 
@@ -131,6 +141,11 @@ public class MultiZoneCityGenerator : MonoBehaviour
             if (tutorialEffect != null) tutorialEffect.ApplyTutorialEffect();
 
             zone.isOccupied = true;
+            Debug.Log($"[PCG] 已在 {zone.zoneName} 生成建筑: {buildingName}");
+        }
+        else
+        {
+            Debug.LogError($"[PCG] 无法找到名为 {buildingName} 的建筑配置，请检查 Inspector！");
         }
     }
 
@@ -274,6 +289,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
         {
             Vector3Int gPos = GameManager.Instance.PlacementGrid.WorldToCell(pos);
             po.Initialize(data, gPos);
+            // 必须向 PlacementSystem 注册，否则建筑逻辑不会生效
             PlacementSystem.Instance?.RegisterExternalObject(building, data, gPos);
         }
     }

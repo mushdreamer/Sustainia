@@ -18,10 +18,10 @@ public class TutorialLevelPreparer : MonoBehaviour
             MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(0, "PowerPlant");
 
             // 2. 生成本地发电 (Local Generation: +20)
-            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(1, "LocalGenration");
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(1, "LocalGeneration");
 
             // 3. 生成住宅消耗 (Demand: -40)
-            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(2, "House");
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(2, "House T1");
 
             // 4. 生成储能电池 (Battery Storage)
             MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(3, "Battery");
