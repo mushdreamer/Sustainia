@@ -59,7 +59,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         private void ScanAndRegisterSceneObjects()
         {
-            // --- 修复 Warning CS0618: 使用新 API ---
             BuildingEffect[] sceneBuildings = FindObjectsByType<BuildingEffect>(FindObjectsSortMode.None);
 
             foreach (var building in sceneBuildings)
@@ -92,17 +91,18 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                     Debug.LogWarning(e.Message);
                 }
             }
+
+            // --- 核心修复：强制生成后也触发事件，让 TutorialManager 感知到 ---
+            OnBuildingPlaced?.Invoke(data);
         }
 
         public void InvokeBuildingPlaced(Placeable data)
         {
-            // --- 新增逻辑：放置成功后，通知生成器锁定该区域 ---
             if (_stateHandler is PlacementState && MultiZoneCityGenerator.Instance != null)
             {
                 var mousePosition = _inputManager.GetSelectedMapPosition();
                 MultiZoneCityGenerator.Instance.SetZoneOccupiedStatus(mousePosition, true);
             }
-            // ------------------------------------------------
 
             OnBuildingPlaced?.Invoke(data);
         }
@@ -151,13 +151,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         {
             var gridType = placedObject.placeable.GridType;
 
-            // --- 新增逻辑：在移除前，获取位置并通知生成器释放区域 ---
             Vector3 worldPos = placedObject.transform.position;
             if (MultiZoneCityGenerator.Instance != null)
             {
                 MultiZoneCityGenerator.Instance.SetZoneOccupiedStatus(worldPos, false);
             }
-            // ----------------------------------------------------
 
             StopState();
             _stateHandler = new RemoveState(_grid, previewSystem, _gridDataMap[gridType], placementHandler);
@@ -199,8 +197,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         {
             foreach (var gridData in _gridDataMap.Values)
             {
-                // 这里的清除需要我们在 GridData 类里加个方法，或者直接重新 new
-                // 考虑到性能和引用，直接清空字典最安全
                 gridData.ClearAll();
             }
         }
@@ -211,20 +207,17 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             var mousePosition = _inputManager.GetSelectedMapPosition();
             var gridPosition = _grid.WorldToCell(mousePosition);
 
-            // --- 核心修改：如果是放置模式，强制检查生成器区域 ---
             if (_stateHandler is PlacementState)
             {
                 if (MultiZoneCityGenerator.Instance != null)
                 {
-                    // 检查两个条件：1. 是否在 Zone 内； 2. 该 Zone 是否已被占用
                     if (!MultiZoneCityGenerator.Instance.IsZoneValidAndEmpty(mousePosition))
                     {
                         Debug.Log("这里不能建造：要么不在生成区域内，要么该区域已经有建筑了。");
-                        return; // 直接返回，不执行放置逻辑
+                        return;
                     }
                 }
             }
-            // ------------------------------------------------
 
             _stateHandler.OnAction(gridPosition);
             if (_stopStateAfterAction) StopState();

@@ -13562,6 +13562,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
   enableTutorial: 1
   steps:
+  - stepName: 00000
+    instructionText: 
+    clearSceneBeforeStart: 1
+    layoutToLoad: -1
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 1
+    allowAnyBuilding: 1
+    isTutorialBuilding: 0
+    targetBuildingType: 3
+    targetTutorialType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 0
   - stepName: Build Anything
     instructionText: Let's start building. Select ANY building from the shop panel
       below and place it on an empty grid.
@@ -13576,7 +13596,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 1
     allowAnyBuilding: 1
+    isTutorialBuilding: 0
     targetBuildingType: 3
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13596,7 +13618,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 1
+    targetTutorialType: 0
     requireRemoval: 1
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13614,7 +13638,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 1
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13633,7 +13659,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 1
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 3
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13653,7 +13681,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 1
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 4
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13672,30 +13702,33 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: Local Generation
-    instructionText: Next, notice the Local Generation facility. Small-scale renewable
-      sources also contribute to our total supply.
+  - stepName: LG
+    instructionText: LG
     clearSceneBeforeStart: 0
     layoutToLoad: -1
-    focusTarget: {fileID: 97609123}
+    focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
-    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
     startCondition: 0
     shouldPauseGame: 1
-    requireBuilding: 0
+    requireBuilding: 1
     allowAnyBuilding: 0
-    targetBuildingType: 0
+    isTutorialBuilding: 1
+    targetBuildingType: 3
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 1
+    requireInput: 0
   - stepName: Residential Area
     instructionText: Finally, the Residential Area defines how much power our citizens
       need right now.
@@ -13710,7 +13743,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13729,7 +13764,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13748,7 +13785,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13768,7 +13807,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13788,7 +13829,9 @@ MonoBehaviour:
     shouldPauseGame: 0
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 1
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13808,7 +13851,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13828,7 +13873,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13848,7 +13895,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13868,7 +13917,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13888,7 +13939,9 @@ MonoBehaviour:
     shouldPauseGame: 0
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 1
@@ -13908,7 +13961,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13928,7 +13983,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13947,7 +14004,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13966,7 +14025,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13985,7 +14046,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -14004,7 +14067,9 @@ MonoBehaviour:
     shouldPauseGame: 0
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 1
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -14023,7 +14088,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -14042,7 +14109,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -14061,7 +14130,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -14080,7 +14151,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -14099,7 +14172,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -14118,7 +14193,9 @@ MonoBehaviour:
     shouldPauseGame: 0
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 1
@@ -14137,7 +14214,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -14156,7 +14235,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -14175,7 +14256,9 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 0
     allowAnyBuilding: 0
+    isTutorialBuilding: 0
     targetBuildingType: 0
+    targetTutorialType: 0
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0

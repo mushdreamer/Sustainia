@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 {
-    // 定义教学专用的扩展类型，不干扰原有的 BuildingType 枚举
     public enum TutorialBuildingType { LocalGen, Battery, NegativeHouse, CCHouse }
 
     public class TutorialBuildingEffect : MonoBehaviour
@@ -27,22 +26,27 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             if (_isActive || ResourceManager.Instance == null) return;
             _isActive = true;
 
-            // 这里直接与 ResourceManager 对接数值
+            // 注册到资源管理器，以便在教程逻辑中被识别
+            ResourceManager.Instance.RegisterTutorialBuildingInstance(this);
+
             switch (tutorialType)
             {
                 case TutorialBuildingType.LocalGen:
                     ResourceManager.Instance.AddGeneration(energyValue);
                     break;
                 case TutorialBuildingType.Battery:
+                    // 可以在此添加电池特定的初始化逻辑
                     break;
             }
-            Debug.Log($"[Tutorial] 教学建筑已激活: {tutorialType}");
+            Debug.Log($"[Tutorial] 教学建筑已激活并注册: {tutorialType}");
         }
 
         private void OnDestroy()
         {
             if (!_isActive || ResourceManager.Instance == null) return;
-            // 销毁时同步扣除数值
+
+            ResourceManager.Instance.UnregisterTutorialBuildingInstance(this);
+
             if (tutorialType == TutorialBuildingType.LocalGen)
                 ResourceManager.Instance.RemoveGeneration(energyValue);
         }

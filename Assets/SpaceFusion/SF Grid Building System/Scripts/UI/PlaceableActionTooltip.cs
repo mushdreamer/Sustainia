@@ -54,7 +54,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
                 _tooltipSize = GetComponent<RectTransform>().sizeDelta;
                 moveButton.onClick.AddListener(MoveObject);
                 removeButton.onClick.AddListener(RemoveObject);
-                researchButton.onClick.AddListener(FundResearch);
 
                 // <<< +++ 
                 // +++ 2. 新增: 绑定新 "升级" 按钮的点击事件
@@ -174,11 +173,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
             blockerUI.SetActive(false);
         }
 
-        private void FundResearch()
+/*        private void FundResearch()
         {
             ResourceManager.Instance.FundResearch();
             HideTooltip();
-        }
+        }*/
 
         // <<< +++ 
         // +++ 4. 新增: 升级按钮调用的方法

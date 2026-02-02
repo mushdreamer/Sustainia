@@ -43,7 +43,11 @@ public class TutorialStep
     [Header("Completion - Building")]
     public bool requireBuilding = false;
     public bool allowAnyBuilding = false;
+    [Tooltip("是否为教程专用建筑类型")]
+    public bool isTutorialBuilding = false;
     public BuildingType targetBuildingType;
+    [Tooltip("如果勾选了 isTutorialBuilding，请在此选择教程建筑类型")]
+    public TutorialBuildingType targetTutorialType;
 
     [Header("Completion - Removal")]
     public bool requireRemoval = false;

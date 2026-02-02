@@ -69,13 +69,10 @@ public class TutorialManager : MonoBehaviour
 
         TutorialStep step = steps[index];
 
-        // --- 核心修改：清场逻辑响应 ---
         if (step.clearSceneBeforeStart && TutorialLevelPreparer.Instance != null)
         {
             TutorialLevelPreparer.Instance.ClearAllBuildings();
-
-            // 如果填入了有效的 layout ID，则加载对应布局
-            if (step.layoutToLoad > 0)
+            if (step.layoutToLoad >= 0)
             {
                 TutorialLevelPreparer.Instance.PrepareLayoutForEvent(step.layoutToLoad);
             }
@@ -160,7 +157,31 @@ public class TutorialManager : MonoBehaviour
         if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) return;
         TutorialStep current = steps[_currentStepIndex];
         if (!current.requireBuilding) return;
-        if (current.allowAnyBuilding || (data != null && data.Prefab.GetComponent<BuildingEffect>().type == current.targetBuildingType)) NextStep();
+
+        if (current.allowAnyBuilding)
+        {
+            NextStep();
+            return;
+        }
+
+        if (data == null) return;
+
+        if (current.isTutorialBuilding)
+        {
+            var effect = data.Prefab.GetComponent<TutorialBuildingEffect>();
+            if (effect != null && effect.tutorialType == current.targetTutorialType)
+            {
+                NextStep();
+            }
+        }
+        else
+        {
+            var effect = data.Prefab.GetComponent<BuildingEffect>();
+            if (effect != null && effect.type == current.targetBuildingType)
+            {
+                NextStep();
+            }
+        }
     }
 
     private void CheckRemovalProgress()
