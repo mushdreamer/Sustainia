@@ -3496,11 +3496,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5026172333621812674, guid: bcf155ad418a60f4c8610479392af38f, type: 3}
   m_PrefabInstance: {fileID: 1611997931}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &339160571 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2133084204804740702, guid: f3640dc403ebd8e4bb7606bb25c9b02f, type: 3}
-  m_PrefabInstance: {fileID: 101089873}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &339774645
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13540,6 +13535,7 @@ GameObject:
   - component: {fileID: 1413932882}
   - component: {fileID: 1413932881}
   - component: {fileID: 1413932883}
+  - component: {fileID: 1413932884}
   m_Layer: 0
   m_Name: TutorialManager
   m_TagString: Untagged
@@ -13669,7 +13665,7 @@ MonoBehaviour:
     instructionText: 'Observe the energy panel. Formula: Grid Input + Local Generation
       - Demand = Storage Change[cite: 5, 50]. Currently: 60 + 20 - 40 = +40[cite:
       5]. Surplus energy is now stored in the battery[cite: 6, 52].'
-    focusTarget: {fileID: 339160571}
+    focusTarget: {fileID: 597993825}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
@@ -13845,6 +13841,294 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+  - stepName: E1.1 - Power Station Check
+    instructionText: First, let's look at the Power Station. It provides Local Generation.
+      Click it to see its output (+60).
+    focusTarget: {fileID: 597993825}
+    cameraDistance: 10
+    cameraAngle: 35
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E1.2 - Battery Check
+    instructionText: Now check the Grid Connection point. It imports energy from
+      the main grid (+20).
+    focusTarget: {fileID: 97609123}
+    cameraDistance: 10
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E1.3 - Demand Check
+    instructionText: The Residential Area consumes energy. Check its Demand (-40).
+    focusTarget: {fileID: 1113102201}
+    cameraDistance: 12
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E1.4 - Equation Logic
+    instructionText: 'The result is Net Grid Load: Input(60) + Local(20) - Demand(40)
+      = +40 surplus stored in batteries.'
+    focusTarget: {fileID: 597993825}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E2.1 - Current State
+    instructionText: The atmosphere currently has 400ppm of CO2. Observe the annual
+      emissions (+50) and removals (-10).
+    focusTarget: {fileID: 0}
+    cameraDistance: 20
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E2.2 - Accumulation Result
+    instructionText: 'After clicking ''Next Year'', the new level is: CO2(t) + Emissions
+      - Removals = 440ppm.'
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E3.1 - Misguided Goal
+    instructionText: Try to 'Maximize Capacity' as your goal. Notice how the maintenance
+      costs drain your budget!
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E3.2 - Real Objective
+    instructionText: 'A reasonable objective is: Minimize total cost while meeting
+      demand and CO2 limits. Let''s fix this.'
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 0
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 1
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 0
+  - stepName: E4.1 - Capacity Limit
+    instructionText: The battery is at 100/100. Try to add more energy. You can't,
+      because 'Energy cannot exceed Capacity'.
+    focusTarget: {fileID: 0}
+    cameraDistance: 8
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E5.1 - Maximization to Minimization
+    instructionText: To maximize Prosperity (P) using a minimization solver, we must
+      minimize (-P). It preserves the same optimal layout.
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E6.1 - Weighted Score
+    instructionText: Your city must be both Economic and Sustainable. Combine them
+      into a single weighted score to solve the tradeoff.
+    focusTarget: {fileID: 0}
+    cameraDistance: 18
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E7.1 - Negative Housing Error
+    instructionText: The system suggests -10 housing units! This is missing a 'Non-negativity'
+      constraint to prevent impossible values.
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E8.1 - Plan Selection
+    instructionText: 'Plan A: Pop 80, Pollution 70. Plan B: Pop 70, Pollution 55.
+      Limit is 60. Plan A is INFEASIBLE.'
+    focusTarget: {fileID: 0}
+    cameraDistance: 25
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E8.2 - Selecting Best Feasible
+    instructionText: Plan B and C are feasible. Plan B has a higher total score.
+      Let's build Plan B.
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 0
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 1
+    requireInput: 0
+  - stepName: E9.1 - Slack Check
+    instructionText: Each factory adds +10 pollution. We are at 40/70. Pollution
+      is NOT yet the limiting factor (Slack > 0).
+    focusTarget: {fileID: 0}
+    cameraDistance: 12
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E9.2 - Binding Point
+    instructionText: At 70/70, the shadow price changes. The constraint is now BINDING
+      and blocks further improvement.
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: E10.1 - Normalization Need
+    instructionText: To compare high food production and low emissions, we normalize
+      them into a single 0-1 consistent score.
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    targetBuildingType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
   tutorialUI: {fileID: 6642071500640953132}
   externalCameraController: {fileID: 920006909}
 --- !u!4 &1413932882
@@ -13877,6 +14161,18 @@ MonoBehaviour:
   introPanel: {fileID: 246866558}
   startButton: {fileID: 1895485795}
   showOnAwake: 1
+--- !u!114 &1413932884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1413932880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2adae07e41d7cf04ba992f2cb2298581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialLevelPreparer
 --- !u!1001 &1414286282
 PrefabInstance:
   m_ObjectHideFlags: 0

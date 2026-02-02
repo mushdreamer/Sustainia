@@ -134,6 +134,39 @@ public class MultiZoneCityGenerator : MonoBehaviour
         // <<< ------------------------------------
     }
 
+    // [新增] 强制在特定区域生成特定类型的建筑，用于教学
+    public void ForceSpawnBuildingInZone(int zoneIndex, CoreBuildingType type)
+    {
+        if (zoneIndex < 0 || zoneIndex >= zones.Count) return;
+
+        // 寻找匹配的建筑配置
+        BuildingType targetOption = buildingOptions.Find(b => b.data.Prefab.GetComponent<BuildingEffect>().type == type);
+
+        if (targetOption.prefab != null)
+        {
+            GenerationZone zone = zones[zoneIndex];
+
+            // 清理该区域旧的建筑 (不删除 Visuals 容器)
+            if (zone.originPoint != null)
+            {
+                foreach (Transform child in zone.originPoint)
+                {
+                    // 确保不删掉系统生成的指示器
+                    if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator")
+                        Destroy(child.gameObject);
+                }
+            }
+
+            GenerateOneZone(zone, targetOption);
+            zone.isOccupied = true;
+            Debug.Log($"[Tutorial-PCG] Forced {type} into {zone.zoneName}");
+        }
+        else
+        {
+            Debug.LogWarning($"[Tutorial-PCG] Could not find building prefab for type: {type}");
+        }
+    }
+
     // <<< --- 新增：供外部调用的开始方法 ---
     public void BeginGeneration()
     {

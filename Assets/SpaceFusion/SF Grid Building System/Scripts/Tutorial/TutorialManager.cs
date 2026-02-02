@@ -120,6 +120,8 @@ public class TutorialManager : MonoBehaviour
     private void PrepareStep(int index)
     {
         if (index >= steps.Count) { CompleteTutorial(); return; }
+        if (index == 0) TutorialLevelPreparer.Instance.PrepareLayoutForEvent(1);
+        else if (index == 4) TutorialLevelPreparer.Instance.PrepareLayoutForEvent(2);
         TutorialStep step = steps[index];
         if (step.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit)
         {
