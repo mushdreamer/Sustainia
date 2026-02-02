@@ -22,11 +22,7 @@ public class TutorialManager : MonoBehaviour
     private bool _isWaitingForStartCondition = false;
     private Coroutine _cameraCoroutine;
 
-    private void Awake()
-    {
-        if (Instance != null) { Destroy(gameObject); return; }
-        Instance = this;
-    }
+    private void Awake() { if (Instance != null) { Destroy(gameObject); return; } Instance = this; }
 
     private void Start()
     {
@@ -42,41 +38,30 @@ public class TutorialManager : MonoBehaviour
 
     private void Update()
     {
-        if (Debug.isDebugBuild || Application.isEditor)
-            if (Input.GetKeyDown(KeyCode.N)) SkipCurrentStep();
-
+        if (Input.GetKeyDown(KeyCode.N)) SkipCurrentStep();
         if (!_isTutorialActive || _currentStepIndex >= steps.Count) return;
 
         TutorialStep currentStep = steps[_currentStepIndex];
 
         if (_isWaitingForStartCondition)
         {
-            bool conditionMet = false;
-            switch (currentStep.startCondition)
-            {
-                case TutorialStep.StartCondition.WaitForElectricityDeficit:
-                    if (ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < -0.1f) conditionMet = true;
-                    break;
-                case TutorialStep.StartCondition.Immediate:
-                default: conditionMet = true; break;
-            }
-            if (conditionMet) ActivateStepUI(currentStep);
+            bool met = false;
+            if (currentStep.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit)
+                met = ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < -0.1f;
+            else met = true;
+
+            if (met) ActivateStepUI(currentStep);
         }
         else
         {
-            bool stepComplete = false;
-            if (currentStep.requirePositiveEnergyBalance && ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance >= 0f) stepComplete = true;
-            if (currentStep.requireOptimizationGoal && LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.IsOptimizationGoalMet()) stepComplete = true;
-            if (stepComplete) NextStep();
+            bool complete = false;
+            if (currentStep.requirePositiveEnergyBalance && ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance >= 0f) complete = true;
+            if (currentStep.requireOptimizationGoal && LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.IsOptimizationGoalMet()) complete = true;
+            if (complete) NextStep();
         }
     }
 
-    public void StartTutorial()
-    {
-        _isTutorialActive = true;
-        _currentStepIndex = 0;
-        PrepareStep(_currentStepIndex);
-    }
+    public void StartTutorial() { _isTutorialActive = true; _currentStepIndex = 0; PrepareStep(0); }
 
     private void PrepareStep(int index)
     {
@@ -99,7 +84,6 @@ public class TutorialManager : MonoBehaviour
         _isWaitingForStartCondition = false;
         tutorialUI.ShowStep(step);
 
-        // --- 核心修改：使用 PCG 圆环作为指示器 ---
         if (step.focusTarget != null)
             UpdateZoneHighlights(step.focusTarget, step.indicatorColor, step.showIndicator);
 
@@ -117,50 +101,68 @@ public class TutorialManager : MonoBehaviour
         if (MultiZoneCityGenerator.Instance == null) return;
         foreach (var zone in MultiZoneCityGenerator.Instance.zones)
         {
-            if (show && zone.originPoint.gameObject == target)
-            {
-                zone.isTutorialHighlight = true;
-                zone.customHighlightColor = color;
-            }
-            else { zone.isTutorialHighlight = false; }
+            bool isTarget = zone.originPoint.gameObject == target;
+            zone.isTutorialHighlight = show && isTarget;
+            zone.customHighlightColor = color;
         }
     }
 
     private IEnumerator MoveCameraSmoothly(TutorialStep step)
     {
         Camera mainCam = Camera.main;
-        var controller = externalCameraController as SpaceFusion.SF_Grid_Building_System.Scripts.Core.CameraController;
-        if (controller != null) controller.enabled = false;
+        var controller = externalCameraController as CameraController;
+        if (controller) controller.enabled = false;
 
         Vector3 targetPos = step.focusTarget.transform.position;
-        float rad = step.cameraAngle * Mathf.Deg2Rad;
-        Vector3 offset = new Vector3(0, Mathf.Sin(rad), -Mathf.Cos(rad)) * step.cameraDistance;
-        Vector3 finalCamPos = targetPos + offset;
+        float pitchRad = step.cameraAngle * Mathf.Deg2Rad;
+
+        Vector3 offset = new Vector3(0, Mathf.Sin(pitchRad), -Mathf.Cos(pitchRad)) * step.cameraDistance;
+        Vector3 finalPos = targetPos + offset;
 
         float elapsed = 0;
         Vector3 startPos = mainCam.transform.position;
         Quaternion startRot = mainCam.transform.rotation;
-        Quaternion finalRot = Quaternion.LookRotation(targetPos - finalCamPos);
+        Quaternion finalRot = Quaternion.LookRotation(targetPos - finalPos);
 
         while (elapsed < 1.0f)
         {
-            mainCam.transform.position = Vector3.Lerp(startPos, finalCamPos, elapsed);
-            mainCam.transform.rotation = Quaternion.Slerp(startRot, finalRot, elapsed);
+            float t = Mathf.SmoothStep(0, 1, elapsed);
+            mainCam.transform.position = Vector3.Lerp(startPos, finalPos, t);
+            mainCam.transform.rotation = Quaternion.Slerp(startRot, finalRot, t);
             elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
 
-        // --- 核心修改：同步坐标 ---
-        if (controller != null)
+        if (controller)
         {
-            controller.FocusOnPosition(targetPos, step.cameraDistance, step.cameraAngle, mainCam.transform.eulerAngles.y);
+            // 传递当前计算好的 targetPos 和 旋转参数
+            controller.SyncTutorialFocus(targetPos, step.cameraDistance, step.cameraAngle, mainCam.transform.eulerAngles.y);
             controller.enabled = true;
         }
     }
 
     public void NextStep() { _currentStepIndex++; PrepareStep(_currentStepIndex); }
+
     public void SkipCurrentStep() { if (_isTutorialActive) NextStep(); }
-    private void CheckBuildingProgress(Placeable d) { /* 逻辑保持不变 */ }
-    private void CheckRemovalProgress() { /* 逻辑保持不变 */ }
-    private void CompleteTutorial() { _isTutorialActive = false; tutorialUI.Hide(); if (externalCameraController) externalCameraController.enabled = true; }
+
+    private void CheckBuildingProgress(Placeable data)
+    {
+        if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) return;
+        TutorialStep current = steps[_currentStepIndex];
+        if (!current.requireBuilding) return;
+        if (current.allowAnyBuilding || (data != null && data.Prefab.GetComponent<BuildingEffect>().type == current.targetBuildingType)) NextStep();
+    }
+
+    private void CheckRemovalProgress()
+    {
+        if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) return;
+        if (steps[_currentStepIndex].requireRemoval) NextStep();
+    }
+
+    private void CompleteTutorial()
+    {
+        _isTutorialActive = false; tutorialUI.Hide();
+        if (ResourceManager.Instance != null) ResourceManager.Instance.isPaused = false;
+        if (externalCameraController != null) externalCameraController.enabled = true;
+    }
 }

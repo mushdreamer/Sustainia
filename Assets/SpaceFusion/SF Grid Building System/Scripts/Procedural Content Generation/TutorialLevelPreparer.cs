@@ -10,6 +10,7 @@ public class TutorialLevelPreparer : MonoBehaviour
     public void PrepareLayoutForEvent(int eventIndex)
     {
         if (MultiZoneCityGenerator.Instance == null) return;
+
         foreach (var zone in MultiZoneCityGenerator.Instance.zones)
         {
             zone.isOccupied = false;

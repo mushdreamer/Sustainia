@@ -14,65 +14,85 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         [Header("Movement Settings")]
         public float keyboardMoveSpeed = 50f;
-        public float sprintMultiplier = 2.5f;
-        public float keyboardRotateSpeed = 100f;
-
-        [Header("Adaptive Speed")]
-        public bool useAdaptiveSpeed = true;
-        public float referenceHeight = 20f;
-        public float maxSpeedMultiplier = 4f;
+        public float keyboardRotateSpeed = 200f; // 旋转灵敏度
+        public float zoomSpeed = 20f;         // 缩放灵敏度
 
         [Header("Limits")]
-        public float minHeight = 2.0f;
-        public float maxHeight = 500.0f;
-        public float minPitchAngle = 10f;
-        public float maxPitchAngle = 85f;
+        public float minHeight = 5.0f;
+        public float maxHeight = 80.0f;
+        public float minPitchAngle = 20f;
+        public float maxPitchAngle = 80f;
 
         private float _targetYaw;
         private float _targetPitch;
         private Vector3 _targetPosition;
         private Quaternion _targetRotation;
         private Camera _sceneCamera;
-        private GameConfig _config;
 
         private void Start()
         {
-            _config = GameConfig.Instance;
             _sceneCamera = GetComponent<Camera>();
-            if (_sceneCamera == null) Debug.LogError("CameraController 必须挂载在带有 Camera 组件的物体上！");
+            if (_sceneCamera == null) Debug.LogError("Missing Camera Component!");
+
             _targetPosition = transform.position;
-            Vector3 angles = transform.eulerAngles;
-            _targetYaw = angles.y;
-            _targetPitch = angles.x;
-            _targetRotation = transform.rotation;
+            _targetYaw = transform.eulerAngles.y;
+            _targetPitch = transform.eulerAngles.x;
+            UpdateTargetRotationFromEuler();
         }
 
         private void Update()
         {
-            HandleKeyboardInput();
-            UpdateCameraTransform();
-        }
+            HandleMovementInput();
+            HandleRotationAndZoomInput();
 
-        private void HandleKeyboardInput()
-        {
-            float h = Input.GetAxis("Horizontal");
-            float v = Input.GetAxis("Vertical");
-            float rotate = 0f;
-            if (Input.GetKey(KeyCode.Q)) rotate = -1f;
-            if (Input.GetKey(KeyCode.E)) rotate = 1f;
-
-            float speedMult = GetHeightSpeedMultiplier() * (Input.GetKey(KeyCode.LeftShift) ? sprintMultiplier : 1f);
-            Quaternion yawRotation = Quaternion.Euler(0, _targetYaw, 0);
-            Vector3 moveDir = (yawRotation * Vector3.forward * v + yawRotation * Vector3.right * h).normalized;
-
-            if (moveDir.sqrMagnitude > 0.01f) _targetPosition += moveDir * (keyboardMoveSpeed * speedMult * Time.deltaTime);
-            if (Mathf.Abs(rotate) > 0.01f) { _targetYaw += rotate * keyboardRotateSpeed * Time.deltaTime; UpdateTargetRotationFromEuler(); }
-        }
-
-        private void UpdateCameraTransform()
-        {
+            // 平滑应用变换
             transform.position = Vector3.Lerp(transform.position, _targetPosition, positionLerpTime * Time.deltaTime);
             transform.rotation = Quaternion.Slerp(transform.rotation, _targetRotation, rotationLerpTime * Time.deltaTime);
+        }
+
+        private void HandleMovementInput()
+        {
+            float h = Input.GetAxis("Horizontal"); // A/D
+            float v = Input.GetAxis("Vertical");   // W/S
+
+            // 基于当前偏航角计算移动方向，使W永远是向前
+            Vector3 forward = Quaternion.Euler(0, _targetYaw, 0) * Vector3.forward;
+            Vector3 right = Quaternion.Euler(0, _targetYaw, 0) * Vector3.right;
+            Vector3 moveDir = (forward * v + right * h).normalized;
+
+            _targetPosition += moveDir * (keyboardMoveSpeed * Time.deltaTime);
+        }
+
+        private void HandleRotationAndZoomInput()
+        {
+            // 1. 右键旋转 [替代 Q/E]
+            if (Input.GetMouseButton(1)) // 0:左键, 1:右键, 2:中键
+            {
+                float mouseX = Input.GetAxis("Mouse X");
+                float mouseY = Input.GetAxis("Mouse Y");
+
+                _targetYaw += mouseX * keyboardRotateSpeed * Time.deltaTime;
+                _targetPitch -= mouseY * keyboardRotateSpeed * Time.deltaTime; // 鼠标上滑抬头
+
+                UpdateTargetRotationFromEuler();
+            }
+
+            // 2. 鼠标滚轮缩放
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (Mathf.Abs(scroll) > 0.01f)
+            {
+                // 计算缩放方向（镜头正对着的方向）
+                Vector3 zoomDir = transform.forward;
+                Vector3 moveAmount = zoomDir * (scroll * zoomSpeed * 10f);
+
+                Vector3 newPos = _targetPosition + moveAmount;
+
+                // 限制缩放高度，防止钻地或飞出地图
+                if (newPos.y >= minHeight && newPos.y <= maxHeight)
+                {
+                    _targetPosition = newPos;
+                }
+            }
         }
 
         private void UpdateTargetRotationFromEuler()
@@ -81,10 +101,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             _targetRotation = Quaternion.Euler(_targetPitch, _targetYaw, 0f);
         }
 
-        private float GetHeightSpeedMultiplier() => useAdaptiveSpeed ? Mathf.Clamp(transform.position.y / referenceHeight, 0.5f, maxSpeedMultiplier) : 1f;
-
-        // --- 核心修改：教程专用聚焦接口 ---
-        public void FocusOnPosition(Vector3 target, float distance, float pitch, float yaw)
+        public void SyncTutorialFocus(Vector3 target, float distance, float pitch, float yaw)
         {
             _targetYaw = yaw;
             _targetPitch = pitch;

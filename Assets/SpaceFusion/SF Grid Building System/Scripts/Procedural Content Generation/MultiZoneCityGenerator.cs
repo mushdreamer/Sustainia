@@ -26,7 +26,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
         public float visualHeightOffset = 0.0f;
         public bool isOccupied = false;
 
-        // --- 教学高亮支持 ---
+        // 教程高亮逻辑
         [HideInInspector] public bool isTutorialHighlight = false;
         [HideInInspector] public Color customHighlightColor;
 
@@ -40,9 +40,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
             if (originPoint == null) return false;
             float diffX = worldPos.x - originPoint.position.x;
             float diffZ = worldPos.z - originPoint.position.z;
-            float relativeX = diffX / cellSize;
-            float relativeZ = diffZ / cellSize;
-            return relativeX >= 0 && relativeX < width && relativeZ >= 0 && relativeZ < height;
+            return diffX >= 0 && diffX < width * cellSize && diffZ >= 0 && diffZ < height * cellSize;
         }
     }
 
@@ -71,80 +69,50 @@ public class MultiZoneCityGenerator : MonoBehaviour
     public float animSpeed = 2.0f;
     public int circleSegments = 128;
 
-    [Header("Control")]
     public bool autoStartGeneration = false;
-
-    private float _currentCo2 = 0f;
-    private float _currentCost = 0f;
-    private float _currentEnergy = 0f;
+    private string _csvFilePath;
+    private float _currentCo2, _currentCost, _currentEnergy;
+    private int _stepCount;
 
     [Header("Zones Configuration")]
     public List<GenerationZone> zones;
 
-    private void Awake()
-    {
-        if (Instance != null) { Destroy(gameObject); }
-        Instance = this;
-    }
+    private void Awake() { if (Instance != null) Destroy(gameObject); Instance = this; }
 
     IEnumerator Start()
     {
         InitZoneVisuals();
         yield return null;
+        _csvFilePath = Path.Combine(Application.dataPath, $"TrainingData_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        InitCSV();
         if (autoStartGeneration) BeginGeneration();
     }
 
+    public void BeginGeneration() { StopAllCoroutines(); StartCoroutine(GenerateZonesSequence()); }
+
     private void Update() => AnimateVisuals();
 
-    // ----------------------
-    // [补充逻辑] 修复报错所需的外部接口
-    // ----------------------
-
-    public bool IsZoneValidAndEmpty(Vector3 worldPos)
-    {
-        GenerationZone zone = GetZoneAtPosition(worldPos);
-        return zone != null && !zone.isOccupied;
-    }
-
+    public bool IsZoneValidAndEmpty(Vector3 worldPos) { var z = GetZoneAtPosition(worldPos); return z != null && !z.isOccupied; }
     public bool IsZoneAvailableForBuilding(Vector3 worldPos) => IsZoneValidAndEmpty(worldPos);
-
-    public void SetZoneOccupiedState(Vector3 worldPos, bool isOccupied) => SetZoneOccupiedStatus(worldPos, isOccupied);
-
-    public void SetZoneOccupiedStatus(Vector3 worldPos, bool occupied)
-    {
-        GenerationZone zone = GetZoneAtPosition(worldPos);
-        if (zone != null) zone.isOccupied = occupied;
-    }
+    public void SetZoneOccupiedStatus(Vector3 worldPos, bool occupied) { var z = GetZoneAtPosition(worldPos); if (z != null) z.isOccupied = occupied; }
+    public void SetZoneOccupiedState(Vector3 worldPos, bool occupied) => SetZoneOccupiedStatus(worldPos, occupied);
 
     private GenerationZone GetZoneAtPosition(Vector3 worldPos)
     {
-        foreach (var zone in zones)
-        {
-            if (zone.Contains(worldPos, cellSize)) return zone;
-        }
+        foreach (var zone in zones) if (zone.Contains(worldPos, cellSize)) return zone;
         return null;
     }
-
-    // ----------------------
-    // [教学核心] 强制生成与动画
-    // ----------------------
 
     public void ForceSpawnBuildingInZone(int zoneIndex, CoreBuildingType type)
     {
         if (zoneIndex < 0 || zoneIndex >= zones.Count) return;
-        BuildingType targetOption = buildingOptions.Find(b => b.data.Prefab.GetComponent<BuildingEffect>().type == type);
-        if (targetOption.prefab != null)
+        var opt = buildingOptions.Find(b => b.data.Prefab.GetComponent<BuildingEffect>().type == type);
+        if (opt.prefab != null)
         {
-            GenerationZone zone = zones[zoneIndex];
-            if (zone.originPoint != null)
-            {
-                foreach (Transform child in zone.originPoint)
-                {
-                    if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator")
-                        Destroy(child.gameObject);
-                }
-            }
-            GenerateOneZone(zone, targetOption);
+            var zone = zones[zoneIndex];
+            foreach (Transform child in zone.originPoint)
+                if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator") Destroy(child.gameObject);
+            GenerateOneZone(zone, opt);
             zone.isOccupied = true;
         }
     }
@@ -154,7 +122,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
         if (zones == null) return;
         float timeVar = Time.unscaledTime;
         float bounceY = Mathf.Sin(timeVar * animSpeed) * 1.5f;
-        float rotateAngle = timeVar * 90f;
 
         foreach (var zone in zones)
         {
@@ -165,7 +132,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
             if (zone.arrowObj != null)
             {
                 zone.arrowObj.position = center + Vector3.up * (finalHeight + bounceY);
-                zone.arrowObj.rotation = Quaternion.Euler(0, rotateAngle, 180);
                 foreach (var r in zone.arrowObj.GetComponentsInChildren<Renderer>()) r.material.color = targetColor;
             }
 
@@ -174,7 +140,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
                 if (Camera.main != null) zone.statusText.transform.rotation = Quaternion.LookRotation(zone.statusText.transform.position - Camera.main.transform.position);
                 zone.statusText.transform.position = center + Vector3.up * (finalHeight - 2.5f);
                 zone.statusText.color = targetColor;
-                zone.statusText.text = zone.isOccupied ? "TUTORIAL\nTARGET" : "OPEN\nSLOT";
+                zone.statusText.text = zone.isOccupied ? "FIXED" : "OPEN";
             }
 
             if (zone.instanceLineMat != null)
@@ -190,15 +156,13 @@ public class MultiZoneCityGenerator : MonoBehaviour
         if (zone.groundOutline == null) return;
         zone.groundOutline.startWidth = lineWidth;
         zone.groundOutline.endWidth = lineWidth;
-        float radiusX = zone.width * cellSize * 0.5f;
-        float radiusZ = zone.height * cellSize * 0.5f;
-        float centerX = zone.width * cellSize * 0.5f;
-        float centerZ = zone.height * cellSize * 0.5f;
+        float rx = zone.width * cellSize * 0.5f;
+        float rz = zone.height * cellSize * 0.5f;
         zone.groundOutline.positionCount = circleSegments + 1;
         for (int i = 0; i <= circleSegments; i++)
         {
-            float angle = (float)i / circleSegments * Mathf.PI * 2f;
-            zone.groundOutline.SetPosition(i, new Vector3(centerX + Mathf.Cos(angle) * radiusX, lineYOffset, centerZ + Mathf.Sin(angle) * radiusZ));
+            float a = (float)i / circleSegments * Mathf.PI * 2f;
+            zone.groundOutline.SetPosition(i, new Vector3(rx + Mathf.Cos(a) * rx, lineYOffset, rz + Mathf.Sin(a) * rz));
         }
     }
 
@@ -207,7 +171,6 @@ public class MultiZoneCityGenerator : MonoBehaviour
         foreach (var zone in zones)
         {
             if (zone.originPoint == null) continue;
-            Vector3 centerPos = GetZoneCenter(zone);
             GameObject container = new GameObject($"{zone.zoneName}_Visuals");
             container.transform.SetParent(this.transform);
 
@@ -215,29 +178,22 @@ public class MultiZoneCityGenerator : MonoBehaviour
             lineObj.transform.SetParent(container.transform);
             lineObj.transform.position = zone.originPoint.position;
             LineRenderer lr = lineObj.AddComponent<LineRenderer>();
-            lr.useWorldSpace = false;
-            lr.loop = true;
+            lr.useWorldSpace = false; lr.loop = true;
             lr.material = new Material(Shader.Find("Sprites/Default"));
             lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            zone.instanceLineMat = lr.material;
-            zone.groundOutline = lr;
+            zone.instanceLineMat = lr.material; zone.groundOutline = lr;
             UpdateCirclePositions(zone);
 
             GameObject textObj = new GameObject("StatusLabel");
             textObj.transform.SetParent(container.transform);
-            textObj.transform.position = centerPos;
             TextMesh tm = textObj.AddComponent<TextMesh>();
-            tm.anchor = TextAnchor.MiddleCenter;
-            tm.alignment = TextAlignment.Center;
-            tm.characterSize = 0.5f;
-            tm.fontSize = 20;
+            tm.anchor = TextAnchor.MiddleCenter; tm.fontSize = 20;
             zone.statusText = tm;
 
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            marker.name = "ArrowIndicator";
-            Destroy(marker.GetComponent<Collider>());
+            marker.name = "ArrowIndicator"; Destroy(marker.GetComponent<Collider>());
             marker.transform.SetParent(container.transform);
-            marker.transform.localScale = new Vector3(2f, 2f, 2f);
+            marker.transform.localScale = Vector3.one * 2f;
             zone.arrowObj = marker.transform;
             marker.GetComponent<Renderer>().material = new Material(Shader.Find("Sprites/Default"));
         }
@@ -245,26 +201,63 @@ public class MultiZoneCityGenerator : MonoBehaviour
 
     private Vector3 GetZoneCenter(GenerationZone zone) => zone.originPoint.position + new Vector3(zone.width * cellSize / 2f, 0, zone.height * cellSize / 2f);
 
-    public void BeginGeneration() { StopAllCoroutines(); StartCoroutine(GenerateZonesSequence()); }
-    IEnumerator GenerateZonesSequence() { yield break; }
-    public void ClearAndRestartGeneration() { }
-
-    void GenerateOneZone(GenerationZone zone, BuildingType specificBuildingType)
+    public void ClearAndRestartGeneration()
     {
-        if (zone.originPoint == null) return;
-        Vector3 centerWorldPos = GetZoneCenter(zone);
-        Vector3 spawnPos = new Vector3(centerWorldPos.x, zone.originPoint.position.y + buildingYOffset, centerWorldPos.z);
-        GameObject newBuilding = Instantiate(specificBuildingType.prefab, spawnPos, Quaternion.identity, zone.originPoint);
-        AttachAndInitialize(newBuilding, specificBuildingType.data, spawnPos);
+        foreach (var zone in zones) { zone.isOccupied = false; foreach (Transform child in zone.originPoint) Destroy(child.gameObject); }
+        _currentCo2 = _currentCost = _currentEnergy = 0; _stepCount = 0;
+        StartCoroutine(GenerateZonesSequence());
     }
 
-    void AttachAndInitialize(GameObject building, Placeable placeableData, Vector3 worldPos)
+    IEnumerator GenerateZonesSequence()
     {
-        PlacedObject placedObj = building.GetComponent<PlacedObject>() ?? building.AddComponent<PlacedObject>();
+        List<int> available = new List<int>();
+        for (int i = 0; i < zones.Count; i++) available.Add(i);
+        float currentError = CalculateWeightedError(_currentCo2, _currentCost, _currentEnergy);
+        while (available.Count > 0)
+        {
+            int idx = available[Random.Range(0, available.Count)];
+            var type = buildingOptions[Random.Range(0, buildingOptions.Count)];
+            var stats = GetBuildingStats(type.prefab);
+            if (CalculateWeightedError(_currentCo2 + stats.co2, _currentCost + stats.cost, _currentEnergy + stats.energy) < currentError)
+            {
+                GenerateOneZone(zones[idx], type);
+                zones[idx].isOccupied = true;
+                _currentCo2 += stats.co2; _currentCost += stats.cost; _currentEnergy += stats.energy;
+                _stepCount++;
+                available.Remove(idx);
+            }
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
+
+    private float CalculateWeightedError(float c, float m, float e) => (Mathf.Abs(c - targetCo2) * weightCo2) + (Mathf.Abs(m - targetCost) * weightCost) + (Mathf.Abs(e - targetEnergy) * weightEnergy);
+
+    private void InitCSV() { if (!string.IsNullOrEmpty(_csvFilePath)) File.WriteAllText(_csvFilePath, "Step,Zone,Building,Co2,Cost,Energy\n"); }
+
+    struct BuildingStats { public float co2, cost, energy; }
+    private BuildingStats GetBuildingStats(GameObject p)
+    {
+        BuildingStats s = new BuildingStats();
+        BuildingEffect e = p.GetComponent<BuildingEffect>();
+        if (e != null) { s.co2 = e.powerPlantCo2Change; s.cost = 100f; s.energy = 50f; }
+        return s;
+    }
+
+    void GenerateOneZone(GenerationZone zone, BuildingType type)
+    {
+        Vector3 spawnPos = GetZoneCenter(zone) + Vector3.up * buildingYOffset;
+        GameObject b = Instantiate(type.prefab, spawnPos, Quaternion.identity, zone.originPoint);
+        AttachAndInitialize(b, type.data, spawnPos);
+    }
+
+    void AttachAndInitialize(GameObject building, Placeable data, Vector3 pos)
+    {
+        PlacedObject po = building.GetComponent<PlacedObject>() ?? building.AddComponent<PlacedObject>();
         if (GameManager.Instance != null && GameManager.Instance.PlacementGrid != null)
         {
-            Vector3Int gridPos = GameManager.Instance.PlacementGrid.WorldToCell(worldPos);
-            placedObj.Initialize(placeableData, gridPos);
+            Vector3Int gPos = GameManager.Instance.PlacementGrid.WorldToCell(pos);
+            po.Initialize(data, gPos);
+            PlacementSystem.Instance?.RegisterExternalObject(building, data, gPos);
         }
     }
 }
