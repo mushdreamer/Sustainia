@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
@@ -156,31 +156,39 @@ public class TutorialManager : MonoBehaviour
     {
         if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) return;
         TutorialStep current = steps[_currentStepIndex];
-        if (!current.requireBuilding) return;
+        if (!current.requireBuilding || current.targetBuildings == null || current.targetBuildings.Count == 0) return;
 
-        if (current.allowAnyBuilding)
+        // 获取当前场上所有的建筑实例
+        var allNormal = ResourceManager.Instance.GetAllPlacedBuildings();
+        var allTutorial = ResourceManager.Instance.GetAllTutorialBuildings();
+
+        bool allRequirementsMet = true;
+
+        foreach (var req in current.targetBuildings)
+        {
+            int currentCount = 0;
+
+            if (req.isTutorialBuilding)
+            {
+                // 在教程建筑列表中查找匹配类型的数量
+                currentCount = allTutorial.FindAll(b => b.tutorialType == req.tutorialType).Count;
+            }
+            else
+            {
+                // 在普通建筑列表中查找匹配类型的数量
+                currentCount = allNormal.FindAll(b => b.type == req.normalType).Count;
+            }
+
+            if (currentCount < req.requiredCount)
+            {
+                allRequirementsMet = false;
+                break;
+            }
+        }
+
+        if (allRequirementsMet)
         {
             NextStep();
-            return;
-        }
-
-        if (data == null) return;
-
-        if (current.isTutorialBuilding)
-        {
-            var effect = data.Prefab.GetComponent<TutorialBuildingEffect>();
-            if (effect != null && effect.tutorialType == current.targetTutorialType)
-            {
-                NextStep();
-            }
-        }
-        else
-        {
-            var effect = data.Prefab.GetComponent<BuildingEffect>();
-            if (effect != null && effect.type == current.targetBuildingType)
-            {
-                NextStep();
-            }
         }
     }
 

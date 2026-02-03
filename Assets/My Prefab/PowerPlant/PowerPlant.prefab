@@ -136,7 +136,7 @@ MonoBehaviour:
   farmCo2Change: 2
   instituteCo2Change: 3
   bankCo2Change: 1.5
-  powerProduction: 20
-  powerPlantCo2Change: 10
+  powerProduction: 40
+  powerPlantCo2Change: 20
   storageConsumption: 5
   storageCo2Change: 8

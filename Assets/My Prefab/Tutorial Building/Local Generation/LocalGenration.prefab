@@ -106,7 +106,7 @@ MonoBehaviour:
   tutorialType: 0
   energyValue: 20
   storageCapacity: 100
-  co2Effect: 0
+  co2Effect: 5
 --- !u!65 &4433695249196801359
 BoxCollider:
   m_ObjectHideFlags: 0
