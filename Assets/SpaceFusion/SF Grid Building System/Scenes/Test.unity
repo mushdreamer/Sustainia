@@ -13610,8 +13610,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: Build Anything
-    instructionText: Select ANY building from the shop panel below and place it on
-      an empty grid.
+    instructionText: Select a hous from the shop panel below and place it on an empty
+      grid.
     clearSceneBeforeStart: 1
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -13624,10 +13624,10 @@ MonoBehaviour:
     requireBuilding: 1
     houseReq:
       checkThis: 1
-      goalCount: 3
+      goalCount: 1
     farmReq:
-      checkThis: 1
-      goalCount: 2
+      checkThis: 0
+      goalCount: 1
     instituteReq:
       checkThis: 0
       goalCount: 1
@@ -13917,7 +13917,7 @@ MonoBehaviour:
     indicatorColor: {r: 1, g: 0, b: 0, a: 1}
     startCondition: 0
     shouldPauseGame: 1
-    requireBuilding: 1
+    requireBuilding: 0
     houseReq:
       checkThis: 0
       goalCount: 1
@@ -13936,7 +13936,7 @@ MonoBehaviour:
     bankReq:
       checkThis: 0
       goalCount: 1
-    requireTutorialBuilding: 0
+    requireTutorialBuilding: 1
     localGenReq:
       checkThis: 1
       goalCount: 1
@@ -14206,7 +14206,7 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 2.3: Adding Emissions to the State'
-    instructionText: 'Now, try building a Power Plant and a Local Generation site.
+    instructionText: 'Now, try building Power Plants and a Local Generation sites.
       As they come online, notice how the projected CO2 meter begins to rise. This
       represents the cumulative effect: the system takes last year''s total concentration
       and stacks this year''s new emissions directly on top of it.'
@@ -14238,7 +14238,7 @@ MonoBehaviour:
     bankReq:
       checkThis: 0
       goalCount: 1
-    requireTutorialBuilding: 1
+    requireTutorialBuilding: 0
     localGenReq:
       checkThis: 1
       goalCount: 1
@@ -14254,7 +14254,7 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: 'Event 2.4: Implementing Removals & The Final Balance'
     instructionText: 'To reach our environmental target, we must intervene. Build
       several CCUS buildings and watch the meter respond. By increasing your removals,
