@@ -13803,15 +13803,16 @@ MonoBehaviour:
   - stepName: 'Event 2.1: The Baseline State'
     instructionText: First, please direct your attention to the atmospheric monitor
       at the top of the screen. This display shows our current environmental state,
-      representing the total concentration inherited from last year. In optimization,
-      understanding where you start is just as important as where you are going.
+      representing the total concentration of CO2 inherited from all previous years.
+      In optimization, understanding this starting point is essential because the
+      atmosphere acts like a reservoir that holds onto every bit of carbon ever released.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
     startCondition: 0
     shouldPauseGame: 1
     requireBuilding: 0
@@ -13824,16 +13825,16 @@ MonoBehaviour:
   - stepName: 'Event 2.2: Defining Net Annual Change'
     instructionText: "The air quality doesn't just change randomly; it is driven
       by your annual decisions. Every year, your city\u2019s impact is defined by
-      the balance of emissions from industry and removals from green tech. The net
-      change you see is the result of subtracting this year's total removals from
-      this year's total emissions."
+      the balance between the pollution created by industry and the carbon captured
+      by green technology. The net change you see each year is the result of subtracting
+      your total removals from your total emissions."
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
     startCondition: 0
     shouldPauseGame: 1
     requireBuilding: 0
@@ -13844,10 +13845,41 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 2.3: Adding Emissions to the State'
-    instructionText: 'Now, try building one Power Plant and one Local Generation
-      site. As they come online, notice how the projected CO2 meter begins to rise.
-      This represents the cumulative effect: the system takes last year''s total
-      CO2 and adds this year''s new emissions on top of it'
+    instructionText: 'Now, try building a Power Plant and a Local Generation site.
+      As they come online, notice how the projected CO2 meter begins to rise. This
+      represents the cumulative effect: the system takes last year''s total concentration
+      and stacks this year''s new emissions directly on top of it.'
+    clearSceneBeforeStart: 0
+    layoutToLoad: -1
+    focusTarget: {fileID: 1743267687}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 1
+    allowAnyCombination: 0
+    targetBuildings:
+    - isTutorialBuilding: 0
+      normalType: 3
+      tutorialType: 0
+      requiredCount: 1
+    - isTutorialBuilding: 1
+      normalType: 0
+      tutorialType: 0
+      requiredCount: 1
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 0
+  - stepName: 'Event 2.4: Implementing Removals & The Final Balance'
+    instructionText: 'To reach our environmental target, we must intervene. Build
+      several CCUS buildings and watch the meter respond. By increasing your removals,
+      you are actively reducing the amount of carbon that gets added to the total.
+      This confirms the core logic of our world: next year''s total is simply last
+      year''s concentration plus whatever we emit, minus whatever we successfully
+      remove.'
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
