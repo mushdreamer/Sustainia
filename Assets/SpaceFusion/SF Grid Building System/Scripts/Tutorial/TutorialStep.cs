@@ -2,19 +2,13 @@
 using System.Collections.Generic;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 
-namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
+[System.Serializable]
+public class BuildingCheck
 {
-    [System.Serializable]
-    public class BuildingRequirement
-    {
-        public bool isTutorialBuilding;
-        [Tooltip("如果是普通建筑，请选择类型")]
-        public BuildingType normalType;
-        [Tooltip("如果是教程建筑，请选择类型")]
-        public TutorialBuildingType tutorialType;
-        [Tooltip("该种类建筑需要达到的目标数量")]
-        public int requiredCount = 1;
-    }
+    [Tooltip("是否检查此建筑")]
+    public bool checkThis = false;
+    [Tooltip("在该步骤内需要新建造的目标数量")]
+    public int goalCount = 1;
 }
 
 [System.Serializable]
@@ -56,23 +50,26 @@ public class TutorialStep
     [Header("Game State Control")]
     public bool shouldPauseGame = true;
 
-    [Header("Completion - Building (Flexible)")]
+    [Header("Completion - Normal Buildings")]
     public bool requireBuilding = false;
-    [Tooltip("如果勾选：只要列表内所有建筑的总数达标即可。如果不勾选：列表内每一项都必须分别达标。")]
-    public bool allowAnyCombination = false;
-    [Tooltip("支持混合配置多种建筑及其数量要求")]
-    public List<BuildingRequirement> targetBuildings;
+    public BuildingCheck houseReq;
+    public BuildingCheck farmReq;
+    public BuildingCheck instituteReq;
+    public BuildingCheck powerPlantReq;
+    public BuildingCheck co2StorageReq;
+    public BuildingCheck bankReq;
 
-    [Header("Completion - Removal")]
+    [Header("Completion - Tutorial Specific Buildings")]
+    public bool requireTutorialBuilding = false;
+    public BuildingCheck localGenReq;
+    public BuildingCheck batteryReq;
+    public BuildingCheck negativeHouseReq;
+    public BuildingCheck ccHouseReq;
+
+    [Header("Completion - Other Conditions")]
     public bool requireRemoval = false;
-
-    [Header("Completion - Simulation")]
     public bool requirePositiveEnergyBalance = false;
-
-    [Header("Completion - Optimization (New)")]
     [Tooltip("如果勾选，将检查 LevelScenarioLoader 中的真实目标是否达成")]
     public bool requireOptimizationGoal = false;
-
-    [Header("Completion - Interaction")]
     public bool requireInput = false;
 }
