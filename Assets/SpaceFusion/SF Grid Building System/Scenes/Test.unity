@@ -13645,52 +13645,11 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: The Emitter
-    instructionText: Let's generate some power. Build a Power Plant from the shop
-      menu. Watch how it provides electricity but also emits CO2.
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
-    focusTarget: {fileID: 0}
-    cameraDistance: 15
-    cameraAngle: 45
-    showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    startCondition: 0
-    shouldPauseGame: 1
-    requireBuilding: 1
-    allowAnyBuilding: 0
-    isTutorialBuilding: 0
-    targetBuildingType: 3
-    targetTutorialType: 0
-    requireRemoval: 0
-    requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 0
-    requireInput: 0
-  - stepName: Build CCUS
-    instructionText: CO2 is rising! We need to fix this. According to Question 13,
-      CCUS (Carbon Capture) technology can remove CO2. Build a Co2Storage facility
-      now!
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
-    focusTarget: {fileID: 0}
-    cameraDistance: 15
-    cameraAngle: 45
-    showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    startCondition: 0
-    shouldPauseGame: 1
-    requireBuilding: 1
-    allowAnyBuilding: 0
-    isTutorialBuilding: 0
-    targetBuildingType: 4
-    targetTutorialType: 0
-    requireRemoval: 0
-    requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 0
-    requireInput: 0
-  - stepName: Power Plant
-    instructionText: "City management begins with power. The game is now paused.
-      Look at the Power Plant\u2014it provides electricity from the main grid."
+  - stepName: 'Event 1.1: Introduction to Grid Input'
+    instructionText: "Introduction to Grid Input City management begins with power,
+      so the game is now paused for this brief orientation. Look at the Power Plant\u2014this
+      facility acts as your primary link to the external infrastructure, providing
+      a steady stream of Input from the grid to keep the city running."
     clearSceneBeforeStart: 1
     layoutToLoad: 1
     focusTarget: {fileID: 597993825}
@@ -13709,15 +13668,64 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: LG
-    instructionText: LG
+  - stepName: 'Event 1.2: Building the Power Plant'
+    instructionText: Building the Power Plant Now, please place a Power Plant in
+      the designated area. As the construction completes, observe the "Electricity"
+      display in your UI. You will notice the Input value increases, showing the
+      baseline energy successfully entering your city's network from the main grid.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
-    focusTarget: {fileID: 0}
+    focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 1
+    allowAnyBuilding: 0
+    isTutorialBuilding: 0
+    targetBuildingType: 3
+    targetTutorialType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 0
+  - stepName: 'Event 1.3: Introduction to Local Generation'
+    instructionText: While the grid is reliable, a resilient city also utilizes Local
+      Generation. These are energy sources like wind or solar located right within
+      your borders. This allows your city to produce its own clean energy independently,
+      reducing reliance on external sources.
+    clearSceneBeforeStart: 0
+    layoutToLoad: -1
+    focusTarget: {fileID: 97609123}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 0
+    allowAnyBuilding: 0
+    isTutorialBuilding: 0
+    targetBuildingType: 0
+    targetTutorialType: 0
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: 'Event 1.4: Building Local Generation'
+    instructionText: Go ahead and build a Local Generation site. Keep a close eye
+      on the Electricity panel; you will see the values update to reflect your Local
+      Generation capacity. This confirms that your city is now active in generating
+      its own power alongside the grid input.
+    clearSceneBeforeStart: 0
+    layoutToLoad: -1
+    focusTarget: {fileID: 1060047925}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
     startCondition: 0
     shouldPauseGame: 1
     requireBuilding: 1
@@ -13729,9 +13737,11 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 0
-  - stepName: Residential Area
-    instructionText: Finally, the Residential Area defines how much power our citizens
-      need right now.
+  - stepName: 'Event 1.5: Understanding Residential Demand'
+    instructionText: Energy isn't just about supply; it's also about consumption.
+      Every building, from factories to homes, creates a specific Demand for power.
+      In our optimization model, meeting this Demand is the essential requirement
+      for a functioning city.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1113102201}
@@ -13750,19 +13760,20 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: Battery Storage
-    instructionText: The surplus energy is $+40$. Since we have more supply than
-      demand, this energy flows into the Battery Storage.
+  - stepName: 'Event 1.6: Building a House'
+    instructionText: Now, build a Residential House. Once it is built, look at the
+      change in your Electricity UI. You will see the Demand value rise. This demonstrates
+      how every new expansion in your city subtracts from your available power supply.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
-    focusTarget: {fileID: 331275197}
+    focusTarget: {fileID: 275863815}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
     indicatorColor: {r: 1, g: 0, b: 0, a: 1}
     startCondition: 0
     shouldPauseGame: 1
-    requireBuilding: 0
+    requireBuilding: 1
     allowAnyBuilding: 0
     isTutorialBuilding: 0
     targetBuildingType: 0
@@ -13770,10 +13781,13 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 1
-  - stepName: E1.4 - Equation Logic
-    instructionText: 'The result is Net Grid Load: Input(60) + Local(20) - Demand(40)
-      = +40 surplus stored in batteries.'
+    requireInput: 0
+  - stepName: 'Event 1.7: The Role of Battery Storage'
+    instructionText: "Finally, let's look at how we balance the equation: Input +
+      Generation - Demand = ?. When your supply exceeds your demand, the surplus
+      isn't lost; it results in a Change in battery energy. This fluctuating value
+      represents your Storage term\u2014the battery absorbs the excess now so you
+      can use it later when the balance shifts."
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 331275197}
