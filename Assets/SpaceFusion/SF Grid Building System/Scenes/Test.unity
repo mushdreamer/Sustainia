@@ -13598,7 +13598,11 @@ MonoBehaviour:
     - isTutorialBuilding: 0
       normalType: 0
       tutorialType: 0
-      requiredCount: 0
+      requiredCount: 3
+    - isTutorialBuilding: 0
+      normalType: 1
+      tutorialType: 0
+      requiredCount: 2
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
@@ -13859,7 +13863,7 @@ MonoBehaviour:
     startCondition: 0
     shouldPauseGame: 1
     requireBuilding: 1
-    allowAnyCombination: 0
+    allowAnyCombination: 1
     targetBuildings:
     - isTutorialBuilding: 0
       normalType: 3

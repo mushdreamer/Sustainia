@@ -21,6 +21,7 @@ public class TutorialManager : MonoBehaviour
     private bool _isTutorialActive = false;
     private bool _isWaitingForStartCondition = false;
     private Coroutine _cameraCoroutine;
+    private float _stepStartTime; // 用于防止自跳步的时间闸门
 
     private void Awake() { if (Instance != null) { Destroy(gameObject); return; } Instance = this; }
 
@@ -30,7 +31,7 @@ public class TutorialManager : MonoBehaviour
         if (tutorialUI) tutorialUI.Initialize(this);
         if (PlacementSystem.Instance != null)
         {
-            PlacementSystem.Instance.OnBuildingPlaced += CheckBuildingProgress;
+            PlacementSystem.Instance.OnBuildingPlaced += OnBuildingPlacedTrigger;
             PlacementSystem.Instance.OnBuildingRemoved += CheckRemovalProgress;
         }
         StartTutorial();
@@ -67,6 +68,7 @@ public class TutorialManager : MonoBehaviour
     {
         if (index >= steps.Count) { CompleteTutorial(); return; }
 
+        _stepStartTime = Time.time; // 重置时间闸门
         TutorialStep step = steps[index];
 
         if (step.clearSceneBeforeStart && TutorialLevelPreparer.Instance != null)
@@ -152,43 +154,63 @@ public class TutorialManager : MonoBehaviour
 
     public void SkipCurrentStep() { if (_isTutorialActive) NextStep(); }
 
-    private void CheckBuildingProgress(Placeable data)
+    private void OnBuildingPlacedTrigger(Placeable data)
     {
-        if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) return;
-        TutorialStep current = steps[_currentStepIndex];
-        if (!current.requireBuilding || current.targetBuildings == null || current.targetBuildings.Count == 0) return;
+        // 收到放置事件后，开启一个协程等待一帧后再检查，确保建筑已注册
+        StartCoroutine(CheckProgressWithDelay());
+    }
 
-        // 获取当前场上所有的建筑实例
+    private IEnumerator CheckProgressWithDelay()
+    {
+        // 等待一帧，确保新建筑的 Start() 运行并完成了 ResourceManager 的注册
+        yield return null;
+
+        if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) yield break;
+
+        // 防御：防止由于强制生成（ForceSpawn）导致的瞬间跳步
+        if (Time.time - _stepStartTime < 0.2f) yield break;
+
+        TutorialStep current = steps[_currentStepIndex];
+        if (!current.requireBuilding || current.targetBuildings == null || current.targetBuildings.Count == 0) yield break;
+
         var allNormal = ResourceManager.Instance.GetAllPlacedBuildings();
         var allTutorial = ResourceManager.Instance.GetAllTutorialBuildings();
 
-        bool allRequirementsMet = true;
-
-        foreach (var req in current.targetBuildings)
+        if (current.allowAnyCombination)
         {
-            int currentCount = 0;
+            // 模式 A：灵活总数模式。计算列表中所有建筑在场上的总和是否达到要求的总和。
+            int totalRequired = 0;
+            int totalCurrentFound = 0;
 
-            if (req.isTutorialBuilding)
+            foreach (var req in current.targetBuildings)
             {
-                // 在教程建筑列表中查找匹配类型的数量
-                currentCount = allTutorial.FindAll(b => b.tutorialType == req.tutorialType).Count;
-            }
-            else
-            {
-                // 在普通建筑列表中查找匹配类型的数量
-                currentCount = allNormal.FindAll(b => b.type == req.normalType).Count;
+                totalRequired += req.requiredCount;
+                if (req.isTutorialBuilding)
+                    totalCurrentFound += allTutorial.FindAll(b => b.tutorialType == req.tutorialType).Count;
+                else
+                    totalCurrentFound += allNormal.FindAll(b => b.type == req.normalType).Count;
             }
 
-            if (currentCount < req.requiredCount)
-            {
-                allRequirementsMet = false;
-                break;
-            }
+            if (totalCurrentFound >= totalRequired) NextStep();
         }
-
-        if (allRequirementsMet)
+        else
         {
-            NextStep();
+            // 模式 B：严格模式。列表中每一项配置都必须分别满足数量要求。
+            bool allMet = true;
+            foreach (var req in current.targetBuildings)
+            {
+                int count = req.isTutorialBuilding ?
+                    allTutorial.FindAll(b => b.tutorialType == req.tutorialType).Count :
+                    allNormal.FindAll(b => b.type == req.normalType).Count;
+
+                if (count < req.requiredCount)
+                {
+                    allMet = false;
+                    break;
+                }
+            }
+
+            if (allMet) NextStep();
         }
     }
 

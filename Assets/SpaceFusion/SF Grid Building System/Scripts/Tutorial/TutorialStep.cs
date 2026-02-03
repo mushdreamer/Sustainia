@@ -2,13 +2,19 @@
 using System.Collections.Generic;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 
-[System.Serializable]
-public class BuildingRequirement
+namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 {
-    public bool isTutorialBuilding;
-    public SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingType normalType;
-    public SpaceFusion.SF_Grid_Building_System.Scripts.Core.TutorialBuildingType tutorialType;
-    public int requiredCount = 1;
+    [System.Serializable]
+    public class BuildingRequirement
+    {
+        public bool isTutorialBuilding;
+        [Tooltip("如果是普通建筑，请选择类型")]
+        public BuildingType normalType;
+        [Tooltip("如果是教程建筑，请选择类型")]
+        public TutorialBuildingType tutorialType;
+        [Tooltip("该种类建筑需要达到的目标数量")]
+        public int requiredCount = 1;
+    }
 }
 
 [System.Serializable]
@@ -19,23 +25,23 @@ public class TutorialStep
     public string instructionText;
 
     [Header("Clean Slate Logic")]
-    [Tooltip("½øÈë´Ë²½ÖèÇ°ÊÇ·ñÇå¿Õ³¡¾°ËùÓÐ½¨Öþ")]
+    [Tooltip("进入此步骤前是否清空场景所有建筑")]
     public bool clearSceneBeforeStart = false;
-    [Tooltip("Çå¿Õºó¼ÓÔØµÄ²¼¾ÖË÷Òý (¶ÔÓ¦ Preparer ÖÐµÄ eventIndex)")]
+    [Tooltip("清空后加载的布局索引 (对应 Preparer 中的 eventIndex)")]
     public int layoutToLoad = -1;
 
     [Header("Camera Control")]
-    [Tooltip("¾µÍ·¾Û½¹µÄÄ¿±ê½¨Öþ»òÎ»ÖÃ")]
+    [Tooltip("镜头聚焦的目标建筑或位置")]
     public GameObject focusTarget;
-    [Tooltip("¾µÍ·¾àÀëÄ¿±êµÄÔ¶½ü")]
+    [Tooltip("镜头距离目标的远近")]
     public float cameraDistance = 15f;
-    [Tooltip("¾µÍ·µÄ¸©ÊÓ½Ç¶È")]
+    [Tooltip("镜头的俯视角度")]
     public float cameraAngle = 45f;
 
     [Header("Visual Hint")]
-    [Tooltip("ÊÇ·ñÔÚ¸Ã²½ÖèÏÔÊ¾ÊÓ¾õÖ¸Òý±êÖ¾")]
+    [Tooltip("是否在该步骤显示视觉指引标志")]
     public bool showIndicator = true;
-    [Tooltip("ÊÓ¾õÖ¸Òý±êÖ¾µÄÑÕÉ«")]
+    [Tooltip("视觉指引标志的颜色")]
     public Color indicatorColor = Color.yellow;
 
     public enum StartCondition
@@ -50,15 +56,12 @@ public class TutorialStep
     [Header("Game State Control")]
     public bool shouldPauseGame = true;
 
-    // TutorialStep.cs
     [Header("Completion - Building (Flexible)")]
     public bool requireBuilding = false;
-    // 如果勾选此项，只要玩家造了列表里任何一种建筑，且总数达到要求即可
+    [Tooltip("如果勾选：只要列表内所有建筑的总数达标即可。如果不勾选：列表内每一项都必须分别达标。")]
     public bool allowAnyCombination = false;
-    // 核心配置列表
+    [Tooltip("支持混合配置多种建筑及其数量要求")]
     public List<BuildingRequirement> targetBuildings;
-
-    // [注意] 可以移除旧的 targetBuildingType 和 isTutorialBuilding 字段以保持 Inspector 整洁
 
     [Header("Completion - Removal")]
     public bool requireRemoval = false;
@@ -67,7 +70,7 @@ public class TutorialStep
     public bool requirePositiveEnergyBalance = false;
 
     [Header("Completion - Optimization (New)")]
-    [Tooltip("Èç¹û¹´Ñ¡£¬½«¼ì²é LevelScenarioLoader ÖÐµÄÕæÊµÄ¿±êÊÇ·ñ´ï³É")]
+    [Tooltip("如果勾选，将检查 LevelScenarioLoader 中的真实目标是否达成")]
     public bool requireOptimizationGoal = false;
 
     [Header("Completion - Interaction")]
