@@ -51,8 +51,6 @@ public class TutorialLevelPreparer : MonoBehaviour
         // 4. 清除可能存在的残留
         BuildingEffect[] leftovers = FindObjectsByType<BuildingEffect>(FindObjectsSortMode.None);
         foreach (var b in leftovers) Destroy(b.gameObject);
-
-        Debug.Log("[Tutorial] 系统逻辑与物理场景已完全清空。");
     }
 
     public void PrepareLayoutForEvent(int eventIndex)

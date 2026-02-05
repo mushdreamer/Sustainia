@@ -13610,7 +13610,7 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: Build Anything
-    instructionText: Select ANY building from the shop panel below and place it on
+    instructionText: Select any building from the shop panel below and place it on
       an empty grid.
     clearSceneBeforeStart: 1
     layoutToLoad: -1
@@ -13623,11 +13623,11 @@ MonoBehaviour:
     shouldPauseGame: 1
     requireBuilding: 1
     houseReq:
-      checkThis: 1
-      goalCount: 3
+      checkThis: 0
+      goalCount: 1
     farmReq:
-      checkThis: 1
-      goalCount: 2
+      checkThis: 0
+      goalCount: 1
     instituteReq:
       checkThis: 0
       goalCount: 1

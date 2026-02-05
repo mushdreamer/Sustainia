@@ -20,11 +20,12 @@ public class TutorialManager : MonoBehaviour
     private int _currentStepIndex = 0;
     private bool _isTutorialActive = false;
     private bool _isWaitingForStartCondition = false;
+    private bool _isSystemClearing = false;
     private Coroutine _cameraCoroutine;
     private float _stepStartTime;
 
-    // 记录进入步骤时的初始建筑数量快照，用于计算本步增量
     private Dictionary<string, int> _initialCounts = new Dictionary<string, int>();
+    private int _initialTotalCount = 0;
 
     private void Awake()
     {
@@ -39,9 +40,15 @@ public class TutorialManager : MonoBehaviour
 
         if (PlacementSystem.Instance != null)
         {
-            // 绑定事件：每当建筑状态改变（增加或减少），都去尝试检查一次进度
+            // 修正后的事件绑定：OnBuildingPlaced 通常带参数，而 OnBuildingRemoved 在某些版本中不带参数
+            // 这里使用匿名函数 () => 处理不带参数的情况
             PlacementSystem.Instance.OnBuildingPlaced += (data) => OnAnyBuildingAction();
-            PlacementSystem.Instance.OnBuildingRemoved += OnAnyBuildingAction;
+
+            // 修复 CS1593 错误：如果 OnBuildingRemoved 不带参数，则去掉 (data)
+            PlacementSystem.Instance.OnBuildingRemoved += () => {
+                OnAnyBuildingAction();
+                OnBuildingRemovedTrigger();
+            };
         }
 
         StartTutorial();
@@ -58,22 +65,21 @@ public class TutorialManager : MonoBehaviour
         {
             bool met = false;
             if (currentStep.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit)
+            {
                 met = ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < -0.1f;
+            }
             else met = true;
 
             if (met) ActivateStepUI(currentStep);
             return;
         }
 
-        // 持续检查数值类非建筑条件（如能量平衡等）
         CheckNonBuildingConditions(currentStep);
     }
 
     private void OnAnyBuildingAction()
     {
-        if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) return;
-
-        // 延迟到帧末，确保 ResourceManager 已完成列表更新
+        if (!_isTutorialActive || _isWaitingForStartCondition || _isSystemClearing || _currentStepIndex >= steps.Count) return;
         StartCoroutine(CheckRequirementsDelayed());
     }
 
@@ -85,44 +91,59 @@ public class TutorialManager : MonoBehaviour
         TutorialStep current = steps[_currentStepIndex];
         if (IsStepRequirementFulfilled(current))
         {
+            Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} completed via Building Action.");
             NextStep();
         }
     }
 
     private bool IsStepRequirementFulfilled(TutorialStep step)
     {
-        // 只有当该步骤需要建筑任务时才进行增量检查
+        if (step.requireRemoval) return false;
+
         if (step.requireBuilding || step.requireTutorialBuilding)
         {
-            // 检查普通建筑需求 (通过 ResourceManager 统一查询)
-            if (step.houseReq.checkThis && GetCountDelta("House") < step.houseReq.goalCount) return false;
-            if (step.farmReq.checkThis && GetCountDelta("Farm") < step.farmReq.goalCount) return false;
-            if (step.instituteReq.checkThis && GetCountDelta("Institute") < step.instituteReq.goalCount) return false;
-            if (step.powerPlantReq.checkThis && GetCountDelta("PowerPlant") < step.powerPlantReq.goalCount) return false;
-            if (step.co2StorageReq.checkThis && GetCountDelta("Co2Storage") < step.co2StorageReq.goalCount) return false;
-            if (step.bankReq.checkThis && GetCountDelta("Bank") < step.bankReq.goalCount) return false;
+            bool hasSpecificRequirement = false;
 
-            // 检查教学专用建筑需求
-            if (step.localGenReq.checkThis && GetCountDelta("LocalGen") < step.localGenReq.goalCount) return false;
-            if (step.batteryReq.checkThis && GetCountDelta("Battery") < step.batteryReq.goalCount) return false;
-            if (step.negativeHouseReq.checkThis && GetCountDelta("NegativeHouse") < step.negativeHouseReq.goalCount) return false;
-            if (step.ccHouseReq.checkThis && GetCountDelta("CCHouse") < step.ccHouseReq.goalCount) return false;
+            if (step.houseReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("House") < step.houseReq.goalCount) return false; }
+            if (step.farmReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Farm") < step.farmReq.goalCount) return false; }
+            if (step.instituteReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Institute") < step.instituteReq.goalCount) return false; }
+            if (step.powerPlantReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("PowerPlant") < step.powerPlantReq.goalCount) return false; }
+            if (step.co2StorageReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Co2Storage") < step.co2StorageReq.goalCount) return false; }
+            if (step.bankReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Bank") < step.bankReq.goalCount) return false; }
+
+            if (step.localGenReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("LocalGen") < step.localGenReq.goalCount) return false; }
+            if (step.batteryReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Battery") < step.batteryReq.goalCount) return false; }
+            if (step.negativeHouseReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("NegativeHouse") < step.negativeHouseReq.goalCount) return false; }
+            if (step.ccHouseReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("CCHouse") < step.ccHouseReq.goalCount) return false; }
+
+            if (!hasSpecificRequirement)
+            {
+                int currentTotal = 0;
+                if (ResourceManager.Instance != null)
+                {
+                    string[] allKeys = { "House", "Farm", "Institute", "PowerPlant", "Co2Storage", "Bank", "LocalGen", "Battery", "NegativeHouse", "CCHouse" };
+                    foreach (var key in allKeys) currentTotal += ResourceManager.Instance.GetTotalBuildingCount(key);
+                }
+                return currentTotal > _initialTotalCount;
+            }
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private int GetCountDelta(string typeKey)
     {
         int currentCount = ResourceManager.Instance.GetTotalBuildingCount(typeKey);
         int initialCount = _initialCounts.ContainsKey(typeKey) ? _initialCounts[typeKey] : 0;
-        // 返回当前数量与步骤开始时数量的差值（增量）
         return Mathf.Max(0, currentCount - initialCount);
     }
 
     private void CheckNonBuildingConditions(TutorialStep currentStep)
     {
         bool statusMet = true;
+        bool hasAnyCondition = currentStep.requirePositiveEnergyBalance || currentStep.requireOptimizationGoal;
 
         if (currentStep.requirePositiveEnergyBalance)
         {
@@ -134,11 +155,14 @@ public class TutorialManager : MonoBehaviour
             if (LevelScenarioLoader.Instance == null || !LevelScenarioLoader.Instance.IsOptimizationGoalMet()) statusMet = false;
         }
 
-        // 如果步骤没有特定的建筑需求，而是只有数值需求且已达成
-        if (statusMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding &&
+        if (hasAnyCondition && statusMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding &&
             !currentStep.requireInput && !currentStep.requireRemoval)
         {
-            if (Time.time - _stepStartTime > 0.5f) NextStep();
+            if (Time.time - _stepStartTime > 0.8f)
+            {
+                Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} completed via Conditions.");
+                NextStep();
+            }
         }
     }
 
@@ -147,22 +171,29 @@ public class TutorialManager : MonoBehaviour
     private void PrepareStep(int index)
     {
         if (index >= steps.Count) { CompleteTutorial(); return; }
+        StartCoroutine(PrepareStepRoutine(index));
+    }
 
+    private IEnumerator PrepareStepRoutine(int index)
+    {
         _stepStartTime = Time.time;
-
-        // 进入新步骤前，先记录当前的建筑存量快照
-        RecordInitialCounts();
-
         TutorialStep step = steps[index];
+        Debug.Log($"<color=yellow>[Tutorial]</color> Preparing Step {index}: {step.stepName}");
 
         if (step.clearSceneBeforeStart && TutorialLevelPreparer.Instance != null)
         {
+            _isSystemClearing = true;
             TutorialLevelPreparer.Instance.ClearAllBuildings();
-            if (step.layoutToLoad >= 0)
-            {
-                TutorialLevelPreparer.Instance.PrepareLayoutForEvent(step.layoutToLoad);
-            }
-            // 如果清空了场景并加载了预设布局，需要重新获取存量快照
+            if (step.layoutToLoad >= 0) TutorialLevelPreparer.Instance.PrepareLayoutForEvent(step.layoutToLoad);
+
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForFixedUpdate();
+
+            RecordInitialCounts();
+            _isSystemClearing = false;
+        }
+        else
+        {
             RecordInitialCounts();
         }
 
@@ -178,14 +209,14 @@ public class TutorialManager : MonoBehaviour
     private void RecordInitialCounts()
     {
         _initialCounts.Clear();
+        _initialTotalCount = 0;
         if (ResourceManager.Instance == null) return;
-
-        // 统一查询所有可能涉及的建筑类型名称
-        string[] allKeys = { "House", "Farm", "Institute", "PowerPlant", "Co2Storage", "Bank",
-                             "LocalGen", "Battery", "NegativeHouse", "CCHouse" };
+        string[] allKeys = { "House", "Farm", "Institute", "PowerPlant", "Co2Storage", "Bank", "LocalGen", "Battery", "NegativeHouse", "CCHouse" };
         foreach (var key in allKeys)
         {
-            _initialCounts[key] = ResourceManager.Instance.GetTotalBuildingCount(key);
+            int count = ResourceManager.Instance.GetTotalBuildingCount(key);
+            _initialCounts[key] = count;
+            _initialTotalCount += count;
         }
     }
 
@@ -193,16 +224,12 @@ public class TutorialManager : MonoBehaviour
     {
         _isWaitingForStartCondition = false;
         tutorialUI.ShowStep(step);
-
-        if (step.focusTarget != null)
-            UpdateZoneHighlights(step.focusTarget, step.indicatorColor, step.showIndicator);
-
+        if (step.focusTarget != null) UpdateZoneHighlights(step.focusTarget, step.indicatorColor, step.showIndicator);
         if (step.focusTarget != null)
         {
             if (_cameraCoroutine != null) StopCoroutine(_cameraCoroutine);
             _cameraCoroutine = StartCoroutine(MoveCameraSmoothly(step));
         }
-
         if (ResourceManager.Instance != null) ResourceManager.Instance.isPaused = step.shouldPauseGame;
     }
 
@@ -249,18 +276,21 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    public void NextStep() { _currentStepIndex++; PrepareStep(_currentStepIndex); }
+    public void NextStep()
+    {
+        _currentStepIndex++;
+        PrepareStep(_currentStepIndex);
+    }
 
     public void SkipCurrentStep() { if (_isTutorialActive) NextStep(); }
 
-    private void OnAnyBuildingAction(Placeable data = null) => OnAnyBuildingAction();
-
     private void OnBuildingRemovedTrigger()
     {
-        if (!_isTutorialActive || _isWaitingForStartCondition || _currentStepIndex >= steps.Count) return;
+        if (!_isTutorialActive || _isWaitingForStartCondition || _isSystemClearing || _currentStepIndex >= steps.Count) return;
 
         if (steps[_currentStepIndex].requireRemoval && Time.time - _stepStartTime > 0.5f)
         {
+            Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} completed via Building Removal.");
             NextStep();
         }
     }

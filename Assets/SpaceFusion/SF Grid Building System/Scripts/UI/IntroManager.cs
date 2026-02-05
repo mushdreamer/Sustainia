@@ -69,7 +69,6 @@ public class IntroManager : MonoBehaviour
 
     private void StartGameLogic()
     {
-        Debug.Log("[IntroManager] 游戏正式开始！");
 
         // 1. 通知生成器开始生成城市
         if (MultiZoneCityGenerator.Instance != null)

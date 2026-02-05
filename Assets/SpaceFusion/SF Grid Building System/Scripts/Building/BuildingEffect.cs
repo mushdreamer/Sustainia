@@ -80,8 +80,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
             if (ResourceManager.Instance == null) return;
 
-            Debug.Log($"[BuildingEffect] 激活建筑: {gameObject.name}, 类型: {type}, 发电量设置: {_currentPowerProduction}");
-
             ResourceManager.Instance.RegisterBuildingInstance(this);
             ResourceManager.Instance.RegisterBuilding(type);
 

@@ -23,9 +23,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         {
             if (currentLevel == null || MultiZoneCityGenerator.Instance == null) return;
 
-            Debug.Log($"[LevelLoader] 加载关卡: {currentLevel.levelName}");
-            Debug.Log($"[LevelLoader] 设置生成器目标 (Flawed): Co2={currentLevel.genTargetCo2}, Cost={currentLevel.genTargetCost}, Energy={currentLevel.genTargetEnergy}");
-
             // 1. 修改生成器的目标，让它生成一个“有缺陷”的城市
             MultiZoneCityGenerator.Instance.targetCo2 = currentLevel.genTargetCo2;
             MultiZoneCityGenerator.Instance.targetCost = currentLevel.genTargetCost;
