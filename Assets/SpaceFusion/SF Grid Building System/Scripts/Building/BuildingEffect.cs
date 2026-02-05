@@ -45,7 +45,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         private float _currentCo2Change = 0f;
         private float _currentPowerProduction = 0f;
 
-        // 依然保留这个防止重复调用的保护
         private bool _isActive = false;
 
         private void Start()
@@ -61,9 +60,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                 _currentPowerProduction = powerProduction;
             }
 
-            // --- 恢复自动激活 ---
-            // 因为 PreviewSystem 已经把预览物体的脚本删了，
-            // 所以只要 Start 能运行，说明这肯定是个真建筑（玩家造的 或 系统生成的）
             ApplyEffect();
         }
 
