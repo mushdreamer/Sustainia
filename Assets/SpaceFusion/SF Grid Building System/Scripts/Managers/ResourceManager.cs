@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private int _universityLevel = 1;
 
         private List<BuildingEffect> _allPlacedBuildings = new List<BuildingEffect>();
-        // 新增：追踪教学建筑
+        // ������׷�ٽ�ѧ����
         private List<TutorialBuildingEffect> _allTutorialBuildings = new List<TutorialBuildingEffect>();
         private Dictionary<BuildingType, int> _buildingCounts = new Dictionary<BuildingType, int>();
 
@@ -246,32 +246,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public void RegisterBuildingInstance(BuildingEffect building) { if (!_allPlacedBuildings.Contains(building)) _allPlacedBuildings.Add(building); }
         public void UnregisterBuildingInstance(BuildingEffect building) { if (_allPlacedBuildings.Contains(building)) _allPlacedBuildings.Remove(building); }
 
+        // --- �������̳̽���ע���߼� ---
         public void RegisterTutorialBuildingInstance(TutorialBuildingEffect building) { if (!_allTutorialBuildings.Contains(building)) _allTutorialBuildings.Add(building); }
         public void UnregisterTutorialBuildingInstance(TutorialBuildingEffect building) { if (_allTutorialBuildings.Contains(building)) _allTutorialBuildings.Remove(building); }
 
         public List<BuildingEffect> GetAllPlacedBuildings() { _allPlacedBuildings.RemoveAll(item => item == null); return new List<BuildingEffect>(_allPlacedBuildings); }
         public List<TutorialBuildingEffect> GetAllTutorialBuildings() { _allTutorialBuildings.RemoveAll(item => item == null); return new List<TutorialBuildingEffect>(_allTutorialBuildings); }
-
-        /// <summary>
-        /// 统一查询方法：不关心建筑来自 BuildingEffect 还是 TutorialBuildingEffect。
-        /// 只要类型枚举转换成字符串后匹配，就计入总数。
-        /// </summary>
-        public int GetTotalBuildingCount(string typeKey)
-        {
-            int count = 0;
-            // 清理并统计普通建筑
-            _allPlacedBuildings.RemoveAll(item => item == null);
-            foreach (var b in _allPlacedBuildings)
-            {
-                if (b.type.ToString() == typeKey) count++;
-            }
-            // 清理并统计教学建筑
-            _allTutorialBuildings.RemoveAll(item => item == null);
-            foreach (var tb in _allTutorialBuildings)
-            {
-                if (tb.tutorialType.ToString() == typeKey) count++;
-            }
-            return count;
-        }
     }
 }
