@@ -173,7 +173,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
                 if (currentLevel != null)
                 {
                     bool isCo2Met = IsGoalMet(currentNetCo2, currentLevel.goalCo2, currentLevel.successTolerancePercent, false);
-                    if (currentNetCo2 <= currentLevel.goalCo2 * (1 + currentLevel.successTolerancePercent)) isCo2Met = true;
                     string goalColor = isCo2Met ? "<color=#00FF00>" : "<color=#FF8888>";
                     co2String += $" / {goalColor}Goal: <{currentLevel.goalCo2:F0}</color>";
                 }
