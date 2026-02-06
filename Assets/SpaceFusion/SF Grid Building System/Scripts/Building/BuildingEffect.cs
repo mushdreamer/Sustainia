@@ -21,8 +21,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         [Tooltip("正数增加排放，负数增加吸收")]
         public float co2Change = 0f;
 
-        // --- 兼容性属性：保留旧变量名以防止其他脚本(如MultiZoneCityGenerator)报错 ---
-        // 我们不删除 electricityConsumption 和 powerPlantCo2Change 的访问入口
+        // --- 兼容性属性 ---
         [HideInInspector] public float electricityConsumption { get => electricityChange; set => electricityChange = value; }
         [HideInInspector] public float powerPlantCo2Change { get => co2Change; set => co2Change = value; }
 
@@ -30,6 +29,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public int populationCapacity = 5;
         public int initialPopulation = 2;
         public float houseCo2Change = 1f;
+        public float foodConsumption = 1f; // 新增：民居产生的食物消耗
 
         [Header("Farm Settings")]
         public float foodProduction = 2f;
@@ -94,33 +94,31 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             ResourceManager.Instance.RegisterBuildingInstance(this);
             ResourceManager.Instance.RegisterBuilding(type);
 
-            // 1. 统一电力逻辑：正数加消耗，负数加发电
+            // 1. 统一电力逻辑
             if (_currentElectricityChange > 0)
                 ResourceManager.Instance.AddConsumption(_currentElectricityChange);
             else if (_currentElectricityChange < 0)
                 ResourceManager.Instance.AddGeneration(Mathf.Abs(_currentElectricityChange));
 
-            // 2. 统一环境逻辑：正数加排放，负数加吸收
+            // 2. 统一环境逻辑
             if (_currentCo2Change > 0)
                 ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Change);
             else if (_currentCo2Change < 0)
                 ResourceManager.Instance.AddCo2Absorption(Mathf.Abs(_currentCo2Change));
 
-            // 3. 处理特定建筑的额外职能 (如人口、食物、银行)
-            // 注意：电力和CO2现在已经由上面的通用逻辑控制，不再写在 switch 里
-            switch (type)
+            // 3. 统一食物逻辑：Farm 加产出，House 加需求
+            if (type == BuildingType.Farm)
             {
-                case BuildingType.House:
-                    ResourceManager.Instance.AddHouseEffect(populationCapacity, initialPopulation);
-                    break;
-
-                case BuildingType.Farm:
-                    ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
-                    break;
-
-                case BuildingType.Bank:
-                    ResourceManager.Instance.AddBank();
-                    break;
+                ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
+            }
+            else if (type == BuildingType.House)
+            {
+                ResourceManager.Instance.AddHouseEffect(populationCapacity, initialPopulation);
+                ResourceManager.Instance.AddFoodDemand(foodConsumption);
+            }
+            else if (type == BuildingType.Bank)
+            {
+                ResourceManager.Instance.AddBank();
             }
         }
 
@@ -141,20 +139,19 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             else if (_currentCo2Change < 0)
                 ResourceManager.Instance.RemoveCo2Absorption(Mathf.Abs(_currentCo2Change));
 
-            // 移除特定职能
-            switch (type)
+            // 移除食物逻辑
+            if (type == BuildingType.Farm)
             {
-                case BuildingType.House:
-                    ResourceManager.Instance.RemoveHouseEffect(populationCapacity, initialPopulation);
-                    break;
-
-                case BuildingType.Farm:
-                    ResourceManager.Instance.RemoveFoodProduction(_currentFoodProduction);
-                    break;
-
-                case BuildingType.Bank:
-                    ResourceManager.Instance.RemoveBank();
-                    break;
+                ResourceManager.Instance.RemoveFoodProduction(_currentFoodProduction);
+            }
+            else if (type == BuildingType.House)
+            {
+                ResourceManager.Instance.RemoveHouseEffect(populationCapacity, initialPopulation);
+                ResourceManager.Instance.RemoveFoodDemand(foodConsumption);
+            }
+            else if (type == BuildingType.Bank)
+            {
+                ResourceManager.Instance.RemoveBank();
             }
         }
 

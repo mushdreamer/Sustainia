@@ -22436,6 +22436,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1710211338784239622, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_Name
+      value: Co2 Emission
+      objectReference: {fileID: 0}
     - target: {fileID: 2232338049669128568, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -22520,6 +22524,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2317555779566606430, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 26
+      objectReference: {fileID: 0}
     - target: {fileID: 2798286960335587460, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_Name
       value: UI
@@ -22527,6 +22535,10 @@ PrefabInstance:
     - target: {fileID: 2798286960335587460, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898357971415184858, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 148
       objectReference: {fileID: 0}
     - target: {fileID: 4586432826691276540, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMax.y
@@ -22566,7 +22578,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7933687562706793821, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8057387769925638119, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: rightPadding
@@ -22579,6 +22591,10 @@ PrefabInstance:
     - target: {fileID: 8057387769925638119, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: horizontalPercent
       value: 0.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 8170007161830716731, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -118
       objectReference: {fileID: 0}
     - target: {fileID: 8280270578031612828, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_text

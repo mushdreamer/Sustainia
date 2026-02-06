@@ -23,8 +23,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public int _currentPopulation;
         private int _populationCapacity;
         private int _basePopulation;
-        private float _food;
-        private float _foodProductionRate;
+
+        // --- 食物逻辑修改：完全模仿电力系统 ---
+        private float _currentFoodProduction = 0f; // 对应产电
+        private float _currentFoodDemand = 0f;     // 对应耗电
+        public float FoodBalance => _currentFoodProduction - _currentFoodDemand;
 
         private float _currentLocalGeneration = 0f;
         private float _currentTotalDemand = 0f;
@@ -39,7 +42,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private int _universityLevel = 1;
 
         private List<BuildingEffect> _allPlacedBuildings = new List<BuildingEffect>();
-        // 新增：追踪教学建筑
         private List<TutorialBuildingEffect> _allTutorialBuildings = new List<TutorialBuildingEffect>();
         private Dictionary<BuildingType, int> _buildingCounts = new Dictionary<BuildingType, int>();
 
@@ -89,6 +91,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
             _currentLocalGeneration = 0f;
             _currentTotalDemand = 0f;
+            _currentFoodProduction = 0f;
+            _currentFoodDemand = 0f;
 
             _buildingCounts.Clear();
             foreach (BuildingType type in System.Enum.GetValues(typeof(BuildingType)))
@@ -105,14 +109,15 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             if (isPaused) return;
             _currentDay++;
             _carbonDioxideEmission = _baseCarbonDioxideEmission * _co2EmissionModifier;
-            _food += _foodProductionRate;
-            float foodConsumed = _currentPopulation * foodConsumptionPerPerson;
 
-            if (_food >= foodConsumed)
+            // --- 食物平衡影响人口逻辑 ---
+            if (FoodBalance >= 0)
             {
-                _food -= foodConsumed;
-                if (_bankCount > 0 && foodConsumed > 0) AddMoney(foodConsumed * moneyMultiplierFromFood);
-                if (_currentPopulation < _populationCapacity && (_currentPopulation > 0 || _foodProductionRate > 0))
+                // 食物充足（产大于需）：产生经济效益（如果有银行）并增长人口
+                if (_bankCount > 0 && _currentFoodDemand > 0)
+                    AddMoney(_currentFoodDemand * moneyMultiplierFromFood);
+
+                if (_currentPopulation < _populationCapacity && (_currentPopulation > 0 || _currentFoodProduction > 0))
                 {
                     _populationGrowthProgress += populationGrowthRate;
                     if (_populationGrowthProgress >= 1f) { _currentPopulation++; _populationGrowthProgress -= 1f; }
@@ -120,7 +125,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             }
             else
             {
-                _food = 0;
+                // 食物短缺（需大于产）：人口由于饥饿减少
                 if (_currentPopulation > _basePopulation)
                 {
                     _populationDecreaseProgress += populationDecreaseRate;
@@ -147,7 +152,14 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
             if (moneyText != null) moneyText.text = $"Money: {_money:F0}";
             if (populationText != null) populationText.text = $"Population: {_currentPopulation} / {_populationCapacity}";
-            if (foodText != null) foodText.text = $"Food: {_food:F0}";
+
+            // --- 食物 UI 逻辑：现在和电力完全一样 ---
+            if (foodText != null)
+            {
+                string sign = FoodBalance >= 0 ? "+" : "";
+                string foodColor = FoodBalance >= 0 ? "<color=green>" : "<color=red>";
+                foodText.text = $"Food Balance: {foodColor}{sign}{FoodBalance:F1}</color>\n<size=70%>(Prod: {_currentFoodProduction:F1} | Dem: {_currentFoodDemand:F1})</size>";
+            }
 
             if (electricityText != null)
             {
@@ -216,8 +228,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             UpdateUI();
         }
 
-        public void AddFoodProduction(float amount) { _foodProductionRate += amount; UpdateUI(); }
-        public void RemoveFoodProduction(float amount) { _foodProductionRate -= amount; if (_foodProductionRate < 0) _foodProductionRate = 0; UpdateUI(); }
+        // --- 食物接口：完全模仿电力的 AddGeneration/AddConsumption ---
+        public void AddFoodProduction(float amount) { _currentFoodProduction += amount; UpdateUI(); }
+        public void RemoveFoodProduction(float amount) { _currentFoodProduction -= amount; if (_currentFoodProduction < 0) _currentFoodProduction = 0; UpdateUI(); }
+        public void AddFoodDemand(float amount) { _currentFoodDemand += amount; UpdateUI(); }
+        public void RemoveFoodDemand(float amount) { _currentFoodDemand -= amount; if (_currentFoodDemand < 0) _currentFoodDemand = 0; UpdateUI(); }
 
         public void AddPowerPlantEffect(float co2) { _baseCarbonDioxideEmission += co2; UpdateUI(); }
         public void RemovePowerPlantEffect(float co2) { _baseCarbonDioxideEmission -= co2; UpdateUI(); }
@@ -251,20 +266,14 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public List<BuildingEffect> GetAllPlacedBuildings() { _allPlacedBuildings.RemoveAll(item => item == null); return new List<BuildingEffect>(_allPlacedBuildings); }
         public List<TutorialBuildingEffect> GetAllTutorialBuildings() { _allTutorialBuildings.RemoveAll(item => item == null); return new List<TutorialBuildingEffect>(_allTutorialBuildings); }
 
-        /// <summary>
-        /// 统一查询方法：不关心建筑来自 BuildingEffect 还是 TutorialBuildingEffect。
-        /// 只要类型枚举转换成字符串后匹配，就计入总数。
-        /// </summary>
         public int GetTotalBuildingCount(string typeKey)
         {
             int count = 0;
-            // 清理并统计普通建筑
             _allPlacedBuildings.RemoveAll(item => item == null);
             foreach (var b in _allPlacedBuildings)
             {
                 if (b.type.ToString() == typeKey) count++;
             }
-            // 清理并统计教学建筑
             _allTutorialBuildings.RemoveAll(item => item == null);
             foreach (var tb in _allTutorialBuildings)
             {
