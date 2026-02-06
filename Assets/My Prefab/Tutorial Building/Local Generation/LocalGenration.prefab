@@ -104,9 +104,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Core.TutorialBuildingEffect
   tutorialType: 0
-  energyValue: 20
+  electricityChange: -25
+  co2Change: 0
   storageCapacity: 100
-  co2Effect: 5
 --- !u!65 &4433695249196801359
 BoxCollider:
   m_ObjectHideFlags: 0

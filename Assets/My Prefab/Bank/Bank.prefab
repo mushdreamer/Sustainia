@@ -128,7 +128,8 @@ MonoBehaviour:
   type: 5
   maxHealth: 100
   _currentHealth: 0
-  electricityConsumption: 1
+  electricityChange: 10
+  co2Change: -20
   populationCapacity: 5
   initialPopulation: 2
   houseCo2Change: 1
@@ -137,6 +138,5 @@ MonoBehaviour:
   instituteCo2Change: 3
   bankCo2Change: 2
   powerProduction: 20
-  powerPlantCo2Change: 10
   storageConsumption: 5
   storageCo2Change: -20

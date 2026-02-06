@@ -74,7 +74,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 2fdacc4343c412e46ab0358c3788ddc8, type: 2}
     - target: {fileID: 919132149155446097, guid: 7a63e5c0a9ca9d846aa76189ecd90c2d, type: 3}
       propertyPath: m_Name
-      value: store_004
+      value: Food
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -126,84 +126,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingEffect
   type: 1
-  buildingLevel: 1
-  maxBuildingLevel: 10
-  upgradeCostPerLevel:
-  - 50
-  - 100
-  - 180
-  - 300
-  - 500
-  - 800
-  - 1300
-  - 2100
-  - 3400
   maxHealth: 100
-  electricityConsumptionPerLevel:
-  - 1
-  - 1.2
-  - 1.5
-  - 2
-  - 2.5
-  - 3
-  - 3.5
-  - 4
-  - 4.5
-  - 5
-  populationCapacityPerLevel: 05000000080000000c0000001200000019000000230000003200000046000000640000008c000000
-  initialPopulationPerLevel: 02000000030000000400000005000000060000000700000008000000090000000a0000000b000000
-  foodProductionPerLevel:
-  - 1200
-  - 2200
-  - 3250
-  - 4300
-  - 5350
-  - 6400
-  - 7450
-  - 8500
-  - 9550
-  - 10600
-  electricityProductionPerLevel:
-  - 10
-  - 15
-  - 22
-  - 30
-  - 40
-  - 55
-  - 70
-  - 90
-  - 115
-  - 150
-  co2EmissionPerLevel:
-  - 2
-  - 2.5
-  - 3
-  - 3.5
-  - 4
-  - 4.5
-  - 5
-  - 5.5
-  - 6
-  - 6.5
-  co2AbsorptionRatePerLevel:
-  - 0.5
-  - 0.7
-  - 1
-  - 1.4
-  - 1.9
-  - 2.5
-  - 3.2
-  - 4
-  - 5
-  - 6
-  co2CapacityPerLevel:
-  - 100
-  - 130
-  - 170
-  - 220
-  - 280
-  - 350
-  - 440
-  - 550
-  - 700
-  - 900
+  _currentHealth: 0
+  electricityChange: 10
+  co2Change: 10
+  populationCapacity: 5
+  initialPopulation: 2
+  houseCo2Change: 1
+  foodProduction: 2
+  farmCo2Change: 2
+  instituteCo2Change: 3
+  bankCo2Change: 1.5
+  powerProduction: 20
+  storageConsumption: 5
+  storageCo2Change: 8

@@ -14,9 +14,17 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         [SerializeField]
         private float _currentHealth;
 
-        [Header("General Consumption")]
-        public float electricityConsumption = 1f;
-        private float _currentElectricityConsumption;
+        [Header("General Resource Settings")]
+        [Tooltip("正数增加消耗(耗电)，负数增加产出(发电)")]
+        public float electricityChange = 0f;
+
+        [Tooltip("正数增加排放，负数增加吸收")]
+        public float co2Change = 0f;
+
+        // --- 兼容性属性：保留旧变量名以防止其他脚本(如MultiZoneCityGenerator)报错 ---
+        // 我们不删除 electricityConsumption 和 powerPlantCo2Change 的访问入口
+        [HideInInspector] public float electricityConsumption { get => electricityChange; set => electricityChange = value; }
+        [HideInInspector] public float powerPlantCo2Change { get => co2Change; set => co2Change = value; }
 
         [Header("House Settings")]
         public int populationCapacity = 5;
@@ -36,12 +44,12 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         [Header("PowerPlant Settings (Emitter)")]
         public float powerProduction = 20f;
-        public float powerPlantCo2Change = 10f;
 
         [Header("Co2Storage Settings (Absorber)")]
         public float storageConsumption = 5f;
         public float storageCo2Change = 8f;
 
+        private float _currentElectricityChange;
         private float _currentCo2Change = 0f;
         private float _currentPowerProduction = 0f;
 
@@ -52,7 +60,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             if (ResourceManager.Instance == null) return;
 
             _currentHealth = maxHealth;
-            _currentElectricityConsumption = electricityConsumption;
+
+            // 初始化当前运行时数值
+            _currentElectricityChange = electricityChange;
+            _currentCo2Change = co2Change;
             _currentFoodProduction = foodProduction;
 
             if (type == BuildingType.PowerPlant)
@@ -83,96 +94,66 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             ResourceManager.Instance.RegisterBuildingInstance(this);
             ResourceManager.Instance.RegisterBuilding(type);
 
+            // 1. 统一电力逻辑：正数加消耗，负数加发电
+            if (_currentElectricityChange > 0)
+                ResourceManager.Instance.AddConsumption(_currentElectricityChange);
+            else if (_currentElectricityChange < 0)
+                ResourceManager.Instance.AddGeneration(Mathf.Abs(_currentElectricityChange));
+
+            // 2. 统一环境逻辑：正数加排放，负数加吸收
+            if (_currentCo2Change > 0)
+                ResourceManager.Instance.AddPowerPlantEffect(_currentCo2Change);
+            else if (_currentCo2Change < 0)
+                ResourceManager.Instance.AddCo2Absorption(Mathf.Abs(_currentCo2Change));
+
+            // 3. 处理特定建筑的额外职能 (如人口、食物、银行)
+            // 注意：电力和CO2现在已经由上面的通用逻辑控制，不再写在 switch 里
             switch (type)
             {
                 case BuildingType.House:
                     ResourceManager.Instance.AddHouseEffect(populationCapacity, initialPopulation);
-                    ResourceManager.Instance.AddConsumption(_currentElectricityConsumption);
-                    ResourceManager.Instance.AddPowerPlantEffect(houseCo2Change);
-                    _currentCo2Change = houseCo2Change;
                     break;
 
                 case BuildingType.Farm:
                     ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
-                    ResourceManager.Instance.AddConsumption(_currentElectricityConsumption);
-                    ResourceManager.Instance.AddPowerPlantEffect(farmCo2Change);
-                    _currentCo2Change = farmCo2Change;
-                    break;
-
-                case BuildingType.Institute:
-                    ResourceManager.Instance.AddConsumption(_currentElectricityConsumption);
-                    ResourceManager.Instance.AddPowerPlantEffect(instituteCo2Change);
-                    _currentCo2Change = instituteCo2Change;
                     break;
 
                 case BuildingType.Bank:
                     ResourceManager.Instance.AddBank();
-                    ResourceManager.Instance.AddConsumption(_currentElectricityConsumption);
-                    ResourceManager.Instance.AddPowerPlantEffect(bankCo2Change);
-                    _currentCo2Change = bankCo2Change;
-                    break;
-
-                case BuildingType.PowerPlant:
-                    ResourceManager.Instance.AddPowerPlantEffect(powerPlantCo2Change);
-                    _currentCo2Change = powerPlantCo2Change;
-                    ResourceManager.Instance.AddGeneration(_currentPowerProduction);
-                    break;
-
-                case BuildingType.Co2Storage:
-                    ResourceManager.Instance.AddCo2Absorption(storageCo2Change);
-                    _currentCo2Change = -storageCo2Change;
-                    _currentElectricityConsumption = storageConsumption;
-                    ResourceManager.Instance.AddConsumption(_currentElectricityConsumption);
-                    break;
-
-                default:
-                    ResourceManager.Instance.AddConsumption(_currentElectricityConsumption);
                     break;
             }
         }
 
         public void RemoveEffect()
         {
-            if (!_isActive && ResourceManager.Instance == null) return;
+            if (!_isActive || ResourceManager.Instance == null) return;
             _isActive = false;
 
+            // 移除电力影响
+            if (_currentElectricityChange > 0)
+                ResourceManager.Instance.RemoveConsumption(_currentElectricityChange);
+            else if (_currentElectricityChange < 0)
+                ResourceManager.Instance.RemoveGeneration(Mathf.Abs(_currentElectricityChange));
+
+            // 移除环境影响
+            if (_currentCo2Change > 0)
+                ResourceManager.Instance.RemovePowerPlantEffect(_currentCo2Change);
+            else if (_currentCo2Change < 0)
+                ResourceManager.Instance.RemoveCo2Absorption(Mathf.Abs(_currentCo2Change));
+
+            // 移除特定职能
             switch (type)
             {
                 case BuildingType.House:
                     ResourceManager.Instance.RemoveHouseEffect(populationCapacity, initialPopulation);
-                    ResourceManager.Instance.RemoveConsumption(_currentElectricityConsumption);
-                    ResourceManager.Instance.RemovePowerPlantEffect(houseCo2Change);
                     break;
 
                 case BuildingType.Farm:
                     ResourceManager.Instance.RemoveFoodProduction(_currentFoodProduction);
-                    ResourceManager.Instance.RemoveConsumption(_currentElectricityConsumption);
-                    ResourceManager.Instance.RemovePowerPlantEffect(farmCo2Change);
-                    break;
-
-                case BuildingType.Institute:
-                    ResourceManager.Instance.RemoveConsumption(_currentElectricityConsumption);
-                    ResourceManager.Instance.RemovePowerPlantEffect(instituteCo2Change);
                     break;
 
                 case BuildingType.Bank:
                     ResourceManager.Instance.RemoveBank();
-                    ResourceManager.Instance.RemoveConsumption(_currentElectricityConsumption);
-                    ResourceManager.Instance.RemovePowerPlantEffect(bankCo2Change);
-                    break;
-
-                case BuildingType.PowerPlant:
-                    ResourceManager.Instance.RemovePowerPlantEffect(powerPlantCo2Change);
-                    ResourceManager.Instance.RemoveGeneration(_currentPowerProduction);
-                    break;
-
-                case BuildingType.Co2Storage:
-                    ResourceManager.Instance.RemoveCo2Absorption(storageCo2Change);
-                    ResourceManager.Instance.RemoveConsumption(_currentElectricityConsumption);
-                    break;
-
-                default:
-                    ResourceManager.Instance.RemoveConsumption(_currentElectricityConsumption);
                     break;
             }
         }
@@ -189,12 +170,22 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             if (_currentHealth > maxHealth) _currentHealth = maxHealth;
         }
 
-        public void UpdateElectricityConsumption(float newValue)
+        public void UpdateElectricityChange(float newValue)
         {
-            if (type == BuildingType.PowerPlant) return;
-            if (_isActive) ResourceManager.Instance.RemoveConsumption(_currentElectricityConsumption);
-            _currentElectricityConsumption = newValue;
-            if (_isActive) ResourceManager.Instance.AddConsumption(_currentElectricityConsumption);
+            if (_isActive)
+            {
+                if (_currentElectricityChange > 0) ResourceManager.Instance.RemoveConsumption(_currentElectricityChange);
+                else if (_currentElectricityChange < 0) ResourceManager.Instance.RemoveGeneration(Mathf.Abs(_currentElectricityChange));
+            }
+
+            _currentElectricityChange = newValue;
+            electricityChange = newValue;
+
+            if (_isActive)
+            {
+                if (_currentElectricityChange > 0) ResourceManager.Instance.AddConsumption(_currentElectricityChange);
+                else if (_currentElectricityChange < 0) ResourceManager.Instance.AddGeneration(Mathf.Abs(_currentElectricityChange));
+            }
         }
 
         public void UpdateFoodProduction(float newValue)
@@ -205,12 +196,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             if (_isActive) ResourceManager.Instance.AddFoodProduction(_currentFoodProduction);
         }
 
-        public float GetCurrentElectricity()
-        {
-            if (type == BuildingType.PowerPlant) return -_currentPowerProduction;
-            return _currentElectricityConsumption;
-        }
-
+        public float GetCurrentElectricity() => _currentElectricityChange;
         public float GetCurrentFood() => _currentFoodProduction;
         public float GetCurrentCo2Change() => _currentCo2Change;
 

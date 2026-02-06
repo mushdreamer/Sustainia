@@ -1,4 +1,4 @@
-using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
+ï»¿using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
 using UnityEngine;
 
 namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
@@ -10,9 +10,17 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public TutorialBuildingType tutorialType;
 
         [Header("Tutorial Stats")]
-        public float energyValue = 20f; // ·¢µç»òºÄµçÁ¿
-        public float storageCapacity = 100f; // µç³ØÈÝÁ¿
-        public float co2Effect = 0f;
+        [Tooltip("æ­£æ•°å¢žåŠ è€—ç”µï¼Œè´Ÿæ•°å¢žåŠ å‘ç”µ")]
+        public float electricityChange = 0f;
+
+        [Tooltip("æ­£æ•°å¢žåŠ æŽ’æ”¾ï¼Œè´Ÿæ•°å¢žåŠ å¸æ”¶")]
+        public float co2Change = 0f;
+
+        // --- å…¼å®¹æ€§å±žæ€§ ---
+        [HideInInspector] public float energyValue { get => electricityChange; set => electricityChange = value; }
+        [HideInInspector] public float co2Effect { get => co2Change; set => co2Change = value; }
+
+        public float storageCapacity = 100f;
 
         private bool _isActive = false;
 
@@ -26,29 +34,27 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
             if (_isActive || ResourceManager.Instance == null) return;
             _isActive = true;
 
-            // ×¢²áµ½×ÊÔ´¹ÜÀíÆ÷£¬ÒÔ±ãÔÚ½Ì³ÌÂß¼­ÖÐ±»Ê¶±ð
             ResourceManager.Instance.RegisterTutorialBuildingInstance(this);
 
-            switch (tutorialType)
-            {
-                case TutorialBuildingType.LocalGen:
-                    ResourceManager.Instance.AddGeneration(energyValue);
-                    break;
-                case TutorialBuildingType.Battery:
-                    // ¿ÉÒÔÔÚ´ËÌí¼Óµç³ØÌØ¶¨µÄ³õÊ¼»¯Âß¼­
-                    break;
-            }
-            Debug.Log($"[Tutorial] ½ÌÑ§½¨ÖþÒÑ¼¤»î²¢×¢²á: {tutorialType}");
+            if (electricityChange > 0) ResourceManager.Instance.AddConsumption(electricityChange);
+            else if (electricityChange < 0) ResourceManager.Instance.AddGeneration(Mathf.Abs(electricityChange));
+
+            if (co2Change > 0) ResourceManager.Instance.AddPowerPlantEffect(co2Change);
+            else if (co2Change < 0) ResourceManager.Instance.AddCo2Absorption(Mathf.Abs(co2Change));
         }
 
         private void OnDestroy()
         {
             if (!_isActive || ResourceManager.Instance == null) return;
 
-            ResourceManager.Instance.UnregisterTutorialBuildingInstance(this);
+            if (electricityChange > 0) ResourceManager.Instance.RemoveConsumption(electricityChange);
+            else if (electricityChange < 0) ResourceManager.Instance.RemoveGeneration(Mathf.Abs(electricityChange));
 
-            if (tutorialType == TutorialBuildingType.LocalGen)
-                ResourceManager.Instance.RemoveGeneration(energyValue);
+            if (co2Change > 0) ResourceManager.Instance.RemovePowerPlantEffect(co2Change);
+            else if (co2Change < 0) ResourceManager.Instance.RemoveCo2Absorption(Mathf.Abs(co2Change));
+
+            ResourceManager.Instance.UnregisterTutorialBuildingInstance(this);
+            _isActive = false;
         }
     }
 }

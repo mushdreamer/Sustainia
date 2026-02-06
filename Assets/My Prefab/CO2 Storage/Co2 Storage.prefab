@@ -126,7 +126,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpaceFusion.SF_Grid_Building_System.Scripts.Core.BuildingEffect
   type: 4
   maxHealth: 100
-  electricityConsumption: 1
+  _currentHealth: 0
+  electricityChange: 20
+  co2Change: -50
   populationCapacity: 5
   initialPopulation: 2
   houseCo2Change: 1
@@ -134,5 +136,6 @@ MonoBehaviour:
   farmCo2Change: 2
   instituteCo2Change: 3
   bankCo2Change: 2
-  powerPlantCo2Change: 10
+  powerProduction: 20
+  storageConsumption: 5
   storageCo2Change: -1
