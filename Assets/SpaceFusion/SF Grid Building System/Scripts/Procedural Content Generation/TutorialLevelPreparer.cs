@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
 
@@ -11,28 +11,31 @@ public class TutorialLevelPreparer : MonoBehaviour
     {
         if (MultiZoneCityGenerator.Instance == null) return;
 
-        // Í£Ö¹Ğ­³Ì·ÀÖ¹ÇåÀíÊ±²úÉú¾ºÌ¬Ìõ¼ş
+        // åœæ­¢åç¨‹é˜²æ­¢æ¸…ç†æ—¶äº§ç”Ÿç«æ€æ¡ä»¶
         MultiZoneCityGenerator.Instance.StopAllCoroutines();
 
-        // --- ºËĞÄĞŞ¸´£ºÇåÀíÏµÍ³Âß¼­²ãÊı¾İ ---
-        // 1. ÇåÀíÍø¸ñÕ¼ÓÃÊı¾İ
+        // --- æ ¸å¿ƒä¿®å¤ï¼šæ¸…ç†ç³»ç»Ÿé€»è¾‘å±‚æ•°æ® ---
+        // 1. æ¸…ç†ç½‘æ ¼å ç”¨æ•°æ®
         if (PlacementSystem.Instance != null)
         {
             PlacementSystem.Instance.ResetAllGridData();
         }
 
-        // 2. ÇåÀí ResourceManager ÀïµÄÊµÀıÒıÓÃ
+        // 2. æ¸…ç† ResourceManager é‡Œçš„æ‰€æœ‰å»ºç­‘å®ä¾‹å¼•ç”¨ï¼ˆåŒ…æ‹¬æ™®é€šå’Œæ•™ç¨‹å»ºç­‘ï¼‰
         if (ResourceManager.Instance != null)
         {
-            // »ñÈ¡ËùÓĞ½¨Öş²¢Ç¿ÖÆÖ´ĞĞ RemoveEffect£¬ÇåÀí UI ºÍÊıÖµ
+            // æ¸…ç†æ™®é€šå»ºç­‘æ•°å€¼
             var allBuildings = ResourceManager.Instance.GetAllPlacedBuildings();
             foreach (var b in allBuildings)
             {
                 if (b != null) b.RemoveEffect();
             }
+
+            // --- æ–°å¢ï¼šæ¸…ç†æ•™ç¨‹ä¸“ç”¨å»ºç­‘æ•°å€¼ ---
+            // å‡è®¾ä½ çš„ ResourceManager æœ‰æä¾›è·å–æ•™ç¨‹å»ºç­‘åˆ—è¡¨çš„æ–¹æ³•ï¼Œæˆ–è€…æˆ‘ä»¬é€šè¿‡ä¸‹é¢çš„ç‰©ç†æ¸…ç†è§¦å‘ OnDestroy
         }
 
-        // 3. ±éÀú²¢ÖØÖÃËùÓĞ Zone µÄ×´Ì¬ºÍÎïÀíÎïÌå
+        // 3. éå†å¹¶é‡ç½®æ‰€æœ‰ Zone çš„çŠ¶æ€å’Œç‰©ç†ç‰©ä½“
         foreach (var zone in MultiZoneCityGenerator.Instance.zones)
         {
             zone.isOccupied = false;
@@ -40,34 +43,54 @@ public class TutorialLevelPreparer : MonoBehaviour
 
             foreach (Transform child in zone.originPoint)
             {
+                // æ’é™¤ UI è£…é¥°ç‰©ï¼Œé”€æ¯æ‰€æœ‰å»ºç­‘ç‰©ä½“
                 if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator")
                 {
-                    // ÎïÀíÏú»Ù
+                    // ç‰©ç†é”€æ¯ä¼šè§¦å‘ BuildingEffect æˆ– TutorialBuildingEffect çš„ OnDestroy
                     Destroy(child.gameObject);
                 }
             }
         }
 
-        // 4. Çå³ı¿ÉÄÜ´æÔÚµÄ²ĞÁô
-        BuildingEffect[] leftovers = FindObjectsByType<BuildingEffect>(FindObjectsSortMode.None);
-        foreach (var b in leftovers) Destroy(b.gameObject);
+        // 4. å½»åº•æ¸…é™¤æ®‹ç•™ï¼ˆé˜²æ­¢æœ‰å»ºç­‘ä¸åœ¨ Zone å±‚çº§ä¸‹ï¼‰
+        // æ¸…ç†æ™®é€šå»ºç­‘
+        BuildingEffect[] leftovers = Object.FindObjectsByType<BuildingEffect>(FindObjectsSortMode.None);
+        foreach (var b in leftovers) { b.RemoveEffect(); Destroy(b.gameObject); }
+
+        // --- æ ¸å¿ƒä¿®å¤ç‚¹ï¼šæ˜¾å¼æ¸…ç†æ•™ç¨‹å»ºç­‘æ®‹ç•™ ---
+        TutorialBuildingEffect[] tutorialLeftovers = Object.FindObjectsByType<TutorialBuildingEffect>(FindObjectsSortMode.None);
+        foreach (var tb in tutorialLeftovers)
+        {
+            // ç‰©ç†é”€æ¯ï¼Œè§¦å‘å…¶å†…éƒ¨çš„ Remove é€»è¾‘
+            Destroy(tb.gameObject);
+        }
+
+        Debug.Log("<color=red>[Tutorial]</color> Scene cleared: Both normal and tutorial buildings removed.");
     }
 
     public void PrepareLayoutForEvent(int eventIndex)
     {
         if (MultiZoneCityGenerator.Instance == null) return;
 
-        // ÔÚÉú³ÉÇ°È·±£ÉÏÒ»¸ö×´Ì¬±»ÍêÈ«ÇåÀí
+        // åœ¨ç”Ÿæˆå‰ç¡®ä¿ä¸Šä¸€ä¸ªçŠ¶æ€è¢«å®Œå…¨æ¸…ç†
         ClearAllBuildings();
 
         if (eventIndex == 1)
         {
-            // ÏÖÔÚµ÷ÓÃÕâ¸ö·½·¨£¬ÄÚ²¿µÄ RegisterExternalObject ¾ÍÄÜ³É¹¦Ö´ĞĞÁË
             MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(0, "PowerPlant");
             MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(1, "LocalGeneration");
             MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(2, "House T1");
             MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(3, "Battery");
         }
-        // ... ÆäËû event ...
+        else if (eventIndex == 2)
+        {
+            // ç”Ÿæˆå…¨ä½å®…åœºæ™¯ (Zone 0-15)
+            int maxZones = Mathf.Min(16, MultiZoneCityGenerator.Instance.zones.Count);
+            for (int i = 0; i < maxZones; i++)
+            {
+                MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(i, "House T1");
+            }
+            Debug.Log($"<color=cyan>[Tutorial]</color> Event 2: Generated {maxZones} Houses.");
+        }
     }
 }

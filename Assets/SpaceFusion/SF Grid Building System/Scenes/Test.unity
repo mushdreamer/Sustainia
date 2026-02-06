@@ -14307,13 +14307,17 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 3: Objective'
-    instructionText: 'Alert: You tried to maximize capacity, causing a massive deficit[cite:
-      13, 14]! Remember, the goal is to ''Minimize Cost while meeting demand''[cite:
-      16, 63]. Enter Demolish Mode to remove excess buildings.'
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
-    focusTarget: {fileID: 0}
+  - stepName: 'Event 3.1: Assessing the City''s Needs'
+    instructionText: 'Take a look at your growing city; the new residential districts
+      have significantly increased our resource requirements. If you check the Level
+      Goal panel, you will see our current status presented as a small optimization
+      problem. We are now tracking three critical variables: Food Demand, Electric
+      Demand, and our Co2 Emission limit. Your task as the city planner is to ensure
+      that the supply for both food and electricity is met while keeping our environmental
+      impact within the safety threshold.'
+    clearSceneBeforeStart: 1
+    layoutToLoad: 2
+    focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
@@ -14352,10 +14356,10 @@ MonoBehaviour:
     ccHouseReq:
       checkThis: 0
       goalCount: 1
-    requireRemoval: 1
+    requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: 'Event 4: Hard Constraint'
     instructionText: 'Force Charge failed! The battery is full (100/100)[cite: 17].
       This is a ''Hard Constraint'': Storage Level cannot exceed its Capacity[cite:
