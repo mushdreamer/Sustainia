@@ -13814,7 +13814,7 @@ MonoBehaviour:
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
-    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
+    indicatorColor: {r: 0, g: 1, b: 0, a: 1}
     startCondition: 0
     shouldPauseGame: 1
     requireBuilding: 1
@@ -13914,7 +13914,7 @@ MonoBehaviour:
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
-    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
+    indicatorColor: {r: 0, g: 1, b: 0, a: 1}
     startCondition: 0
     shouldPauseGame: 1
     requireBuilding: 1
@@ -14013,7 +14013,7 @@ MonoBehaviour:
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
-    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
+    indicatorColor: {r: 0, g: 1, b: 0, a: 1}
     startCondition: 0
     shouldPauseGame: 1
     requireBuilding: 1
@@ -14104,13 +14104,13 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 2.1: The Baseline State'
-    instructionText: First, please direct your attention to the atmospheric monitor
-      at the top of the screen. This display shows our current environmental state,
-      representing the total concentration of CO2 inherited from all previous years.
-      In optimization, understanding this starting point is essential because the
-      atmosphere acts like a reservoir that holds onto every bit of carbon ever released.
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
+    instructionText: "Checking the History First, take a look at the CO2 Emission
+      display in your Level Goal panel. This number represents our starting point\u2014it
+      is the total concentration of CO2 inherited from last year's activities. In
+      this simulation, the environment remembers every bit of carbon released in
+      the past."
+    clearSceneBeforeStart: 1
+    layoutToLoad: 1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -14155,68 +14155,18 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 2.2: Defining Net Annual Change'
-    instructionText: "The air quality doesn't just change randomly; it is driven
-      by your annual decisions. Every year, your city\u2019s impact is defined by
-      the balance between the pollution created by industry and the carbon captured
-      by green technology. The net change you see each year is the result of subtracting
-      your total removals from your total emissions."
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
-    focusTarget: {fileID: 0}
-    cameraDistance: 15
-    cameraAngle: 45
-    showIndicator: 1
-    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
-    startCondition: 0
-    shouldPauseGame: 1
-    requireBuilding: 0
-    houseReq:
-      checkThis: 0
-      goalCount: 1
-    farmReq:
-      checkThis: 0
-      goalCount: 1
-    instituteReq:
-      checkThis: 0
-      goalCount: 1
-    powerPlantReq:
-      checkThis: 0
-      goalCount: 1
-    co2StorageReq:
-      checkThis: 0
-      goalCount: 1
-    bankReq:
-      checkThis: 0
-      goalCount: 1
-    requireTutorialBuilding: 0
-    localGenReq:
-      checkThis: 0
-      goalCount: 1
-    batteryReq:
-      checkThis: 0
-      goalCount: 1
-    negativeHouseReq:
-      checkThis: 0
-      goalCount: 1
-    ccHouseReq:
-      checkThis: 0
-      goalCount: 1
-    requireRemoval: 0
-    requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 0
-    requireInput: 1
-  - stepName: 'Event 2.3: Adding Emissions to the State'
-    instructionText: 'Now, try building a Power Plant and a Local Generation site.
-      As they come online, notice how the projected CO2 meter begins to rise. This
-      represents the cumulative effect: the system takes last year''s total concentration
-      and stacks this year''s new emissions directly on top of it.'
+    instructionText: Increasing This Year's Impact Now, go ahead and build a few
+      Power Plants or Local Generation sites. As these facilities begin to operate,
+      you will notice the meter for this year's emissions starting to rise. Every
+      new energy source you add increases the amount of carbon being pumped into
+      the sky right now.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
-    indicatorColor: {r: 1, g: 0, b: 0, a: 1}
+    indicatorColor: {r: 0, g: 1, b: 0, a: 1}
     startCondition: 0
     shouldPauseGame: 1
     requireBuilding: 1
@@ -14254,14 +14204,64 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: 'Event 2.3: Adding Emissions to the State'
+    instructionText: Reducing Impact with CCUS To protect our future, we need to
+      bring those numbers down. Construct a CCUS building and observe the change.
+      You will see that these facilities actively subtract from your current output.
+      Our objective is to ensure that this year's net impact is low enough to keep
+      the total concentration below our target limit.
+    clearSceneBeforeStart: 0
+    layoutToLoad: -1
+    focusTarget: {fileID: 1743267687}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 0, g: 1, b: 0, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 1
+    houseReq:
+      checkThis: 0
+      goalCount: 1
+    farmReq:
+      checkThis: 0
+      goalCount: 1
+    instituteReq:
+      checkThis: 0
+      goalCount: 1
+    powerPlantReq:
+      checkThis: 0
+      goalCount: 1
+    co2StorageReq:
+      checkThis: 1
+      goalCount: 3
+    bankReq:
+      checkThis: 0
+      goalCount: 1
+    requireTutorialBuilding: 0
+    localGenReq:
+      checkThis: 0
+      goalCount: 1
+    batteryReq:
+      checkThis: 0
+      goalCount: 1
+    negativeHouseReq:
+      checkThis: 0
+      goalCount: 1
+    ccHouseReq:
+      checkThis: 0
+      goalCount: 1
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
     requireInput: 0
   - stepName: 'Event 2.4: Implementing Removals & The Final Balance'
-    instructionText: 'To reach our environmental target, we must intervene. Build
-      several CCUS buildings and watch the meter respond. By increasing your removals,
-      you are actively reducing the amount of carbon that gets added to the total.
-      This confirms the core logic of our world: next year''s total is simply last
-      year''s concentration plus whatever we emit, minus whatever we successfully
-      remove.'
+    instructionText: "The Final Year-End Balance In summary, your city's environment
+      is a continuous tally. This year\u2019s final CO2 level is simply last year's
+      total, plus all the new carbon we released, minus the carbon we successfully
+      removed. Your goal is to manage this balance to keep the city sustainable year
+      after year."
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
