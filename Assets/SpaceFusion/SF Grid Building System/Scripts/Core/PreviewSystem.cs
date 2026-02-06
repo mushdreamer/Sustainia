@@ -1,4 +1,4 @@
-using SpaceFusion.SF_Grid_Building_System.Scripts.Enums;
+ï»¿using SpaceFusion.SF_Grid_Building_System.Scripts.Enums;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Utils;
 using UnityEngine;
@@ -40,14 +40,24 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         {
             _previewObject = Instantiate(selectedObject.Prefab);
 
-            // --- ºËĞÄĞŞ¸Ä£ºÀ¶Í¼Ä£Ê½ÏÂ£¬Ïú»ÙÎïÌåÉÏµÄÂß¼­½Å±¾£¬·ÀÖ¹¿Û·Ñ/²ú³ö ---
-            // ÕâÑùËü¾ÍÖ»ÊÇÒ»¸ö´¿´âµÄÊÓ¾õÄ£ĞÍ£¬Start() ·½·¨ÓÀÔ¶²»»áÓĞ»ú»áÖ´ĞĞ
-            var effects = _previewObject.GetComponentsInChildren<BuildingEffect>();
-            foreach (var effect in effects)
+            // --- æ ¸å¿ƒå®‰å…¨é”ï¼šé˜²æ­¢è“å›¾ç”Ÿæ•ˆ ---
+            // 1. ç§»é™¤å¸¸è§„å»ºç­‘æ•ˆæœ (BuildingEffect)
+            var normalEffects = _previewObject.GetComponentsInChildren<BuildingEffect>();
+            foreach (var effect in normalEffects)
+            {
+                // å½»åº•é”€æ¯ç»„ä»¶ï¼Œä½¿å…¶æ— æ³•æ‰§è¡Œ Start()
+                Destroy(effect);
+            }
+
+            // 2. ç§»é™¤æ•™å­¦å»ºç­‘æ•ˆæœ (TutorialBuildingEffect)
+            var tutorialEffects = _previewObject.GetComponentsInChildren<TutorialBuildingEffect>();
+            foreach (var effect in tutorialEffects)
             {
                 Destroy(effect);
             }
-            // Ë³±ã°Ñ PlacedObject Ò²ÇåÀíµô£¬·ÀÖ¹²úÉú¸ÉÈÅ
+
+            // 3. ç§»é™¤ PlacedObject
+            // é˜²æ­¢é¢„è§ˆç‰©ä½“å°è¯•è¿›è¡Œåæ ‡è½¬æ¢æˆ–äº§ç”Ÿ GUID å¹²æ‰°
             var placedObjects = _previewObject.GetComponentsInChildren<PlacedObject>();
             foreach (var po in placedObjects)
             {
@@ -63,6 +73,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
             _pivotOffset = PlaceableUtils.CalculateOffset(_previewObject, gridCellSize);
             _cellSize = gridCellSize;
+
             if (_config.UsePreviewMaterial)
             {
                 PreparePreview(_previewObject);

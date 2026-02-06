@@ -1,4 +1,4 @@
-using UnityEngine;
+锘縰sing UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
@@ -26,7 +26,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
         public float visualHeightOffset = 0.0f;
         public bool isOccupied = false;
 
-        // 教程高亮逻辑
+        // 陆脤鲁脤赂脽脕脕脗脽录颅
         [HideInInspector] public bool isTutorialHighlight = false;
         [HideInInspector] public Color customHighlightColor;
 
@@ -78,7 +78,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
     public List<GenerationZone> zones;
 
     [Header("Special Buildings (Tutorial Only)")]
-    [Tooltip("这些建筑不会出现在玩家建造栏，仅供教学 PCG 生成")]
+    [Tooltip("脮芒脨漏陆篓脰镁虏禄禄谩鲁枚脧脰脭脷脥忙录脪陆篓脭矛脌赂拢卢陆枚鹿漏陆脤脩搂 PCG 脡煤鲁脡")]
     public List<BuildingType> specialBuildingOptions;
 
     private void Awake() { if (Instance != null) Destroy(gameObject); Instance = this; }
@@ -107,12 +107,12 @@ public class MultiZoneCityGenerator : MonoBehaviour
         return null;
     }
 
-    // --- 修改重点：确保建筑生成在中心并正确注册 ---
+    // --- 脨脼赂脛脰脴碌茫拢潞脠路卤拢陆篓脰镁脡煤鲁脡脭脷脰脨脨脛虏垄脮媒脠路脳垄虏谩 ---
     public void ForceSpawnBuildingInZone(int zoneIndex, string buildingName)
     {
         if (zoneIndex < 0 || zoneIndex >= zones.Count) return;
 
-        // 改用名称查找
+        // 赂脛脫脙脙没鲁脝虏茅脮脪
         var opt = buildingOptions.Find(b => b.data.name == buildingName);
         if (opt.prefab == null)
             opt = specialBuildingOptions.Find(b => b.data.name == buildingName);
@@ -121,19 +121,19 @@ public class MultiZoneCityGenerator : MonoBehaviour
         {
             var zone = zones[zoneIndex];
 
-            // 1. 清理该区域原有的所有建筑
+            // 1. 脟氓脌铆赂脙脟酶脫貌脭颅脫脨碌脛脣霉脫脨陆篓脰镁
             foreach (Transform child in zone.originPoint)
                 if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator")
                     Destroy(child.gameObject);
 
-            // 2. 计算生成位置：必须是 OriginPoint 的本地中心，并加上偏移
+            // 2. 录脝脣茫脡煤鲁脡脦禄脰脙拢潞卤脴脨毛脢脟 OriginPoint 碌脛卤戮碌脴脰脨脨脛拢卢虏垄录脫脡脧脝芦脪脝
             Vector3 spawnPos = GetZoneCenter(zone) + Vector3.up * buildingYOffset;
             GameObject b = Instantiate(opt.prefab, spawnPos, Quaternion.identity, zone.originPoint);
 
-            // 3. 核心初始化：由于是强制生成，必须手动调用初始化
+            // 3. 潞脣脨脛鲁玫脢录禄炉拢潞脫脡脫脷脢脟脟驴脰脝脡煤鲁脡拢卢卤脴脨毛脢脰露炉碌梅脫脙鲁玫脢录禄炉
             AttachAndInitialize(b, opt.data, spawnPos);
 
-            // 4. 判断逻辑脚本激活
+            // 4. 脜脨露脧脗脽录颅陆脜卤戮录陇禄卯
             var normalEffect = b.GetComponent<BuildingEffect>();
             var tutorialEffect = b.GetComponent<TutorialBuildingEffect>();
 
@@ -141,11 +141,11 @@ public class MultiZoneCityGenerator : MonoBehaviour
             if (tutorialEffect != null) tutorialEffect.ApplyTutorialEffect();
 
             zone.isOccupied = true;
-            Debug.Log($"[PCG] 已在 {zone.zoneName} 生成建筑: {buildingName}");
+            Debug.Log($"[PCG] 脪脩脭脷 {zone.zoneName} 脡煤鲁脡陆篓脰镁: {buildingName}");
         }
         else
         {
-            Debug.LogError($"[PCG] 无法找到名为 {buildingName} 的建筑配置，请检查 Inspector！");
+            Debug.LogError($"[PCG] 脦脼路篓脮脪碌陆脙没脦陋 {buildingName} 碌脛陆篓脰镁脜盲脰脙拢卢脟毛录矛虏茅 Inspector拢隆");
         }
     }
 
@@ -271,7 +271,13 @@ public class MultiZoneCityGenerator : MonoBehaviour
     {
         BuildingStats s = new BuildingStats();
         BuildingEffect e = p.GetComponent<BuildingEffect>();
-        if (e != null) { s.co2 = e.powerPlantCo2Change; s.cost = 100f; s.energy = 50f; }
+        if (e != null)
+        {
+            // 璇讳綘鏂版敼鐨勫悕瀛楋紝纭繚 PCG 绠楁硶閫昏緫姝ｇ‘
+            s.co2 = e.co2Change;
+            s.energy = e.electricityChange;
+            s.cost = 100f;
+        }
         return s;
     }
 
@@ -289,7 +295,7 @@ public class MultiZoneCityGenerator : MonoBehaviour
         {
             Vector3Int gPos = GameManager.Instance.PlacementGrid.WorldToCell(pos);
             po.Initialize(data, gPos);
-            // 必须向 PlacementSystem 注册，否则建筑逻辑不会生效
+            // 卤脴脨毛脧貌 PlacementSystem 脳垄虏谩拢卢路帽脭貌陆篓脰镁脗脽录颅虏禄禄谩脡煤脨搂
             PlacementSystem.Instance?.RegisterExternalObject(building, data, gPos);
         }
     }

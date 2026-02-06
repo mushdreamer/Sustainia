@@ -122,65 +122,53 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            // 1. 优先处理普通建筑逻辑
+            // 1. 处理普通建筑逻辑
             if (buildingEffect != null)
             {
-                BuildingType type = buildingEffect.type;
-
-                float energy = buildingEffect.GetCurrentElectricity();
+                // 使用你新定义的通用变量名
+                float energy = buildingEffect.electricityChange;
                 if (Mathf.Abs(energy) > 0.01f)
                 {
-                    bool isProduction = energy < 0;
+                    bool isProduction = energy < 0; // 负数发电
                     string color = isProduction ? "<color=green>" : "<color=red>";
                     string label = isProduction ? "Energy Production" : "Energy Consumption";
                     sb.AppendLine($"{color}{label}: {Mathf.Abs(energy):F1}</color>");
                 }
 
-                float co2 = buildingEffect.GetCurrentCo2Change();
+                float co2 = buildingEffect.co2Change;
                 if (Mathf.Abs(co2) > 0.01f)
                 {
-                    bool isEmission = co2 > 0;
+                    bool isEmission = co2 > 0; // 正数排放
                     string color = isEmission ? "<color=red>" : "<color=green>";
                     string label = isEmission ? "CO2 Emission" : "CO2 Absorption";
                     sb.AppendLine($"{color}{label}: {Mathf.Abs(co2):F1}</color>");
                 }
 
-                if (type == BuildingType.Farm)
-                {
-                    float food = buildingEffect.GetCurrentFood();
-                    sb.AppendLine($"<color=green>Food Production: {food:F1}</color>");
-                }
-                if (type == BuildingType.House)
-                {
+                // 保留其他特定职能显示
+                if (buildingEffect.type == BuildingType.Farm)
+                    sb.AppendLine($"<color=green>Food Production: {buildingEffect.foodProduction:F1}</color>");
+
+                if (buildingEffect.type == BuildingType.House)
                     sb.AppendLine($"Population: {buildingEffect.initialPopulation} / {buildingEffect.populationCapacity}");
-                }
-                if (type == BuildingType.Institute)
-                {
-                    sb.AppendLine($"<color=#00FFFF>Research: Active</color>");
-                }
-                if (type == BuildingType.Bank)
-                {
-                    sb.AppendLine($"<color=#FFD700>Economy: Trade Center</color>");
-                }
-                if (type == BuildingType.Co2Storage)
-                {
-                    sb.AppendLine($"<color=green>Status: Capturing</color>");
-                }
             }
 
-            // 2. 新增：处理教学建筑逻辑 (Battery & LocalGeneration)
+            // 2. 处理教学建筑逻辑
             var tutorialEffect = GetComponent<TutorialBuildingEffect>();
             if (tutorialEffect != null)
             {
-                if (tutorialEffect.tutorialType == TutorialBuildingType.LocalGen)
+                // 同样适配新的变量名 electricityChange 和 co2Change
+                if (Mathf.Abs(tutorialEffect.electricityChange) > 0.01f)
                 {
-                    sb.AppendLine($"<color=green>Local Gen: +{tutorialEffect.energyValue:F1}</color>");
-                    if (tutorialEffect.co2Effect > 0.01f)
-                        sb.AppendLine($"<color=red>CO2: +{tutorialEffect.co2Effect:F1}</color>");
+                    bool isGen = tutorialEffect.electricityChange < 0;
+                    string prefix = isGen ? "+" : "-";
+                    sb.AppendLine($"<color=yellow>Tutorial Energy: {prefix}{Mathf.Abs(tutorialEffect.electricityChange):F1}</color>");
                 }
-                else if (tutorialEffect.tutorialType == TutorialBuildingType.Battery)
+
+                if (Mathf.Abs(tutorialEffect.co2Change) > 0.01f)
                 {
-                    sb.AppendLine($"<color=#FFD700>Storage Cap: {tutorialEffect.storageCapacity:F0} kWh</color>");
+                    bool isEmit = tutorialEffect.co2Change > 0;
+                    string label = isEmit ? "Emit" : "Absorb";
+                    sb.AppendLine($"<color=#FFA500>Tutorial CO2 {label}: {Mathf.Abs(tutorialEffect.co2Change):F1}</color>");
                 }
             }
 
