@@ -40,11 +40,7 @@ public class TutorialManager : MonoBehaviour
 
         if (PlacementSystem.Instance != null)
         {
-            // 修正后的事件绑定：OnBuildingPlaced 通常带参数，而 OnBuildingRemoved 在某些版本中不带参数
-            // 这里使用匿名函数 () => 处理不带参数的情况
             PlacementSystem.Instance.OnBuildingPlaced += (data) => OnAnyBuildingAction();
-
-            // 修复 CS1593 错误：如果 OnBuildingRemoved 不带参数，则去掉 (data)
             PlacementSystem.Instance.OnBuildingRemoved += () => {
                 OnAnyBuildingAction();
                 OnBuildingRemovedTrigger();
@@ -143,7 +139,8 @@ public class TutorialManager : MonoBehaviour
     private void CheckNonBuildingConditions(TutorialStep currentStep)
     {
         bool statusMet = true;
-        bool hasAnyCondition = currentStep.requirePositiveEnergyBalance || currentStep.requireOptimizationGoal;
+        // 只有在这些特定条件被勾选时才进行判定
+        bool hasAutomatedCondition = currentStep.requirePositiveEnergyBalance || currentStep.requireOptimizationGoal;
 
         if (currentStep.requirePositiveEnergyBalance)
         {
@@ -155,8 +152,9 @@ public class TutorialManager : MonoBehaviour
             if (LevelScenarioLoader.Instance == null || !LevelScenarioLoader.Instance.IsOptimizationGoalMet()) statusMet = false;
         }
 
-        if (hasAnyCondition && statusMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding &&
-            !currentStep.requireInput && !currentStep.requireRemoval)
+        // 修改点：如果满足了自动化条件，且该步骤没有明确要求建造或删除（建造逻辑在 CheckRequirementsDelayed 处理），则自动跳到下一步。
+        // 无论 requireInput 是否勾选，自动化条件达成都会触发 NextStep()。
+        if (hasAutomatedCondition && statusMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding && !currentStep.requireRemoval)
         {
             if (Time.time - _stepStartTime > 0.8f)
             {

@@ -129,7 +129,7 @@ MonoBehaviour:
   maxHealth: 100
   _currentHealth: 0
   electricityChange: -50
-  co2Change: -30
+  co2Change: 30
   populationCapacity: 5
   initialPopulation: 2
   houseCo2Change: 1

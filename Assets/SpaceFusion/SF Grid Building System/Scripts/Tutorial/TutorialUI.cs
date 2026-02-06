@@ -1,13 +1,13 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
 public class TutorialUI : MonoBehaviour
 {
     [Header("UI References")]
-    public GameObject panel; // Õû¸ö½Ì³ÌÃæ°å
+    public GameObject panel; // æ•´ä¸ªæ•™ç¨‹é¢æ¿
     public TextMeshProUGUI instructionText;
-    public Button nextButton; // "ÏÂÒ»²½" °´Å¥
+    public Button nextButton; // "ä¸‹ä¸€æ­¥" æŒ‰é’®
 
     private TutorialManager _manager;
 
@@ -22,9 +22,14 @@ public class TutorialUI : MonoBehaviour
         panel.SetActive(true);
         instructionText.text = step.instructionText;
 
-        // Èç¹ûÕâÒ»²½ĞèÒªÍæ¼Ò½¨Ôì¶«Î÷£¬¾ÍÒş²Ø¡°ÏÂÒ»²½¡±°´Å¥£¬Ç¿ÖÆÍæ¼ÒÈ¥½¨Ôì
-        // Èç¹ûÖ»ÊÇÔÄ¶ÁÎÄ±¾£¬ÔòÏÔÊ¾¡°ÏÂÒ»²½¡±
-        nextButton.gameObject.SetActive(step.requireInput);
+        // ä¿®æ”¹é€»è¾‘ï¼š
+        // 1. å¦‚æœæ˜¾å¼å‹¾é€‰äº† requireInputï¼Œåˆ™ä¸€å®šæ˜¾ç¤ºæŒ‰é’®ï¼ˆä½œä¸ºå…œåº•ï¼‰ã€‚
+        // 2. å¦‚æœæ²¡æœ‰ä»»ä½•è‡ªåŠ¨åŒ–æ¡ä»¶ï¼ˆå»ºé€ ã€åˆ é™¤ã€èƒ½æºã€ç›®æ ‡ï¼‰ï¼Œé‚£å®ƒå°±æ˜¯ä¸€ä¸ªçº¯æ–‡æœ¬é˜…è¯»æ­¥éª¤ï¼Œä¹Ÿå¿…é¡»æ˜¾ç¤ºæŒ‰é’®ã€‚
+        bool hasNoAutomation = !step.requireBuilding && !step.requireTutorialBuilding &&
+                               !step.requireRemoval && !step.requirePositiveEnergyBalance &&
+                               !step.requireOptimizationGoal;
+
+        nextButton.gameObject.SetActive(step.requireInput || hasNoAutomation);
     }
 
     public void Hide()
