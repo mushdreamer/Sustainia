@@ -13656,7 +13656,7 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: Remove Building
     instructionText: Great! Now let's try to remove it. Click and HOLD the Left Mouse
       Button on the building to open the menu, then select the "Trash Can" button
@@ -13705,7 +13705,7 @@ MonoBehaviour:
     requireRemoval: 1
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: Finish
     instructionText: Good Job! Press Next to Continue!
     clearSceneBeforeStart: 0
@@ -13852,7 +13852,7 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: 'Event 1.3: Introduction to Local Generation'
     instructionText: While the grid is reliable, a resilient city also utilizes Local
       Generation. These are energy sources like wind or solar located right within
@@ -13952,7 +13952,7 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: 'Event 1.5: Understanding Residential Demand'
     instructionText: Energy isn't just about supply; it's also about consumption.
       Every building, from factories to homes, creates a specific Demand for power.
@@ -14051,7 +14051,7 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: 'Event 1.7: The Role of Battery Storage'
     instructionText: "Finally, let's look at how we balance the equation: Input +
       Generation - Demand = ?. When your supply exceeds your demand, the surplus
@@ -14181,7 +14181,7 @@ MonoBehaviour:
       goalCount: 1
     powerPlantReq:
       checkThis: 1
-      goalCount: 1
+      goalCount: 2
     co2StorageReq:
       checkThis: 0
       goalCount: 1
@@ -14191,7 +14191,7 @@ MonoBehaviour:
     requireTutorialBuilding: 1
     localGenReq:
       checkThis: 1
-      goalCount: 1
+      goalCount: 2
     batteryReq:
       checkThis: 0
       goalCount: 1
@@ -14255,7 +14255,7 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: 'Event 2.4: Implementing Removals & The Final Balance'
     instructionText: "The Final Year-End Balance In summary, your city's environment
       is a continuous tally. This year\u2019s final CO2 level is simply last year's
@@ -14306,7 +14306,7 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
   - stepName: 'Event 3: Objective'
     instructionText: 'Alert: You tried to maximize capacity, causing a massive deficit[cite:
       13, 14]! Remember, the goal is to ''Minimize Cost while meeting demand''[cite:
