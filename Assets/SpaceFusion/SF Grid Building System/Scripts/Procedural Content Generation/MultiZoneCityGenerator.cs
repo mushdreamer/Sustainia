@@ -107,45 +107,40 @@ public class MultiZoneCityGenerator : MonoBehaviour
         return null;
     }
 
-    // --- ÐÞ¸ÄÖØµã£ºÈ·±£½¨ÖþÉú³ÉÔÚÖÐÐÄ²¢ÕýÈ·×¢²á ---
     public void ForceSpawnBuildingInZone(int zoneIndex, string buildingName)
     {
         if (zoneIndex < 0 || zoneIndex >= zones.Count) return;
 
-        // ¸ÄÓÃÃû³Æ²éÕÒ
         var opt = buildingOptions.Find(b => b.data.name == buildingName);
-        if (opt.prefab == null)
-            opt = specialBuildingOptions.Find(b => b.data.name == buildingName);
+        if (opt.prefab == null) opt = specialBuildingOptions.Find(b => b.data.name == buildingName);
 
         if (opt.prefab != null)
         {
             var zone = zones[zoneIndex];
-
-            // 1. ÇåÀí¸ÃÇøÓòÔ­ÓÐµÄËùÓÐ½¨Öþ
             foreach (Transform child in zone.originPoint)
                 if (child.name != "RingOutline" && child.name != "StatusLabel" && child.name != "ArrowIndicator")
                     Destroy(child.gameObject);
 
-            // 2. ¼ÆËãÉú³ÉÎ»ÖÃ£º±ØÐëÊÇ OriginPoint µÄ±¾µØÖÐÐÄ£¬²¢¼ÓÉÏÆ«ÒÆ
             Vector3 spawnPos = GetZoneCenter(zone) + Vector3.up * buildingYOffset;
             GameObject b = Instantiate(opt.prefab, spawnPos, Quaternion.identity, zone.originPoint);
 
-            // 3. ºËÐÄ³õÊ¼»¯£ºÓÉÓÚÊÇÇ¿ÖÆÉú³É£¬±ØÐëÊÖ¶¯µ÷ÓÃ³õÊ¼»¯
             AttachAndInitialize(b, opt.data, spawnPos);
 
-            // 4. ÅÐ¶ÏÂß¼­½Å±¾¼¤»î
             var normalEffect = b.GetComponent<BuildingEffect>();
             var tutorialEffect = b.GetComponent<TutorialBuildingEffect>();
 
+            // 核心改动：先强制 Apply，再打印日志
             if (normalEffect != null) normalEffect.ApplyEffect();
             if (tutorialEffect != null) tutorialEffect.ApplyTutorialEffect();
 
+            // 此时打印出来的就不应该是 0 了
+            if (normalEffect != null)
+                Debug.Log($"<color=green>[Registered]</color> {buildingName} | 电力: {normalEffect.GetCurrentElectricity()} | CO2: {normalEffect.GetCurrentCo2Change()}");
+
             zone.isOccupied = true;
-            Debug.Log($"[PCG] ÒÑÔÚ {zone.zoneName} Éú³É½¨Öþ: {buildingName}");
-        }
-        else
-        {
-            Debug.LogError($"[PCG] ÎÞ·¨ÕÒµ½ÃûÎª {buildingName} µÄ½¨ÖþÅäÖÃ£¬Çë¼ì²é Inspector£¡");
+
+            // 强制刷新 UI：利用 AddMoney(0) 触发内部 UpdateUI
+            if (ResourceManager.Instance != null) ResourceManager.Instance.AddMoney(0);
         }
     }
 
