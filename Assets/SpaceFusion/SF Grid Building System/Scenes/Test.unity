@@ -14109,8 +14109,8 @@ MonoBehaviour:
       is the total concentration of CO2 inherited from last year's activities. In
       this simulation, the environment remembers every bit of carbon released in
       the past."
-    clearSceneBeforeStart: 1
-    layoutToLoad: 1
+    clearSceneBeforeStart: 0
+    layoutToLoad: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -14307,14 +14307,12 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 3.1: Assessing the City''s Needs'
-    instructionText: 'Take a look at your growing city; the new residential districts
-      have significantly increased our resource requirements. If you check the Level
-      Goal panel, you will see our current status presented as a small optimization
-      problem. We are now tracking three critical variables: Food Demand, Electric
-      Demand, and our Co2 Emission limit. Your task as the city planner is to ensure
-      that the supply for both food and electricity is met while keeping our environmental
-      impact within the safety threshold.'
+  - stepName: 'Event 3.1: The Urban Challenge'
+    instructionText: "The camera focuses on your growing city, where the rapid increase
+      in residential houses has created a complex management crisis. Open your Level
+      Goal panel; you will see that our current state is far from optimal. To restore
+      order, you must help the city's system build an Objective Function\u2014a mathematical
+      goal\u2014by addressing each critical demand one by one."
     clearSceneBeforeStart: 1
     layoutToLoad: 2
     focusTarget: {fileID: 1743267687}
@@ -14360,111 +14358,7 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 3.2: Defining the Objective Function'
-    instructionText: "To resolve these competing needs, the city\u2019s management
-      system requires a clear instruction known as an Objective Function. This is
-      the mathematical goal that tells the simulation what to prioritize. Without
-      a properly defined objective, the system wouldn't know whether to focus solely
-      on building more farms, generating more power, or simply saving money at the
-      expense of the citizens' well-being."
-    clearSceneBeforeStart: 1
-    layoutToLoad: 2
-    focusTarget: {fileID: 1743267687}
-    cameraDistance: 15
-    cameraAngle: 45
-    showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    startCondition: 0
-    shouldPauseGame: 0
-    requireBuilding: 0
-    houseReq:
-      checkThis: 0
-      goalCount: 1
-    farmReq:
-      checkThis: 0
-      goalCount: 1
-    instituteReq:
-      checkThis: 0
-      goalCount: 1
-    powerPlantReq:
-      checkThis: 0
-      goalCount: 1
-    co2StorageReq:
-      checkThis: 0
-      goalCount: 1
-    bankReq:
-      checkThis: 0
-      goalCount: 1
-    requireTutorialBuilding: 0
-    localGenReq:
-      checkThis: 0
-      goalCount: 1
-    batteryReq:
-      checkThis: 0
-      goalCount: 1
-    negativeHouseReq:
-      checkThis: 0
-      goalCount: 1
-    ccHouseReq:
-      checkThis: 0
-      goalCount: 1
-    requireRemoval: 0
-    requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 0
-    requireInput: 1
-  - stepName: 'Event 3.2: Defining the Objective Function'
-    instructionText: "To resolve these competing needs, the city\u2019s management
-      system requires a clear instruction known as an Objective Function. This is
-      the mathematical goal that tells the simulation what to prioritize. Without
-      a properly defined objective, the system wouldn't know whether to focus solely
-      on building more farms, generating more power, or simply saving money at the
-      expense of the citizens' well-being."
-    clearSceneBeforeStart: 1
-    layoutToLoad: 2
-    focusTarget: {fileID: 1743267687}
-    cameraDistance: 15
-    cameraAngle: 45
-    showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    startCondition: 0
-    shouldPauseGame: 0
-    requireBuilding: 0
-    houseReq:
-      checkThis: 0
-      goalCount: 1
-    farmReq:
-      checkThis: 0
-      goalCount: 1
-    instituteReq:
-      checkThis: 0
-      goalCount: 1
-    powerPlantReq:
-      checkThis: 0
-      goalCount: 1
-    co2StorageReq:
-      checkThis: 0
-      goalCount: 1
-    bankReq:
-      checkThis: 0
-      goalCount: 1
-    requireTutorialBuilding: 0
-    localGenReq:
-      checkThis: 0
-      goalCount: 1
-    batteryReq:
-      checkThis: 0
-      goalCount: 1
-    negativeHouseReq:
-      checkThis: 0
-      goalCount: 1
-    ccHouseReq:
-      checkThis: 0
-      goalCount: 1
-    requireRemoval: 0
-    requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 0
-    requireInput: 1
-  - stepName: 'Event 3.3: Meeting Food Demand'
+  - stepName: "Event 3.2: Step 1 \u2014 Meeting Food Demand"
     instructionText: 'First, look at the Food Demand indicator. Our citizens are
       hungry, and the current supply is insufficient. You are prompted to add the
       first rule to our optimization logic: "Ensure food production meets or exceeds
@@ -14516,7 +14410,7 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 3.4: Satisfying Electric Demand'
+  - stepName: "Event 3.3: Step 2 \u2014 Satisfying Electric Demand"
     instructionText: 'Now, notice the Electric Demand bar. The new houses and your
       food production facilities have placed a heavy load on the grid. We must now
       update our objective to: "Provide enough electricity for all city functions."
@@ -14568,13 +14462,65 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 3.5: Honoring the CO2 Emission Limit'
+  - stepName: "Event 3.4: Step 3 \u2014 Honoring the CO2 Emission Limit"
     instructionText: 'Finally, we must address the CO2 Emission meter. A city cannot
       be successful if it destroys its environment. You add the final constraint:
       "Keep emissions below the safety threshold." To achieve this without shutting
       down the city, the system factors in the cost of CCUS facilities to scrub the
       air. This final step ensures that our growth remains within sustainable physical
       boundaries.'
+    clearSceneBeforeStart: 1
+    layoutToLoad: 2
+    focusTarget: {fileID: 1743267687}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 0
+    requireBuilding: 0
+    houseReq:
+      checkThis: 0
+      goalCount: 1
+    farmReq:
+      checkThis: 0
+      goalCount: 1
+    instituteReq:
+      checkThis: 0
+      goalCount: 1
+    powerPlantReq:
+      checkThis: 0
+      goalCount: 1
+    co2StorageReq:
+      checkThis: 0
+      goalCount: 1
+    bankReq:
+      checkThis: 0
+      goalCount: 1
+    requireTutorialBuilding: 0
+    localGenReq:
+      checkThis: 0
+      goalCount: 1
+    batteryReq:
+      checkThis: 0
+      goalCount: 1
+    negativeHouseReq:
+      checkThis: 0
+      goalCount: 1
+    ccHouseReq:
+      checkThis: 0
+      goalCount: 1
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+  - stepName: 'Event 3.5: The Final Integrated Objective'
+    instructionText: 'With all requirements addressed, the Banker reveals the complete
+      picture. By solving for food, electricity, and the environment simultaneously
+      at the lowest price, you have successfully implemented the ultimate objective:
+      "Minimize total cost while meeting demand and CO2 limits". This balanced approach
+      is the only way to ensure the city thrives without wasting resources or violating
+      the laws of nature.'
     clearSceneBeforeStart: 1
     layoutToLoad: 2
     focusTarget: {fileID: 1743267687}
