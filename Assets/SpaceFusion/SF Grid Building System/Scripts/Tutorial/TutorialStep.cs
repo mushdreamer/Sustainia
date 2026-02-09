@@ -72,4 +72,18 @@ public class TutorialStep
     [Tooltip("如果勾选，将检查 LevelScenarioLoader 中的真实目标是否达成")]
     public bool requireOptimizationGoal = false;
     public bool requireInput = false;
+
+    [Header("New Status Conditions (Combined Check)")]
+    [Tooltip("要求食物差值 >= 0")]
+    public bool requireFoodSatisfied = false;
+    [Tooltip("要求食物差值 < 0")]
+    public bool requireFoodShortage = false;
+    [Tooltip("要求电力差值 >= 0")]
+    public bool requireElecStable = false;
+    [Tooltip("要求电力差值 < 0")]
+    public bool requireElecDeficit = false;
+    [Tooltip("要求净碳排放 <= 限制值")]
+    public bool requireCo2WithinLimit = false;
+    [Tooltip("要求净碳排放 > 限制值")]
+    public bool requireCo2OverLimit = false;
 }

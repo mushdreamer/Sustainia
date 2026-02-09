@@ -138,27 +138,62 @@ public class TutorialManager : MonoBehaviour
 
     private void CheckNonBuildingConditions(TutorialStep currentStep)
     {
+        if (ResourceManager.Instance == null) return;
+
+        // 默认条件达成，接下来的检查如果有一个不通过，则 statusMet 为 false
         bool statusMet = true;
-        // 只有在这些特定条件被勾选时才进行判定
-        bool hasAutomatedCondition = currentStep.requirePositiveEnergyBalance || currentStep.requireOptimizationGoal;
 
-        if (currentStep.requirePositiveEnergyBalance)
+        // 判断是否开启了任何状态自动化检查
+        bool hasAutomatedCondition =
+            currentStep.requirePositiveEnergyBalance ||
+            currentStep.requireOptimizationGoal ||
+            currentStep.requireFoodSatisfied ||
+            currentStep.requireFoodShortage ||
+            currentStep.requireElecStable ||
+            currentStep.requireElecDeficit ||
+            currentStep.requireCo2WithinLimit ||
+            currentStep.requireCo2OverLimit;
+
+        if (!hasAutomatedCondition) return;
+
+        // --- 联合检查逻辑 (AND 关系) ---
+
+        // 检查食物
+        if (currentStep.requireFoodSatisfied && ResourceManager.Instance.FoodBalance < 0f) statusMet = false;
+        if (currentStep.requireFoodShortage && ResourceManager.Instance.FoodBalance >= 0f) statusMet = false;
+
+        // 检查电力
+        if ((currentStep.requireElecStable || currentStep.requirePositiveEnergyBalance) && ResourceManager.Instance.ElectricityBalance < 0f) statusMet = false;
+        if (currentStep.requireElecDeficit && ResourceManager.Instance.ElectricityBalance >= 0f) statusMet = false;
+
+        // 检查 CO2 (依赖 LevelScenarioLoader)
+        if (currentStep.requireCo2WithinLimit || currentStep.requireCo2OverLimit)
         {
-            if (ResourceManager.Instance == null || ResourceManager.Instance.ElectricityBalance < 0f) statusMet = false;
+            if (LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.currentLevel != null)
+            {
+                float currentNetCo2 = ResourceManager.Instance.GetCurrentNetEmission();
+                float limit = LevelScenarioLoader.Instance.currentLevel.goalCo2;
+
+                if (currentStep.requireCo2WithinLimit && currentNetCo2 > limit) statusMet = false;
+                if (currentStep.requireCo2OverLimit && currentNetCo2 <= limit) statusMet = false;
+            }
+            else
+            {
+                statusMet = false; // 如果找不到配置，视为不满足
+            }
         }
 
-        if (currentStep.requireOptimizationGoal)
-        {
-            if (LevelScenarioLoader.Instance == null || !LevelScenarioLoader.Instance.IsOptimizationGoalMet()) statusMet = false;
-        }
+        // 检查优化目标
+        if (currentStep.requireOptimizationGoal && (LevelScenarioLoader.Instance == null || !LevelScenarioLoader.Instance.IsOptimizationGoalMet())) statusMet = false;
 
-        // 修改点：如果满足了自动化条件，且该步骤没有明确要求建造或删除（建造逻辑在 CheckRequirementsDelayed 处理），则自动跳到下一步。
-        // 无论 requireInput 是否勾选，自动化条件达成都会触发 NextStep()。
-        if (hasAutomatedCondition && statusMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding && !currentStep.requireRemoval)
+        // --- 判定跳转 ---
+        // 只有当所有勾选的状态都满足，且没有要求特定的操作（建造/移除/点击）时，才执行自动跳转
+        if (statusMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding && !currentStep.requireRemoval && !currentStep.requireInput)
         {
+            // 加入一个极短的缓冲，防止在状态切换瞬间发生闪跳
             if (Time.time - _stepStartTime > 0.8f)
             {
-                Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} completed via Conditions.");
+                Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} completed: All status conditions met.");
                 NextStep();
             }
         }

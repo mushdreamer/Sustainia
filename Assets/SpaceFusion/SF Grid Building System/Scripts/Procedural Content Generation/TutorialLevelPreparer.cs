@@ -85,7 +85,7 @@ public class TutorialLevelPreparer : MonoBehaviour
         else if (eventIndex == 2)
         {
             // 生成全住宅场景 (Zone 0-15)
-            int maxZones = Mathf.Min(16, MultiZoneCityGenerator.Instance.zones.Count);
+            int maxZones = Mathf.Min(10, MultiZoneCityGenerator.Instance.zones.Count);
             for (int i = 0; i < maxZones; i++)
             {
                 MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(i, "House T1");
