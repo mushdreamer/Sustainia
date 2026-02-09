@@ -13898,8 +13898,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 1.4: Building Local Generation'
-    instructionText: Build a Local Generation. The Local Generation value updates,
-      adding to your total power supply.
+    instructionText: 'Build a Local Generation. The Local Generation value updates,
+      adding to your total power supply. '
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1060047925}
@@ -13994,8 +13994,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 1.6: Building a House'
-    instructionText: Build a Residential House. The Demand value rises, subtracting
-      from your available power.
+    instructionText: 'Build a Residential House. The Demand value rises, subtracting
+      from your available power. '
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 2120787670}
