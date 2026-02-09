@@ -13754,10 +13754,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 1.1: Introduction to Grid Input'
-    instructionText: "Introduction to Grid Input City management begins with power,
-      so the game is now paused for this brief orientation. Look at the Power Plant\u2014this
-      facility acts as your primary link to the external infrastructure, providing
-      a steady stream of Input from the grid to keep the city running."
+    instructionText: The Power Plant is your link to external infrastructure. It
+      provides Input from grid, a constant energy stream for the city.
     clearSceneBeforeStart: 1
     layoutToLoad: 1
     focusTarget: {fileID: 597993825}
@@ -13804,10 +13802,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 1.2: Building the Power Plant'
-    instructionText: Building the Power Plant Now, please place a Power Plant in
-      the designated area. As the construction completes, observe the "Electricity"
-      display in your UI. You will notice the Input value increases, showing the
-      baseline energy successfully entering your city's network from the main grid.
+    instructionText: Place a Power Plant. Check the UI; the Input value increases
+      as energy enters the network.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
@@ -13854,10 +13850,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 1.3: Introduction to Local Generation'
-    instructionText: While the grid is reliable, a resilient city also utilizes Local
-      Generation. These are energy sources like wind or solar located right within
-      your borders. This allows your city to produce its own clean energy independently,
-      reducing reliance on external sources.
+    instructionText: Local Generation refers to internal energy sources (Wind/Solar).
+      This reduces reliance on external sources by producing power within city borders.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 97609123}
@@ -13904,10 +13898,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 1.4: Building Local Generation'
-    instructionText: Go ahead and build a Local Generation site. Keep a close eye
-      on the Electricity panel; you will see the values update to reflect your Local
-      Generation capacity. This confirms that your city is now active in generating
-      its own power alongside the grid input.
+    instructionText: Build a Local Generation. The Local Generation value updates,
+      adding to your total power supply.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1060047925}
@@ -13954,10 +13946,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 1.5: Understanding Residential Demand'
-    instructionText: Energy isn't just about supply; it's also about consumption.
-      Every building, from factories to homes, creates a specific Demand for power.
-      In our optimization model, meeting this Demand is the essential requirement
-      for a functioning city.
+    instructionText: Every building creates a specific Demand (consumption). Meeting
+      this Demand is the mandatory requirement for a functioning city.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1113102201}
@@ -14004,9 +13994,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 1.6: Building a House'
-    instructionText: Now, build a Residential House. Once it is built, look at the
-      change in your Electricity UI. You will see the Demand value rise. This demonstrates
-      how every new expansion in your city subtracts from your available power supply.
+    instructionText: Build a Residential House. The Demand value rises, subtracting
+      from your available power.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 2120787670}
@@ -14053,11 +14042,9 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 1.7: The Role of Battery Storage'
-    instructionText: "Finally, let's look at how we balance the equation: Input +
-      Generation - Demand = ?. When your supply exceeds your demand, the surplus
-      isn't lost; it results in a Change in battery energy. This fluctuating value
-      represents your Storage term\u2014the battery absorbs the excess now so you
-      can use it later when the balance shifts."
+    instructionText: 'The city energy balance is calculated as: Input + Generation
+      - Demand. The result is the Change in battery energy (Storage). Surplus is
+      stored; deficits are drawn from storage.'
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 331275197}
@@ -14104,11 +14091,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 2.1: The Baseline State'
-    instructionText: "Checking the History First, take a look at the CO2 Emission
-      display in your Level Goal panel. This number represents our starting point\u2014it
-      is the total concentration of CO2 inherited from last year's activities. In
-      this simulation, the environment remembers every bit of carbon released in
-      the past."
+    instructionText: "Look at the CO2 Emission in the goal panel. This value represents
+      CO2(t)\u2014the total concentration inherited from the previous year."
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14155,10 +14139,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 2.2: Defining Net Annual Change'
-    instructionText: Increasing This Year's Impact Now, build a few Power Plant.
-      As these facilities begin to operate, you will notice the meter for this year's
-      emissions starting to rise. Every new energy source you add increases the amount
-      of carbon being pumped into the sky right now.
+    instructionText: Build a Power Plant. Observe the CO2 Emissions rise. Every operational
+      factory or plant adds new carbon to the atmosphere.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
@@ -14205,11 +14187,8 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 2.3: Adding Emissions to the State'
-    instructionText: Reducing Impact with CCUS To protect our future, we need to
-      bring those numbers down. Construct a CCUS building and observe the change.
-      You will see that these facilities actively subtract from your current output.
-      Our objective is to ensure that this year's net impact is low enough to keep
-      the total concentration below our target limit.
+    instructionText: Build a CCUS Facility. Observe the Co2 Emissions fall. These
+      facilities actively subtract or "remove" carbon from the current year's output.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
@@ -14256,11 +14235,9 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 2.4: Implementing Removals & The Final Balance'
-    instructionText: "The Final Year-End Balance In summary, your city's environment
-      is a continuous tally. This year\u2019s final CO2 level is simply last year's
-      total, plus all the new carbon we released, minus the carbon we successfully
-      removed. Your goal is to manage this balance to keep the city sustainable year
-      after year."
+    instructionText: 'The environment calculates the next year''s level (t+1) using
+      this formula: Co2(t+1) = Co2(t) + emissions - removals. Manage this balance
+      to keep the total concentration within sustainable limits year after year.'
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
@@ -14306,12 +14283,9 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 3.1: The Urban Challenge'
-    instructionText: "The camera focuses on your growing city, where the rapid increase
-      in residential houses has created a complex management crisis. Open your Level
-      Goal panel; you will see that our current state is far from optimal. To restore
-      order, you must help the city's system build an Objective Function\u2014a mathematical
-      goal\u2014by addressing each critical demand one by one."
+  - stepName: 'Event 3.1: Defining the Management Goal'
+    instructionText: A city needs a mathematical "compass" called an Objective Function.
+      You must define what "success" looks like by addressing competing needs.
     clearSceneBeforeStart: 1
     layoutToLoad: 2
     focusTarget: {fileID: 1743267687}
@@ -14357,13 +14331,9 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: "Event 3.2: Step 1 \u2014 Meeting Food Demand"
-    instructionText: 'First, look at the Food Demand indicator. Our citizens are
-      hungry, and the current supply is insufficient. You are prompted to add the
-      first rule to our optimization logic: "Ensure food production meets or exceeds
-      demand." Once you approve this, the system identifies the need for new agricultural
-      zones. However, providing food costs money and requires power, leading us to
-      our next challenge.'
+  - stepName: "Event 3.2: Requirement 1 \u2014 Meeting Food Demand"
+    instructionText: Observe the Food Demand. Add restaurant to meet the food demand.
+      The trade-off is that producing food costs money and consumes power.
     clearSceneBeforeStart: 1
     layoutToLoad: 2
     focusTarget: {fileID: 1743267687}
@@ -14409,13 +14379,10 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: "Event 3.3: Step 2 \u2014 Satisfying Electric Demand"
-    instructionText: 'Now, notice the Electric Demand bar. The new houses and your
-      food production facilities have placed a heavy load on the grid. We must now
-      update our objective to: "Provide enough electricity for all city functions."
-      As the system plans the necessary Power Plants and Local Generation, you will
-      see the energy balance stabilize, but a new problem emerges: our industrial
-      activity is pushing the atmosphere to its limit.'
+  - stepName: "Event 3.3: Requirement 2 \u2014 Satisfying Electric Demand"
+    instructionText: Observe the Electric Demand bar. Add powerplant or local generation
+      to meet the electric demand. Balancing energy is necessary, but increased generation
+      raises CO2 levels.
     clearSceneBeforeStart: 1
     layoutToLoad: 2
     focusTarget: {fileID: 1743267687}
@@ -14461,13 +14428,9 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: "Event 3.4: Step 3 \u2014 Honoring the CO2 Emission Limit"
-    instructionText: 'Finally, we must address the CO2 Emission meter. A city cannot
-      be successful if it destroys its environment. You add the final constraint:
-      "Keep emissions below the safety threshold." To achieve this without shutting
-      down the city, the system factors in the cost of CCUS facilities to scrub the
-      air. This final step ensures that our growth remains within sustainable physical
-      boundaries.'
+  - stepName: "Event 3.4: Requirement 3 \u2014 The CO2 Limit"
+    instructionText: Observe the CO2 Emission. Add the CCUS building to lower Co2
+      Emission. Factors in the cost of CCUS facilities to lower the Co2 Level.
     clearSceneBeforeStart: 1
     layoutToLoad: 2
     focusTarget: {fileID: 1743267687}
@@ -14514,12 +14477,9 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 3.5: The Final Integrated Objective'
-    instructionText: 'With all requirements addressed, the Banker reveals the complete
-      picture. By solving for food, electricity, and the environment simultaneously
-      at the lowest price, you have successfully implemented the ultimate objective:
-      "Minimize total cost while meeting demand and CO2 limits". This balanced approach
-      is the only way to ensure the city thrives without wasting resources or violating
-      the laws of nature.'
+    instructionText: 'The complete objective is now set: "Minimize total cost while
+      meeting demand and CO2 limits". Optimization is the process of finding the
+      cheapest way to satisfy all constraints simultaneously.'
     clearSceneBeforeStart: 1
     layoutToLoad: 2
     focusTarget: {fileID: 1743267687}
