@@ -153,30 +153,30 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             if (moneyText != null) moneyText.text = $"Money: {_money:F0}";
             if (populationText != null) populationText.text = $"Population: {_currentPopulation} / {_populationCapacity}";
 
-            // --- 食物 UI 逻辑：现在和电力完全一样 ---
             if (foodText != null)
             {
-                string sign = FoodBalance >= 0 ? "+" : "";
-                string foodColor = FoodBalance >= 0 ? "<color=green>" : "<color=red>";
-                foodText.text = $"Food Balance: {foodColor}{sign}{FoodBalance:F1}</color>\n<size=70%>(Prod: {_currentFoodProduction:F1} | Dem: {_currentFoodDemand:F1})</size>";
+                bool isSatisfied = FoodBalance >= 0;
+                string sign = isSatisfied ? "+" : "";
+                string foodColor = isSatisfied ? "<color=green>" : "<color=red>";
+                string statusText = isSatisfied ? "Satisfied" : "Shortage";
+
+                foodText.text = $"Food Balance: {foodColor}{sign}{FoodBalance:F1} ({statusText})</color>\n<size=70%>(Prod: {_currentFoodProduction:F1} | Dem: {_currentFoodDemand:F1})</size>";
             }
 
+            // --- Electricity UI: 移除 Goal 数值显示，改为颜色状态判断 ---
             if (electricityText != null)
             {
-                string sign = ElectricityBalance >= 0 ? "+" : "";
-                string elecColor = ElectricityBalance >= 0 ? "<color=green>" : "<color=red>";
-                string elecString = $"Elec Balance: {elecColor}{sign}{ElectricityBalance:F1}</color>";
+                bool isSatisfied = ElectricityBalance >= 0;
+                string sign = isSatisfied ? "+" : "";
+                string elecColor = isSatisfied ? "<color=green>" : "<color=red>";
+                string statusText = isSatisfied ? "Stable" : "Power Outage";
 
-                if (currentLevel != null)
-                {
-                    bool isEnergyMet = IsGoalMet(ElectricityBalance, currentLevel.goalEnergy, currentLevel.successTolerancePercent, true);
-                    string goalColor = isEnergyMet ? "<color=#00FF00>" : "<color=#FF8888>";
-                    elecString += $" / {goalColor}Goal: {currentLevel.goalEnergy:F0}</color>";
-                }
+                string elecString = $"Elec Balance: {elecColor}{sign}{ElectricityBalance:F1} ({statusText})</color>";
                 elecString += $"\n<size=70%>(Gen: {_currentLocalGeneration:F1} | Dem: {_currentTotalDemand:F1})</size>";
                 electricityText.text = elecString;
             }
 
+            // --- CO2 UI: 将 Goal 改为 Limit 概念 ---
             if (co2EmissionText != null)
             {
                 float currentNetCo2 = (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
@@ -184,12 +184,16 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
                 if (currentLevel != null)
                 {
-                    bool isCo2Met = IsGoalMet(currentNetCo2, currentLevel.goalCo2, currentLevel.successTolerancePercent, false);
-                    string goalColor = isCo2Met ? "<color=#00FF00>" : "<color=#FF8888>";
-                    co2String += $" / {goalColor}Goal: <{currentLevel.goalCo2:F0}</color>";
+                    // 判断是否在阈值（Limit）之内
+                    bool isUnderLimit = currentNetCo2 <= currentLevel.goalCo2;
+                    string statusColor = isUnderLimit ? "<color=green>" : "<color=red>";
+                    string limitColor = isUnderLimit ? "<color=#00FF00>" : "<color=#FF8888>";
+
+                    co2String = $"{statusColor}{co2String}</color> / {limitColor}Limit: <{currentLevel.goalCo2:F0}</color>";
                 }
                 co2EmissionText.text = co2String;
             }
+
             if (dayText != null) dayText.text = $"Day {_currentDay}";
         }
 
