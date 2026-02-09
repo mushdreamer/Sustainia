@@ -14526,14 +14526,10 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 4.1: The Cost of Excess Energy'
-    instructionText: "Observe your city's current energy panel; you will notice that
-      the net electricity is positive, meaning your generation exceeds consumption.
-      While this surplus automatically flows into Battery Storage, storing energy
-      isn't perfect\u2014batteries slowly leak power over time. Every watt of wasted
-      energy represents a loss of your invested capital. Your current task is to
-      achieve a perfect balance where production matches consumption exactly. You
-      can do this by building more electricity-consuming Houses or demolishing unnecessary
-      Power Plants to cut the surplus at its source."
+    instructionText: 'Notice the net electricity is positive; surplus flows to Battery
+      Storage. Storing energy leads to leakage and wasted investment. Build consuming
+      facilities or demolish power plants to match production with consumption. Constraint
+      1 (Upper Bound): Battery energy cannot exceed its capacity.'
     clearSceneBeforeStart: 1
     layoutToLoad: 1
     focusTarget: {fileID: 0}
@@ -14580,12 +14576,9 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 4.2: The Capacity Boundary'
-    instructionText: 'As you adjust the grid balance through construction or demolition,
-      you must respect the physical limits of your infrastructure. If you ignore
-      consumption in pursuit of high generation, your Battery Storage will eventually
-      hit its maximum limit. This reveals the first hard boundary in our optimization
-      model: the Capacity Constraint. It dictates that the energy in the battery
-      can never exceed its rated storage capacity.'
+    instructionText: 'Constraint 1: Battery energy cannot exceed its capacity. Constraint
+      2 (Lower Bound): Real-world variables (Houses, Plants) must be greater than
+      0.'
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14631,13 +14624,10 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 4.3: The "Negative Build" Paradox'
-    instructionText: 'In an attempt to further reduce costs, you might be tempted
-      by a "shortcut": trying to achieve "-5 Houses" by demolishing buildings that
-      don''t exist. However, the system will immediately trigger a logical error
-      because, in the real world, the number of houses and factories must be greater
-      than or equal to zero. This is the Non-negativity Constraint, which ensures
-      that optimization results never lose touch with physical reality.'
+  - stepName: 'Event 4.3: Defining the Feasible Region'
+    instructionText: The Feasible Region is the set of all plans that satisfy both
+      bounds. A valid optimization model must stay within the Capacity Cap and above
+      the Zero Floor.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14683,14 +14673,10 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 4.4: Defining the Feasible Region'
-    instructionText: "Through these attempts, you have defined the \"Feasible Region\"
-      for your city\u2014the legal zone where your plans can actually be executed.
-      A valid optimization model must contain both of these physical boundaries:
-      an upper limit that cannot exceed capacity, and a lower limit that never drops
-      below zero. You now understand that optimization is not just about chasing
-      extreme numbers, but about finding the most efficient balance within the constraints
-      of physical laws."
+  - stepName: 'Event 5.1: The Prosperity Calculation (P)'
+    instructionText: Prosperity (P) = Building Value - Resource Gaps (Food/Electricity).
+      Your P is low because gaps are too large and the budget is empty. You must
+      find a way to maximize P without new construction.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14736,65 +14722,10 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 5.1: The Prosperity Calculation'
-    instructionText: Your Prosperity (P) is calculated by taking the potential value
-      of your buildings and subtracting the Resource Gaps caused by insufficient
-      food and electricity. Currently, your Prosperity is very low because these
-      gaps are far too large. With a limited budget that prevents new construction,
-      your only option to increase Prosperity is to shrink these gaps by downsizing
-      the city's requirements.
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
-    focusTarget: {fileID: 0}
-    cameraDistance: 15
-    cameraAngle: 45
-    showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    startCondition: 0
-    shouldPauseGame: 1
-    requireBuilding: 0
-    houseReq:
-      checkThis: 0
-      goalCount: 1
-    farmReq:
-      checkThis: 0
-      goalCount: 1
-    instituteReq:
-      checkThis: 0
-      goalCount: 1
-    powerPlantReq:
-      checkThis: 0
-      goalCount: 1
-    co2StorageReq:
-      checkThis: 0
-      goalCount: 1
-    bankReq:
-      checkThis: 0
-      goalCount: 1
-    requireTutorialBuilding: 0
-    localGenReq:
-      checkThis: 0
-      goalCount: 1
-    batteryReq:
-      checkThis: 0
-      goalCount: 1
-    negativeHouseReq:
-      checkThis: 0
-      goalCount: 1
-    ccHouseReq:
-      checkThis: 0
-      goalCount: 1
-    requireRemoval: 0
-    requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 0
-    requireInput: 1
-  - stepName: 'Event 5.2: Reducing the Gap via Demolition'
-    instructionText: The system prompts you to enter Demolish Mode. Try removing
-      a few Residential Houses that are currently consuming more power and food than
-      the city can provide. As these buildings disappear, watch the Level Goal panel;
-      you will notice that your total Prosperity score actually begins to rise. Even
-      though you have fewer buildings, the significant reduction in the Resource
-      Gap makes the overall system more efficient and successful.
+  - stepName: 'Event 5.2: Optimization via Demolition'
+    instructionText: Remove houses to decrease the demand. As gaps shrink, your Prosperity
+      (P) rises. Efficiency can be improved by reducing the "negative" impact of
+      gaps.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14841,14 +14772,10 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 5.3: Minimizing -P to Maximize P'
-    instructionText: 'Continue demolishing the excess structures until the Food and
-      Electricity Gaps reach zero. As the gaps vanish, you will see your Prosperity
-      score reach its peak for the current budget. This exercise demonstrates a core
-      principle of optimization: when you cannot grow directly, you can achieve your
-      goal by focusing on the negative. By choosing to "Minimize -P" (the gaps),
-      you effectively reach the same optimal layout as if you were maximizing prosperity.
-      You have learned that minimizing the negative is a powerful way to ensure the
-      best possible city performance.'
+    instructionText: If your solver only accepts minimization problems. To reach
+      the peak of P, we tell the solver to Minimize -P. Minimizing the negative of
+      a value is mathematically identical to maximizing the value itself. Both lead
+      to the same optimal city layout.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14895,12 +14822,9 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: "Event 6.1: Defining the City\u2019s Identity"
-    instructionText: 'In this level, we are not giving you a fixed goal; instead,
-      you will design the very formula used to measure the city''s Prosperity. You
-      are provided with two types of specialized structures: Industrial Factories,
-      which generate Gold (Profit), and CCUS Facilities, which produce Green (Sustainability).
-      How you balance these 8 slots will define what "success" means for your city.
-      As you begin placing buildings, a dynamic equation appears on the main screen:'
+    instructionText: Build few buildings to either Industrial Factories (Gold/Profit)
+      or CCUS Facilities (Green/Sustainability). This allocation determines the priorities
+      of your city's success metric.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14947,11 +14871,10 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 6.2: From Construction to Weights'
-    instructionText: "Prosperity Score = W1 \xD7 Gold + W2 \xD7 Green Every time
-      you place a Factory, the weight W1 increases; every time you place a CCUS Facility,
-      the weight W2 increases. The system is literally turning your physical layout
-      into a weighted objective, showing you in real-time how your choices are translated
-      into mathematical importance."
+    instructionText: "Each building choice modifies a dynamic equation on the UI:
+      Prosperity Score = W1 \xD7 Gold + W2 \xD7 Green. Factories increase the economic
+      weight W1, while CCUS facilities increase the environmental weight W2, translating
+      your physical layout into a Weighted Objective Function"
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14998,12 +14921,10 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 6.3: The Logic of the Optimal Score'
-    instructionText: "With your formula set, look at the resulting Prosperity Score.
-      In the world of optimization, this single number acts as your ultimate compass.
-      The system analyzes various plans and identifies the one with the highest score
-      within the pollution limits as the \"Optimal Plan\". You\u2019ve learned that
-      once your priorities (weights) are fixed, the plan that maximizes this score
-      is mathematically the best possible version of your city."
+    instructionText: The Prosperity Score acts as the ultimate compass for decision-making.
+      After weights are set, the system identifies the plan with the highest score
+      within pollution limits as the "Optimal Plan," proving that maximizing this
+      integrated score yields the best possible version of your city.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -15050,11 +14971,10 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 6.4: The Power of Consistent Trade-offs'
-    instructionText: Why collapse Gold and Green into one score? By using a single
-      formula, the system can compare different trade-offs consistently. Whether
-      you favor profit or the environment, this weighted objective ensures that every
-      building choice is evaluated on the same scale, allowing the solver to find
-      the best result based precisely on the values you defined.
+    instructionText: Collapsing Gold and Green into a single weighted score allows
+      the system to compare different trade-offs consistently. This ensures every
+      building choice is evaluated on the same scale, enabling the solver to find
+      the best result based precisely on your defined values.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -15100,12 +15020,11 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 9.1: Room to Grow'
-    instructionText: "Take a look at your City Environment panel. Your current Pollution
-      is at 40 units, while the legal Limit is set at 70. You have a \"buffer\" of
-      30 units. Because you are well below the limit, this environmental constraint
-      is currently Inactive\u2014it exists, but it isn\u2019t stopping you from expanding
-      yet."
+  - stepName: 'Event 9.1: Identifying Inactive Constraints'
+    instructionText: Open the City Environment panel and compare the CO2 Emission
+      level to the Safety Limit. Currently, emissions are below the threshold, meaning
+      the environmental constraint is Inactive. It exists in the model but does not
+      yet restrict your city's planning.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -15151,12 +15070,11 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-  - stepName: 'Event 9.2: Chasing Profit'
-    instructionText: Your mission is to increase the city's income as much as possible.
-      Start building Factories in the industrial zone. Each factory adds +15 Gold
-      to your revenue but also adds +10 Pollution. As you build the first two factories,
-      notice that your Prosperity Score climbs steadily without any resistance from
-      the system.
+  - stepName: 'Event 9.2: Expansion Without Resistance'
+    instructionText: Construct Industrial Factories to increase Prosperity. Notice
+      that as CO2 levels rise, your score continues to climb without interference.
+      Because you remain below the safety limit, the system allows expansion without
+      mathematical resistance, showing that the constraint is not yet a bottleneck.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -15203,12 +15121,10 @@ MonoBehaviour:
     requireOptimizationGoal: 0
     requireInput: 1
   - stepName: 'Event 9.3: The Shadow Price of Zero'
-    instructionText: "Notice a key insight: as long as your total pollution (now
-      at 60) remains below the 70-unit limit, the constraint has no \"cost\" on your
-      potential growth. In optimization terms, we say the Shadow Price of pollution
-      is currently Zero. This means that at this exact moment, increasing the pollution
-      limit wouldn't actually help you improve your score\u2014you still have free
-      space to use."
+    instructionText: While building within this buffer, the Shadow Price of the CO2
+      limit remains at Zero. In optimization, a zero shadow price indicates that
+      the constraint is not "binding"; relaxing the limit further would not improve
+      your score since you haven't exhausted your current allowance.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -15254,13 +15170,11 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 1
     requireInput: 0
-  - stepName: 'Event 9.4: Approaching the Binding Constraint'
-    instructionText: "But be careful! As you place the next factory, your pollution
-      will hit the 70-unit wall. The moment the constraint becomes Binding (hits
-      the limit), the Shadow Price will jump above zero. Suddenly, the constraint
-      is no longer \"invisible\"\u2014it becomes the primary factor stopping your
-      score from going any higher. You have learned that a constraint only limits
-      your success when you actually push against its boundary."
+  - stepName: 'Event 9.4: Reaching the Binding Constraint'
+    instructionText: The moment your total CO2 Emission matches the Safety Limit,
+      the constraint becomes Binding. The Shadow Price rises above zero, signaling
+      that the environment has finally become the primary factor stopping your Prosperity
+      Score from increasing further.
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
