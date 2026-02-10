@@ -106,7 +106,7 @@ MonoBehaviour:
   tutorialType: 1
   electricityChange: 0
   co2Change: 25
-  storageCapacity: 100
+  storageCapacity: 10
 --- !u!65 &2956330279912860538
 BoxCollider:
   m_ObjectHideFlags: 0

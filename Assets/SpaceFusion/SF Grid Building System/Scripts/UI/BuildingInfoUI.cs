@@ -1,8 +1,10 @@
-using System.Text;
+ï»¿using System.Text;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
+using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems; // ç”¨äºå°„çº¿æ£€æµ‹åˆ¤æ–­
 
 namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
 {
@@ -16,19 +18,15 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
         [SerializeField] private TextMeshProUGUI nameText;
         [SerializeField] private TextMeshProUGUI statsText;
 
-        [Header("Position Tuning (Î¢µ÷ÉèÖÃ)")]
-        [Tooltip("¿ØÖÆUIÔÚÆÁÄ»ÓÒ²àµÄ°Ù·Ö±ÈÎ»ÖÃ£¬1.0´ú±í×îÓÒ±ß")]
-        [Range(0f, 1f)]
-        [SerializeField] private float horizontalPercent = 0.95f;
-
-        [Tooltip("¿ØÖÆUIÔÚ´¹Ö±·½ÏòµÄ°Ù·Ö±ÈÎ»ÖÃ£¬0.5Îª¾ÓÖĞ")]
-        [Range(0f, 1f)]
-        [SerializeField] private float verticalPercent = 0.5f;
-
-        [Tooltip("ÔÚ°Ù·Ö±ÈÎ»ÖÃ»ù´¡ÉÏµÄÏñËØÆ«ÒÆ")]
+        [Header("Position Tuning")]
+        [Range(0f, 1f)][SerializeField] private float horizontalPercent = 0.95f;
+        [Range(0f, 1f)][SerializeField] private float verticalPercent = 0.5f;
         [SerializeField] private Vector2 pixelOffset = new Vector2(0, 0);
 
         private RectTransform _rectTransform;
+        private TutorialBuildingEffect _currentTutorialBuilding;
+        private string _cachedName;
+        private string _cachedDetails;
 
         private void Awake()
         {
@@ -38,38 +36,90 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
             Hide();
         }
 
-        // É¾³ıÁËÔ­ÓĞµÄ Update Êó±ê¸úËæÂß¼­£¬ÒÔ½â¾ö UI Óë½¨ÖşÖØºÏµÄÎÊÌâ
         private void Update()
         {
-            // Èç¹ûÄãÏëÔÚÔËĞĞÊ±ÍÏ¶¯»¬¸ËÊµÊ±¿´Ğ§¹û£¬¿ÉÒÔ°ÑÏÂÃæµÄ¶¨Î»º¯Êı·ÅÔÚÕâÀï
-            // SetPanelPosition(); 
+            // å¦‚æœé¢æ¿æ˜¯æ‰“å¼€çš„ï¼Œæˆ‘ä»¬éœ€è¦å®æ—¶åˆ·æ–°å†…å®¹
+            if (panel.activeSelf)
+            {
+                RefreshDisplay();
+            }
         }
 
+        // ä¿®æ”¹åçš„é€šç”¨ Show æ–¹æ³•ï¼šå¢åŠ è‡ªåŠ¨è¯†åˆ«é€»è¾‘
         public void Show(string name, string details)
         {
-            nameText.text = name;
-            statsText.text = details;
+            _cachedName = name;
+            _cachedDetails = details;
 
-            // ÔÚÏÔÊ¾Ê±¼ÆËãÎ»ÖÃ
+            // æ ¸å¿ƒä¿®å¤ï¼šç›´æ¥é€šè¿‡ç‰©ç†å°„çº¿æ¢æµ‹é¼ æ ‡ä¸‹çš„ç‰©ä½“
+            // è¿™æ ·æ— è®ºå¤–éƒ¨è„šæœ¬æ€ä¹ˆä¼ ï¼ŒUI éƒ½ä¼šæ ¹æ®ç‰©ç†äº‹å®è¿›è¡Œåˆ¤æ–­
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                _currentTutorialBuilding = hit.collider.GetComponentInParent<TutorialBuildingEffect>();
+            }
+
+            RefreshDisplay();
             SetPanelPosition();
-
             panel.SetActive(true);
+        }
+
+        private void RefreshDisplay()
+        {
+            nameText.text = _cachedName;
+
+            // å¦‚æœæ¢æµ‹åˆ°æ˜¯æ•™å­¦å»ºç­‘ï¼Œæ‰§è¡Œå®šåˆ¶é€»è¾‘
+            if (_currentTutorialBuilding != null)
+            {
+                StringBuilder sb = new StringBuilder();
+
+                if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.Battery)
+                {
+                    // åªæœ‰ Battery æ˜¾ç¤ºè¿‡è½½çŠ¶æ€
+                    if (ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < 0)
+                    {
+                        sb.AppendLine("<color=red><b>çŠ¶æ€: è¿‡è½½ (OVERLOADED)</b></color>");
+                        sb.Append("<color=red>ç”µç½‘ç”µåŠ›ä¸è¶³ä»¥æ”¯æ’‘ç”µæ± è¿ä½œ</color>");
+                    }
+                    else
+                    {
+                        sb.Append("<color=green>çŠ¶æ€: æ­£å¸¸ (NORMAL)</color>");
+                    }
+                }
+                else if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.LocalGen)
+                {
+                    // LocalGen æ˜¾ç¤ºç”µåŠ›å’Œ CO2
+                    float genValue = -_currentTutorialBuilding.electricityChange;
+                    float co2Value = _currentTutorialBuilding.co2Change;
+                    sb.AppendLine($"ç”µåŠ›ä¾›åº”: {genValue:F1} units");
+                    sb.Append($"ç¢³æ’æ”¾é‡: {co2Value:F1} kg/day");
+                }
+                else
+                {
+                    // å…¶ä»–æ•™å­¦å»ºç­‘ä½¿ç”¨é»˜è®¤ä¿¡æ¯
+                    sb.Append(_cachedDetails);
+                }
+
+                statsText.text = sb.ToString();
+            }
+            else
+            {
+                // æ™®é€šå»ºç­‘ï¼Œç›´æ¥æ˜¾ç¤ºå¤–éƒ¨ä¼ è¿›æ¥çš„ details
+                statsText.text = _cachedDetails;
+            }
         }
 
         private void SetPanelPosition()
         {
             if (_rectTransform == null) return;
-
-            // »ùÓÚµ±Ç°ÆÁÄ»·Ö±æÂÊ¼ÆËã×ø±ê
             float targetX = Screen.width * horizontalPercent;
             float targetY = Screen.height * verticalPercent;
-
-            // Ó¦ÓÃ¼ÆËã³öµÄÎ»ÖÃ¼ÓÉÏÄãµÄÎ¢µ÷Æ«ÒÆ
-            transform.position = new Vector3(targetX, targetY, 0) + (Vector3)pixelOffset;
+            _rectTransform.position = new Vector3(targetX, targetY, 0) + (Vector3)pixelOffset;
         }
 
         public void Hide()
         {
+            _currentTutorialBuilding = null;
             panel.SetActive(false);
         }
     }
