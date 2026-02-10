@@ -14687,10 +14687,9 @@ MonoBehaviour:
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 4.1: The Cost of Excess Energy'
-    instructionText: 'Notice the net electricity is positive; surplus flows to Battery
+    instructionText: Notice the net electricity is positive; surplus flows to Battery
       Storage. Storing energy leads to leakage and wasted investment. Build consuming
-      facilities or demolish power plants to match production with consumption. Constraint
-      1 (Upper Bound): Battery energy cannot exceed its capacity.'
+      facilities or demolish power plants to match production with consumption.
     clearSceneBeforeStart: 1
     layoutToLoad: 3
     focusTarget: {fileID: 1743267687}
@@ -14741,13 +14740,13 @@ MonoBehaviour:
     requireElecStable: 0
     requireElecDeficit: 0
     requireElecOverload: 0
-    requireElecNormal: 0
+    requireElecNormal: 1
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 4.2: The Capacity Boundary'
-    instructionText: 'Constraint 1: Battery energy cannot exceed its capacity. Constraint
-      2 (Lower Bound): Real-world variables (Houses, Plants) must be greater than
-      0.'
+    instructionText: 'Now you will know that constraint has to be feasible. For example:
+      Battery energy cannot exceed its capacity, Real-world variables (Houses, Plants)
+      must be greater than 0.'
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14802,9 +14801,15 @@ MonoBehaviour:
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 4.3: Defining the Feasible Region'
-    instructionText: The Feasible Region is the set of all plans that satisfy both
-      bounds. A valid optimization model must stay within the Capacity Cap and above
-      the Zero Floor.
+    instructionText: "Now, begin optimizing your city layout. Ensure that your plan
+      remains within the 'Feasible Region'\u2014this means simultaneously satisfying
+      multiple constraints across energy, environment, and survival. When your Electricity
+      Balance is stable and within battery capacity , net CO\u2082 emissions are
+      below the limit , and food production meets the population demand, the 'Level
+      Goal' section of the UI will turn entirely green. In an optimization model,
+      only a solution in this 'all-green' state is considered 'Feasible'. From all
+      feasible solutions, try adjusting your layout to find the optimal one that
+      yields the highest city score!"
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14849,13 +14854,13 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 1
+    requireInput: 0
     requireFoodSatisfied: 1
     requireFoodShortage: 0
     requireElecStable: 1
     requireElecDeficit: 0
     requireElecOverload: 0
-    requireElecNormal: 1
+    requireElecNormal: 0
     requireCo2WithinLimit: 1
     requireCo2OverLimit: 0
   - stepName: 'Event 5.1: The Prosperity Calculation (P)'
