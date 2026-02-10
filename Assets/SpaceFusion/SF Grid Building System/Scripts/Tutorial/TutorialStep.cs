@@ -41,7 +41,8 @@ public class TutorialStep
     public enum StartCondition
     {
         Immediate,
-        WaitForElectricityDeficit
+        WaitForElectricityDeficit,
+        WaitForElectricityOverload // 新增：等待过载才开始
     }
 
     [Header("Start Conditions")]
@@ -82,6 +83,10 @@ public class TutorialStep
     public bool requireElecStable = false;
     [Tooltip("要求电力差值 < 0")]
     public bool requireElecDeficit = false;
+    [Tooltip("要求电池发生过载 (Balance > Threshold)")]
+    public bool requireElecOverload = false;
+    [Tooltip("要求电池处于正常状态 (Balance <= Threshold)")]
+    public bool requireElecNormal = false;
     [Tooltip("要求净碳排放 <= 限制值")]
     public bool requireCo2WithinLimit = false;
     [Tooltip("要求净碳排放 > 限制值")]

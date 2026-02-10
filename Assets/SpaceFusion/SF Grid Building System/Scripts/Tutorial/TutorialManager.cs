@@ -64,6 +64,11 @@ public class TutorialManager : MonoBehaviour
             {
                 met = ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < -0.1f;
             }
+            // 新增判定：等待过载开始
+            else if (currentStep.startCondition == TutorialStep.StartCondition.WaitForElectricityOverload)
+            {
+                met = IsAnyBatteryOverloaded();
+            }
             else met = true;
 
             if (met) ActivateStepUI(currentStep);
@@ -140,10 +145,8 @@ public class TutorialManager : MonoBehaviour
     {
         if (ResourceManager.Instance == null) return;
 
-        // 默认条件达成，接下来的检查如果有一个不通过，则 statusMet 为 false
         bool statusMet = true;
 
-        // 判断是否开启了任何状态自动化检查
         bool hasAutomatedCondition =
             currentStep.requirePositiveEnergyBalance ||
             currentStep.requireOptimizationGoal ||
@@ -151,6 +154,8 @@ public class TutorialManager : MonoBehaviour
             currentStep.requireFoodShortage ||
             currentStep.requireElecStable ||
             currentStep.requireElecDeficit ||
+            currentStep.requireElecOverload ||
+            currentStep.requireElecNormal ||
             currentStep.requireCo2WithinLimit ||
             currentStep.requireCo2OverLimit;
 
@@ -158,15 +163,16 @@ public class TutorialManager : MonoBehaviour
 
         // --- 联合检查逻辑 (AND 关系) ---
 
-        // 检查食物
         if (currentStep.requireFoodSatisfied && ResourceManager.Instance.FoodBalance < 0f) statusMet = false;
         if (currentStep.requireFoodShortage && ResourceManager.Instance.FoodBalance >= 0f) statusMet = false;
 
-        // 检查电力
         if ((currentStep.requireElecStable || currentStep.requirePositiveEnergyBalance) && ResourceManager.Instance.ElectricityBalance < 0f) statusMet = false;
         if (currentStep.requireElecDeficit && ResourceManager.Instance.ElectricityBalance >= 0f) statusMet = false;
 
-        // 检查 CO2 (依赖 LevelScenarioLoader)
+        if (currentStep.requireElecOverload && !IsAnyBatteryOverloaded()) statusMet = false;
+
+        if (currentStep.requireElecNormal && IsAnyBatteryOverloaded()) statusMet = false;
+
         if (currentStep.requireCo2WithinLimit || currentStep.requireCo2OverLimit)
         {
             if (LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.currentLevel != null)
@@ -177,26 +183,43 @@ public class TutorialManager : MonoBehaviour
                 if (currentStep.requireCo2WithinLimit && currentNetCo2 > limit) statusMet = false;
                 if (currentStep.requireCo2OverLimit && currentNetCo2 <= limit) statusMet = false;
             }
-            else
-            {
-                statusMet = false; // 如果找不到配置，视为不满足
-            }
+            else statusMet = false;
         }
 
-        // 检查优化目标
         if (currentStep.requireOptimizationGoal && (LevelScenarioLoader.Instance == null || !LevelScenarioLoader.Instance.IsOptimizationGoalMet())) statusMet = false;
 
-        // --- 判定跳转 ---
-        // 只有当所有勾选的状态都满足，且没有要求特定的操作（建造/移除/点击）时，才执行自动跳转
         if (statusMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding && !currentStep.requireRemoval && !currentStep.requireInput)
         {
-            // 加入一个极短的缓冲，防止在状态切换瞬间发生闪跳
             if (Time.time - _stepStartTime > 0.8f)
             {
                 Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} completed: All status conditions met.");
                 NextStep();
             }
         }
+    }
+
+    /// <summary>
+    /// 核心判定逻辑：检查场景中是否存在任何 Battery 处于 Balance > Threshold 的状态
+    /// </summary>
+    private bool IsAnyBatteryOverloaded()
+    {
+        if (ResourceManager.Instance == null) return false;
+
+        float currentBalance = ResourceManager.Instance.ElectricityBalance;
+        List<TutorialBuildingEffect> tutorials = ResourceManager.Instance.GetAllTutorialBuildings();
+
+        foreach (var tb in tutorials)
+        {
+            if (tb != null && tb.tutorialType == TutorialBuildingType.Battery)
+            {
+                // 获取该电池的有效阈值 (可能是自定义的或全局默认的)
+                if (currentBalance > tb.GetEffectiveThreshold())
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void StartTutorial() { _isTutorialActive = true; _currentStepIndex = 0; PrepareStep(0); }
@@ -230,7 +253,9 @@ public class TutorialManager : MonoBehaviour
             RecordInitialCounts();
         }
 
-        if (step.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit)
+        // 修改：增加对 WaitForElectricityOverload 的支持
+        if (step.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit ||
+            step.startCondition == TutorialStep.StartCondition.WaitForElectricityOverload)
         {
             _isWaitingForStartCondition = true;
             tutorialUI.Hide();

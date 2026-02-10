@@ -11193,6 +11193,7 @@ MonoBehaviour:
   co2EmissionText: {fileID: 1448449903}
   _currentDay: 0
   _currentPopulation: 0
+  globalOverloadThreshold: 0
   _happiness: 0
   _airQuality: 0
   isPaused: 0
@@ -13613,6 +13614,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: Build Anything
@@ -13667,6 +13670,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: Remove Building
@@ -13722,6 +13727,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: Finish
@@ -13775,6 +13782,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 1.1: Introduction to Grid Input'
@@ -13829,6 +13838,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 1.2: Building the Power Plant'
@@ -13883,6 +13894,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 1.3: Introduction to Local Generation'
@@ -13937,6 +13950,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 1.4: Building Local Generation'
@@ -13991,6 +14006,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 1.5: Understanding Residential Demand'
@@ -14045,6 +14062,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 1.6: Building a House'
@@ -14099,6 +14118,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 1.7: The Role of Battery Storage'
@@ -14154,6 +14175,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 2.1: The Baseline State'
@@ -14208,6 +14231,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 2.2: Defining Net Annual Change'
@@ -14262,6 +14287,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 2.3: Adding Emissions to the State'
@@ -14316,6 +14343,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 2.4: Implementing Removals & The Final Balance'
@@ -14371,6 +14400,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 3.1: Defining the Management Goal'
@@ -14425,6 +14456,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: "Event 3.2: Requirement 1 \u2014 Meeting Food Demand"
@@ -14479,6 +14512,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: "Event 3.3: Requirement 2 \u2014 Satisfying Electric Demand"
@@ -14534,6 +14569,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 1
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: "Event 3.4: Requirement 3 \u2014 The CO2 Limit"
@@ -14588,6 +14625,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 1
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 1
     requireCo2OverLimit: 0
   - stepName: 'Event 3.5: The Final Integrated Objective'
@@ -14643,6 +14682,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 4.1: The Cost of Excess Energy'
@@ -14698,7 +14739,9 @@ MonoBehaviour:
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
-    requireElecDeficit: 1
+    requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 1
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 4.2: The Capacity Boundary'
@@ -14754,6 +14797,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 4.3: Defining the Feasible Region'
@@ -14809,6 +14854,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 5.1: The Prosperity Calculation (P)'
@@ -14864,6 +14911,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 5.2: Optimization via Demolition'
@@ -14919,6 +14968,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 5.3: Minimizing -P to Maximize P'
@@ -14975,6 +15026,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: "Event 6.1: Defining the City\u2019s Identity"
@@ -15030,6 +15083,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 6.2: From Construction to Weights'
@@ -15086,6 +15141,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 6.3: The Logic of the Optimal Score'
@@ -15142,6 +15199,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 6.4: The Power of Consistent Trade-offs'
@@ -15198,6 +15257,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 9.1: Identifying Inactive Constraints'
@@ -15254,6 +15315,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 9.2: Expansion Without Resistance'
@@ -15310,6 +15373,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 9.3: The Shadow Price of Zero'
@@ -15366,6 +15431,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 9.4: Reaching the Binding Constraint'
@@ -15422,6 +15489,8 @@ MonoBehaviour:
     requireFoodShortage: 0
     requireElecStable: 0
     requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   tutorialUI: {fileID: 6642071500640953132}
