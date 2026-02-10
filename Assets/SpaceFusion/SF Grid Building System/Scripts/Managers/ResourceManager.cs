@@ -38,7 +38,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
         // --- 新增：过载阈值自定义 ---
         [Header("Custom Balance Thresholds")]
-        [Tooltip("定义电力平衡低于多少时显示为过载/断电。默认为0。")]
+        [Tooltip("定义电力平衡高于多少时显示为过载。默认为0。")]
         public float globalOverloadThreshold = 0f;
 
         public float _happiness;
@@ -171,13 +171,27 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
             if (electricityText != null)
             {
-                // 使用自定义阈值判断是否过载
-                bool isSatisfied = ElectricityBalance >= globalOverloadThreshold;
-                string sign = ElectricityBalance >= 0 ? "+" : "";
-                string elecColor = isSatisfied ? "<color=green>" : "<color=red>";
-                string statusText = isSatisfied ? "Stable" : "Overload / Power Outage";
+                float balance = ElectricityBalance;
+                string elecColor = "<color=green>";
+                string statusText = "Stable";
 
-                string elecString = $"Elec Balance: {elecColor}{sign}{ElectricityBalance:F1} ({statusText})</color>";
+                // 修改显示逻辑：
+                // 1. 如果 Balance > Threshold，显示过载 (Overload)
+                // 2. 如果 Balance < 0，显示电力不足 (Shortage)
+                // 3. 否则显示稳定 (Stable)
+                if (balance > globalOverloadThreshold)
+                {
+                    elecColor = "<color=red>";
+                    statusText = "Overload";
+                }
+                else if (balance < 0)
+                {
+                    elecColor = "<color=red>";
+                    statusText = "Power Shortage";
+                }
+
+                string sign = balance >= 0 ? "+" : "";
+                string elecString = $"Elec Balance: {elecColor}{sign}{balance:F1} ({statusText})</color>";
                 elecString += $"\n<size=70%>(Gen: {_currentLocalGeneration:F1} | Dem: {_currentTotalDemand:F1})</size>";
                 electricityText.text = elecString;
             }

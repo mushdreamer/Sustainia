@@ -14741,7 +14741,7 @@ MonoBehaviour:
     requireElecStable: 0
     requireElecDeficit: 0
     requireElecOverload: 0
-    requireElecNormal: 1
+    requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 4.2: The Capacity Boundary'
@@ -14850,13 +14850,13 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
-    requireFoodSatisfied: 0
+    requireFoodSatisfied: 1
     requireFoodShortage: 0
-    requireElecStable: 0
+    requireElecStable: 1
     requireElecDeficit: 0
     requireElecOverload: 0
-    requireElecNormal: 0
-    requireCo2WithinLimit: 0
+    requireElecNormal: 1
+    requireCo2WithinLimit: 1
     requireCo2OverLimit: 0
   - stepName: 'Event 5.1: The Prosperity Calculation (P)'
     instructionText: Prosperity (P) = Building Value - Resource Gaps (Food/Electricity).
