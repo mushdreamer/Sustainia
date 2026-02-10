@@ -52,6 +52,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
+                // 尝试从自身或父级获取 TutorialBuildingEffect
                 _currentTutorialBuilding = hit.collider.GetComponentInParent<TutorialBuildingEffect>();
             }
 
@@ -70,15 +71,21 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
 
                 if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.Battery)
                 {
-                    // 修改逻辑：根据用户要求，只要总用电需求 (CurrentTotalDemand) 大于 0，就显示过载
-                    if (ResourceManager.Instance != null && ResourceManager.Instance.CurrentTotalDemand > 0)
+                    // 获取该建筑生效的阈值（可能是自定义的，也可能是全局默认的）
+                    float threshold = _currentTutorialBuilding.GetEffectiveThreshold();
+                    float currentDemand = ResourceManager.Instance != null ? ResourceManager.Instance.CurrentTotalDemand : 0f;
+
+                    // 修改判定逻辑：如果当前需求超过了玩家定义的阈值
+                    if (currentDemand > threshold)
                     {
                         sb.AppendLine("<color=red><b>Status: OVERLOADED</b></color>");
-                        sb.Append("<color=red>Grid has active demand. Battery capacity exceeded.</color>");
+                        sb.AppendLine($"<color=red>Demand ({currentDemand:F1}) > Threshold ({threshold:F1})</color>");
+                        sb.Append("<color=red>Grid capacity exceeded.</color>");
                     }
                     else
                     {
-                        sb.Append("<color=green>Status: NORMAL</color>");
+                        sb.AppendLine("<color=green>Status: NORMAL</color>");
+                        sb.Append($"<size=80%>Demand: {currentDemand:F1} / Threshold: {threshold:F1}</size>");
                     }
                 }
                 else if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.LocalGen)

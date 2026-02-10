@@ -14651,8 +14651,8 @@ MonoBehaviour:
       facilities or demolish power plants to match production with consumption. Constraint
       1 (Upper Bound): Battery energy cannot exceed its capacity.'
     clearSceneBeforeStart: 1
-    layoutToLoad: 1
-    focusTarget: {fileID: 0}
+    layoutToLoad: 3
+    focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
@@ -14694,11 +14694,11 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 1
+    requireInput: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
-    requireElecDeficit: 0
+    requireElecDeficit: 1
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 4.2: The Capacity Boundary'

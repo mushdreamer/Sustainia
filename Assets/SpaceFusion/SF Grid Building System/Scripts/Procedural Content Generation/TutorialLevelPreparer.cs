@@ -92,5 +92,18 @@ public class TutorialLevelPreparer : MonoBehaviour
             }
             Debug.Log($"<color=cyan>[Tutorial]</color> Event 2: Generated {maxZones} Houses.");
         }
+        else if (eventIndex == 3)
+        {
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(4, "Battery");
+
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(0, "PowerPlant");
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(1, "PowerPlant");
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(2, "LocalGeneration");
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(3, "LocalGeneration");
+
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(5, "House T1");
+
+            Debug.Log("<color=cyan>[Tutorial]</color> Event 3: Generated Surplus Energy Scenario.");
+        }
     }
 }

@@ -16,6 +16,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         [Tooltip("正数增加排放，负数增加吸收")]
         public float co2Change = 0f;
 
+        [Header("Custom Overload Settings")]
+        [Tooltip("如果该值不为0，此建筑会使用该自定义阈值判定电力平衡是否过载。")]
+        public float customOverloadThreshold = 0f;
+
         // --- 兼容性属性 ---
         [HideInInspector] public float energyValue { get => electricityChange; set => electricityChange = value; }
         [HideInInspector] public float co2Effect { get => co2Change; set => co2Change = value; }
@@ -55,6 +59,15 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
             ResourceManager.Instance.UnregisterTutorialBuildingInstance(this);
             _isActive = false;
+        }
+
+        /// <summary>
+        /// 获取当前生效的过载阈值
+        /// </summary>
+        public float GetEffectiveThreshold()
+        {
+            if (customOverloadThreshold != 0) return customOverloadThreshold;
+            return ResourceManager.Instance != null ? ResourceManager.Instance.globalOverloadThreshold : 0f;
         }
     }
 }

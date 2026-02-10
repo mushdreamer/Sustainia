@@ -36,6 +36,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         // 新增：公开总需求量，供 BuildingInfoUI 判断过载
         public float CurrentTotalDemand => _currentTotalDemand;
 
+        // --- 新增：过载阈值自定义 ---
+        [Header("Custom Balance Thresholds")]
+        [Tooltip("定义电力平衡低于多少时显示为过载/断电。默认为0。")]
+        public float globalOverloadThreshold = 0f;
+
         public float _happiness;
         private float _baseCarbonDioxideEmission;
         private float _carbonDioxideEmission;
@@ -166,10 +171,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
             if (electricityText != null)
             {
-                bool isSatisfied = ElectricityBalance >= 0;
-                string sign = isSatisfied ? "+" : "";
+                // 使用自定义阈值判断是否过载
+                bool isSatisfied = ElectricityBalance >= globalOverloadThreshold;
+                string sign = ElectricityBalance >= 0 ? "+" : "";
                 string elecColor = isSatisfied ? "<color=green>" : "<color=red>";
-                string statusText = isSatisfied ? "Stable" : "Power Outage";
+                string statusText = isSatisfied ? "Stable" : "Overload / Power Outage";
 
                 string elecString = $"Elec Balance: {elecColor}{sign}{ElectricityBalance:F1} ({statusText})</color>";
                 elecString += $"\n<size=70%>(Gen: {_currentLocalGeneration:F1} | Dem: {_currentTotalDemand:F1})</size>";
