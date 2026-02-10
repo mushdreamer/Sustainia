@@ -4,7 +4,7 @@ using SpaceFusion.SF_Grid_Building_System.Scripts.Scriptables;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Managers;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems; // 用于射线检测判断
+using UnityEngine.EventSystems;
 
 namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
 {
@@ -38,21 +38,20 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
 
         private void Update()
         {
-            // 如果面板是打开的，我们需要实时刷新内容
+            // 每帧更新显示内容，以实时反映电力平衡变化导致的过载状态
             if (panel.activeSelf)
             {
                 RefreshDisplay();
             }
         }
 
-        // 修改后的通用 Show 方法：增加自动识别逻辑
+        // 修改说明：保留了上一版的射线检测识别逻辑，这是确保 UI 正确识别 TutorialBuilding 的关键
         public void Show(string name, string details)
         {
             _cachedName = name;
             _cachedDetails = details;
 
-            // 核心修复：直接通过物理射线探测鼠标下的物体
-            // 这样无论外部脚本怎么传，UI 都会根据物理事实进行判断
+            // 通过物理射线探测鼠标下的物体，自动识别是否为教学建筑
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
@@ -68,35 +67,33 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
         {
             nameText.text = _cachedName;
 
-            // 如果探测到是教学建筑，执行定制逻辑
             if (_currentTutorialBuilding != null)
             {
                 StringBuilder sb = new StringBuilder();
 
                 if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.Battery)
                 {
-                    // 只有 Battery 显示过载状态
+                    // 英文显示及颜色同步：与 ResourceManager 逻辑一致，负平衡为红色，正平衡为绿色
                     if (ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < 0)
                     {
-                        sb.AppendLine("<color=red><b>状态: 过载 (OVERLOADED)</b></color>");
-                        sb.Append("<color=red>电网电力不足以支撑电池运作</color>");
+                        sb.AppendLine("<color=red><b>Status: OVERLOADED</b></color>");
+                        sb.Append("<color=red>Grid power insufficient for battery operation</color>");
                     }
                     else
                     {
-                        sb.Append("<color=green>状态: 正常 (NORMAL)</color>");
+                        sb.Append("<color=green>Status: NORMAL</color>");
                     }
                 }
                 else if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.LocalGen)
                 {
-                    // LocalGen 显示电力和 CO2
+                    // LocalGen 显示逻辑：将电力变更数值转换为正数的供应量进行展示
                     float genValue = -_currentTutorialBuilding.electricityChange;
                     float co2Value = _currentTutorialBuilding.co2Change;
-                    sb.AppendLine($"电力供应: {genValue:F1} units");
-                    sb.Append($"碳排放量: {co2Value:F1} kg/day");
+                    sb.AppendLine($"Electricity Supply: {genValue:F1} units");
+                    sb.Append($"CO2 Emission: {co2Value:F1} kg/day");
                 }
                 else
                 {
-                    // 其他教学建筑使用默认信息
                     sb.Append(_cachedDetails);
                 }
 
@@ -104,7 +101,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
             }
             else
             {
-                // 普通建筑，直接显示外部传进来的 details
+                // 普通建筑保持原样显示
                 statsText.text = _cachedDetails;
             }
         }
