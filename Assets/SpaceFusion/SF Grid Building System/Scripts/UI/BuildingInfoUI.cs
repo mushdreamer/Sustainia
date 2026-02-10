@@ -71,21 +71,22 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
 
                 if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.Battery)
                 {
-                    // 获取该建筑生效的阈值（可能是自定义的，也可能是全局默认的）
+                    // 获取该建筑生效的阈值
                     float threshold = _currentTutorialBuilding.GetEffectiveThreshold();
-                    float currentDemand = ResourceManager.Instance != null ? ResourceManager.Instance.CurrentTotalDemand : 0f;
+                    // 获取当前的电力平衡值 (ElectricityBalance = Generation - Demand)
+                    float currentBalance = ResourceManager.Instance != null ? ResourceManager.Instance.ElectricityBalance : 0f;
 
-                    // 修改判定逻辑：如果当前需求超过了玩家定义的阈值
-                    if (currentDemand > threshold)
+                    // 修改判定逻辑：如果当前平衡值超过了定义的阈值，则判定为过载
+                    if (currentBalance > threshold)
                     {
                         sb.AppendLine("<color=red><b>Status: OVERLOADED</b></color>");
-                        sb.AppendLine($"<color=red>Demand ({currentDemand:F1}) > Threshold ({threshold:F1})</color>");
+                        sb.AppendLine($"<color=red>Balance ({currentBalance:F1}) > Threshold ({threshold:F1})</color>");
                         sb.Append("<color=red>Grid capacity exceeded.</color>");
                     }
                     else
                     {
                         sb.AppendLine("<color=green>Status: NORMAL</color>");
-                        sb.Append($"<size=80%>Demand: {currentDemand:F1} / Threshold: {threshold:F1}</size>");
+                        sb.Append($"<size=80%>Balance: {currentBalance:F1} / Threshold: {threshold:F1}</size>");
                     }
                 }
                 else if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.LocalGen)
