@@ -38,20 +38,17 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
 
         private void Update()
         {
-            // 每帧更新显示内容，以实时反映电力平衡变化导致的过载状态
             if (panel.activeSelf)
             {
                 RefreshDisplay();
             }
         }
 
-        // 修改说明：保留了上一版的射线检测识别逻辑，这是确保 UI 正确识别 TutorialBuilding 的关键
         public void Show(string name, string details)
         {
             _cachedName = name;
             _cachedDetails = details;
 
-            // 通过物理射线探测鼠标下的物体，自动识别是否为教学建筑
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
@@ -73,11 +70,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
 
                 if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.Battery)
                 {
-                    // 英文显示及颜色同步：与 ResourceManager 逻辑一致，负平衡为红色，正平衡为绿色
-                    if (ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < 0)
+                    // 修改逻辑：根据用户要求，只要总用电需求 (CurrentTotalDemand) 大于 0，就显示过载
+                    if (ResourceManager.Instance != null && ResourceManager.Instance.CurrentTotalDemand > 0)
                     {
                         sb.AppendLine("<color=red><b>Status: OVERLOADED</b></color>");
-                        sb.Append("<color=red>Grid power insufficient for battery operation</color>");
+                        sb.Append("<color=red>Grid has active demand. Battery capacity exceeded.</color>");
                     }
                     else
                     {
@@ -86,7 +83,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
                 }
                 else if (_currentTutorialBuilding.tutorialType == TutorialBuildingType.LocalGen)
                 {
-                    // LocalGen 显示逻辑：将电力变更数值转换为正数的供应量进行展示
                     float genValue = -_currentTutorialBuilding.electricityChange;
                     float co2Value = _currentTutorialBuilding.co2Change;
                     sb.AppendLine($"Electricity Supply: {genValue:F1} units");
@@ -101,7 +97,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.UI
             }
             else
             {
-                // 普通建筑保持原样显示
                 statsText.text = _cachedDetails;
             }
         }

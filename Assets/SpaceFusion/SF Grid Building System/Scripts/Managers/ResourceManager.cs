@@ -33,6 +33,9 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private float _currentTotalDemand = 0f;
         public float ElectricityBalance => _currentLocalGeneration - _currentTotalDemand;
 
+        // 新增：公开总需求量，供 BuildingInfoUI 判断过载
+        public float CurrentTotalDemand => _currentTotalDemand;
+
         public float _happiness;
         private float _baseCarbonDioxideEmission;
         private float _carbonDioxideEmission;
@@ -113,7 +116,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             // --- 食物平衡影响人口逻辑 ---
             if (FoodBalance >= 0)
             {
-                // 食物充足（产大于需）：产生经济效益（如果有银行）并增长人口
                 if (_bankCount > 0 && _currentFoodDemand > 0)
                     AddMoney(_currentFoodDemand * moneyMultiplierFromFood);
 
@@ -125,7 +127,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             }
             else
             {
-                // 食物短缺（需大于产）：人口由于饥饿减少
                 if (_currentPopulation > _basePopulation)
                 {
                     _populationDecreaseProgress += populationDecreaseRate;
@@ -163,7 +164,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
                 foodText.text = $"Food Balance: {foodColor}{sign}{FoodBalance:F1} ({statusText})</color>\n<size=70%>(Prod: {_currentFoodProduction:F1} | Dem: {_currentFoodDemand:F1})</size>";
             }
 
-            // --- Electricity UI: 移除 Goal 数值显示，改为颜色状态判断 ---
             if (electricityText != null)
             {
                 bool isSatisfied = ElectricityBalance >= 0;
@@ -176,7 +176,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
                 electricityText.text = elecString;
             }
 
-            // --- CO2 UI: 将 Goal 改为 Limit 概念 ---
             if (co2EmissionText != null)
             {
                 float currentNetCo2 = (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
@@ -184,7 +183,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
                 if (currentLevel != null)
                 {
-                    // 判断是否在阈值（Limit）之内
                     bool isUnderLimit = currentNetCo2 <= currentLevel.goalCo2;
                     string statusColor = isUnderLimit ? "<color=green>" : "<color=red>";
                     string limitColor = isUnderLimit ? "<color=#00FF00>" : "<color=#FF8888>";
@@ -232,7 +230,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             UpdateUI();
         }
 
-        // --- 食物接口：完全模仿电力的 AddGeneration/AddConsumption ---
         public void AddFoodProduction(float amount) { _currentFoodProduction += amount; UpdateUI(); }
         public void RemoveFoodProduction(float amount) { _currentFoodProduction -= amount; if (_currentFoodProduction < 0) _currentFoodProduction = 0; UpdateUI(); }
         public void AddFoodDemand(float amount) { _currentFoodDemand += amount; UpdateUI(); }
