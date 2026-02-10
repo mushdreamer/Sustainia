@@ -22607,10 +22607,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1710211338784239622, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_Name
-      value: Co2 Emission
-      objectReference: {fileID: 0}
     - target: {fileID: 2232338049669128568, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -22691,45 +22687,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2300968183590877686, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2317555779566606430, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 26
-      objectReference: {fileID: 0}
     - target: {fileID: 2798286960335587460, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_Name
       value: UI
-      objectReference: {fileID: 0}
-    - target: {fileID: 2798286960335587460, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2898357971415184858, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 148
-      objectReference: {fileID: 0}
-    - target: {fileID: 3683356156925166853, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_fontSize
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 3683356156925166853, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_fontSizeBase
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 4263367271010119648, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_fontSize
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 4263367271010119648, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_fontStyle
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4263367271010119648, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_fontSizeBase
-      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 4586432826691276540, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMax.y
@@ -22755,59 +22715,9 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4862574356204304045, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.6786464
-      objectReference: {fileID: 0}
-    - target: {fileID: 4862574356204304045, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.3732555
-      objectReference: {fileID: 0}
-    - target: {fileID: 4862574356204304045, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.6786464
-      objectReference: {fileID: 0}
     - target: {fileID: 7933687562706793821, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_IsActive
       value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8057387769925638119, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: rightPadding
-      value: 40
-      objectReference: {fileID: 0}
-    - target: {fileID: 8057387769925638119, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: verticalPercent
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 8057387769925638119, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: horizontalPercent
-      value: 0.9
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170007161830716731, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -118
-      objectReference: {fileID: 0}
-    - target: {fileID: 8280270578031612828, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_text
-      value: "Welcome to 'Sustaina'! In this immersive city-building simulation,
-        you will step into the role of a city manager overseeing a critical energy
-        transition. \n\n\nYour Learning Journey: This project is designed to help
-        you master core Optimization concepts through gameplay. After completing
-        the following 10 interactive tutorial events, you will be asked to complete
-        a questionnaire to test your understanding of these optimization principles.
-        \n\nControls: > Camera: Use WASD to move, Right Mouse to rotate, and the
-        Scroll Wheel to zoom. Management: Use your Left Mouse to build, demolish,
-        and interact with the city. \n\nThe city layout you see has been uniquely
-        generated by our PCG algorithm based on specific optimization goals. When
-        you are ready to begin your first lesson, press the Next button!"
-      objectReference: {fileID: 0}
-    - target: {fileID: 8388452155552365904, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_fontSize
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 8388452155552365904, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
-      propertyPath: m_fontSizeBase
-      value: 50
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
