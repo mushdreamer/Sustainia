@@ -14801,15 +14801,11 @@ MonoBehaviour:
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 4.3: Defining the Feasible Region'
-    instructionText: "Now, begin optimizing your city layout. Ensure that your plan
-      remains within the 'Feasible Region'\u2014this means simultaneously satisfying
-      multiple constraints across energy, environment, and survival. When your Electricity
-      Balance is stable and within battery capacity , net CO\u2082 emissions are
-      below the limit , and food production meets the population demand, the 'Level
-      Goal' section of the UI will turn entirely green. In an optimization model,
-      only a solution in this 'all-green' state is considered 'Feasible'. From all
-      feasible solutions, try adjusting your layout to find the optimal one that
-      yields the highest city score!"
+    instructionText: 'Now, optimize your city layout to stay within the ''Feasible
+      Region''. This requires meeting all constraints: stable electricity, CO2 within
+      limits, and sufficient food. When the ''Level Goals'' turn entirely green,
+      your plan is considered ''Feasible''. Adjust your layout to find the optimal
+      solution with the highest score!'
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
