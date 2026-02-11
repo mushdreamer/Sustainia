@@ -5,9 +5,7 @@ using SpaceFusion.SF_Grid_Building_System.Scripts.Core;
 [System.Serializable]
 public class BuildingCheck
 {
-    [Tooltip("是否检查此建筑")]
     public bool checkThis = false;
-    [Tooltip("在该步骤内需要新建造的目标数量")]
     public int goalCount = 1;
 }
 
@@ -18,31 +16,31 @@ public class TutorialStep
     [TextArea(3, 10)]
     public string instructionText;
 
+    // --- 新增：独立公式面板配置 ---
+    [Header("Independent Formula Display")]
+    [Tooltip("是否为该步骤显示独立的公式面板")]
+    public bool showFormulaPanel = false;
+    [Tooltip("显示的公式模板，例如: {elec} + {food} = Result")]
+    public string formulaContent;
+
     [Header("Clean Slate Logic")]
-    [Tooltip("进入此步骤前是否清空场景所有建筑")]
     public bool clearSceneBeforeStart = false;
-    [Tooltip("清空后加载的布局索引 (对应 Preparer 中的 eventIndex)")]
     public int layoutToLoad = -1;
 
     [Header("Camera Control")]
-    [Tooltip("镜头聚焦的目标建筑或位置")]
     public GameObject focusTarget;
-    [Tooltip("镜头距离目标的远近")]
     public float cameraDistance = 15f;
-    [Tooltip("镜头的俯视角度")]
     public float cameraAngle = 45f;
 
     [Header("Visual Hint")]
-    [Tooltip("是否在该步骤显示视觉指引标志")]
     public bool showIndicator = true;
-    [Tooltip("视觉指引标志的颜色")]
     public Color indicatorColor = Color.yellow;
 
     public enum StartCondition
     {
         Immediate,
         WaitForElectricityDeficit,
-        WaitForElectricityOverload // 新增：等待过载才开始
+        WaitForElectricityOverload
     }
 
     [Header("Start Conditions")]
@@ -70,25 +68,16 @@ public class TutorialStep
     [Header("Completion - Other Conditions")]
     public bool requireRemoval = false;
     public bool requirePositiveEnergyBalance = false;
-    [Tooltip("如果勾选，将检查 LevelScenarioLoader 中的真实目标是否达成")]
     public bool requireOptimizationGoal = false;
     public bool requireInput = false;
 
-    [Header("New Status Conditions (Combined Check)")]
-    [Tooltip("要求食物差值 >= 0")]
+    [Header("New Status Conditions")]
     public bool requireFoodSatisfied = false;
-    [Tooltip("要求食物差值 < 0")]
     public bool requireFoodShortage = false;
-    [Tooltip("要求电力差值 >= 0")]
     public bool requireElecStable = false;
-    [Tooltip("要求电力差值 < 0")]
     public bool requireElecDeficit = false;
-    [Tooltip("要求电池发生过载 (Balance > Threshold)")]
     public bool requireElecOverload = false;
-    [Tooltip("要求电池处于正常状态 (Balance <= Threshold)")]
     public bool requireElecNormal = false;
-    [Tooltip("要求净碳排放 <= 限制值")]
     public bool requireCo2WithinLimit = false;
-    [Tooltip("要求净碳排放 > 限制值")]
     public bool requireCo2OverLimit = false;
 }
