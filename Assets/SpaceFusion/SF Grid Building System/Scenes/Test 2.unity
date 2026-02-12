@@ -13855,8 +13855,8 @@ MonoBehaviour:
   - stepName: 'Event 1.2: Building the Power Plant'
     instructionText: Place a Power Plant. Check the UI; the Input value increases
       as energy enters the network.
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: Input
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
@@ -13971,8 +13971,8 @@ MonoBehaviour:
   - stepName: 'Event 1.4: Building Local Generation'
     instructionText: 'Build a Local Generation. The Local Generation value updates,
       adding to your total power supply. '
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: Input + Generation
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1060047925}
@@ -14087,8 +14087,8 @@ MonoBehaviour:
   - stepName: 'Event 1.6: Building a House'
     instructionText: 'Build a Residential House. The Demand value rises, subtracting
       from your available power. '
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: Input + Generation - Demand
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 2120787670}
@@ -22795,17 +22795,33 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 56
       objectReference: {fileID: 0}
+    - target: {fileID: 7345592351364239474, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7345592351364239474, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7345592351364239474, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7345592351364239474, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7561411106749792228, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 7561411106749792228, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -274
+      value: -146
       objectReference: {fileID: 0}
     - target: {fileID: 7933687562706793821, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
