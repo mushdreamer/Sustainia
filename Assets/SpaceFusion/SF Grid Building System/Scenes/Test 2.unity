@@ -13565,6 +13565,8 @@ MonoBehaviour:
   steps:
   - stepName: Start
     instructionText: Let's Start!
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 1
@@ -13623,6 +13625,8 @@ MonoBehaviour:
   - stepName: Build Anything
     instructionText: Select any building from the shop panel below and place it on
       an empty grid.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 1
@@ -13682,6 +13686,8 @@ MonoBehaviour:
     instructionText: Great! Now let's try to remove it. Click and HOLD the Left Mouse
       Button on the building to open the menu, then select the "Trash Can" button
       to remove.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -13739,6 +13745,8 @@ MonoBehaviour:
     requireCo2OverLimit: 0
   - stepName: Finish
     instructionText: Good Job! Press Next to Continue!
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -13797,6 +13805,8 @@ MonoBehaviour:
   - stepName: 'Event 1.1: Introduction to Grid Input'
     instructionText: The Power Plant is your link to external infrastructure. It
       provides Input from grid, a constant energy stream for the city.
+    setSpecificMoney: 1
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 1
@@ -13855,6 +13865,8 @@ MonoBehaviour:
   - stepName: 'Event 1.2: Building the Power Plant'
     instructionText: Place a Power Plant. Check the UI; the Input value increases
       as energy enters the network.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 1
     formulaContent: Input
     clearSceneBeforeStart: 0
@@ -13913,6 +13925,8 @@ MonoBehaviour:
   - stepName: 'Event 1.3: Introduction to Local Generation'
     instructionText: Local Generation refers to internal energy sources (Wind/Solar).
       This reduces reliance on external sources by producing power within city borders.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -13971,6 +13985,8 @@ MonoBehaviour:
   - stepName: 'Event 1.4: Building Local Generation'
     instructionText: 'Build a Local Generation. The Local Generation value updates,
       adding to your total power supply. '
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 1
     formulaContent: Input + Generation
     clearSceneBeforeStart: 0
@@ -14029,6 +14045,8 @@ MonoBehaviour:
   - stepName: 'Event 1.5: Understanding Residential Demand'
     instructionText: Every building creates a specific Demand (consumption). Meeting
       this Demand is the mandatory requirement for a functioning city.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -14087,6 +14105,8 @@ MonoBehaviour:
   - stepName: 'Event 1.6: Building a House'
     instructionText: 'Build a Residential House. The Demand value rises, subtracting
       from your available power. '
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 1
     formulaContent: Input + Generation - Demand
     clearSceneBeforeStart: 0
@@ -14146,6 +14166,8 @@ MonoBehaviour:
     instructionText: 'The city energy balance is calculated as: Input + Generation
       - Demand. The result is the Change in battery energy (Storage). Surplus is
       stored; deficits are drawn from storage.'
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 1
     formulaContent: Input + Generation - Demand = Change in battery energy
     clearSceneBeforeStart: 0
@@ -14204,6 +14226,8 @@ MonoBehaviour:
   - stepName: 'Event 2.1: The Baseline State'
     instructionText: "Look at the CO2 Emission in the goal panel. This value represents
       CO2(t)\u2014the total concentration inherited from the previous year."
+    setSpecificMoney: 1
+    moneyAmount: 1000
     showFormulaPanel: 1
     formulaContent: Co2(t)
     clearSceneBeforeStart: 0
@@ -14262,6 +14286,8 @@ MonoBehaviour:
   - stepName: 'Event 2.2: Defining Net Annual Change'
     instructionText: Build a Power Plant. Observe the CO2 Emissions rise. Every operational
       factory or plant adds new carbon to the atmosphere.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 1
     formulaContent: Co2(t) + emissions
     clearSceneBeforeStart: 0
@@ -14320,6 +14346,8 @@ MonoBehaviour:
   - stepName: 'Event 2.3: Adding Emissions to the State'
     instructionText: Build a CCUS Facility. Observe the Co2 Emissions fall. These
       facilities actively subtract or "remove" carbon from the current year's output.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 1
     formulaContent: Co2(t) + emissions - removals
     clearSceneBeforeStart: 0
@@ -14379,6 +14407,8 @@ MonoBehaviour:
     instructionText: 'The environment calculates the next year''s level (t+1) using
       this formula: Co2(t+1) = Co2(t) + emissions - removals. Manage this balance
       to keep the total concentration within sustainable limits year after year.'
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 1
     formulaContent: Co2(t+1) = Co2(t) + emissions - removals
     clearSceneBeforeStart: 0
@@ -14437,6 +14467,8 @@ MonoBehaviour:
   - stepName: 'Event 3.1: Defining the Management Goal'
     instructionText: A city needs a mathematical "compass" called an Objective Function.
       You must define what "success" looks like by addressing competing needs.
+    setSpecificMoney: 1
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 1
@@ -14495,6 +14527,8 @@ MonoBehaviour:
   - stepName: "Event 3.2: Requirement 1 \u2014 Meeting Food Demand"
     instructionText: Observe the Food Demand. Add restaurant to meet the food demand.
       The trade-off is that producing food costs money and consumes power.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -14554,6 +14588,8 @@ MonoBehaviour:
     instructionText: Observe the Electric Demand bar. Add powerplant or local generation
       to meet the electric demand. Balancing energy is necessary, but increased generation
       raises CO2 levels.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -14612,6 +14648,8 @@ MonoBehaviour:
   - stepName: "Event 3.4: Requirement 3 \u2014 The CO2 Limit"
     instructionText: Observe the CO2 Emission. Add the CCUS building to lower Co2
       Emission. Factors in the cost of CCUS facilities to lower the Co2 Level.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -14671,6 +14709,8 @@ MonoBehaviour:
     instructionText: 'The complete objective is now set: "Minimize total cost while
       meeting demand and CO2 limits". Optimization is the process of finding the
       cheapest way to satisfy all constraints simultaneously.'
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -14730,6 +14770,8 @@ MonoBehaviour:
     instructionText: Notice the net electricity is positive; surplus flows to Battery
       Storage. Storing energy leads to leakage and wasted investment. Build consuming
       facilities or demolish power plants to match production with consumption.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 1
@@ -14789,6 +14831,8 @@ MonoBehaviour:
     instructionText: 'Now you will know that constraint has to be feasible. For example:
       Battery energy cannot exceed its capacity, Real-world variables (Houses, Plants)
       must be greater than 0.'
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -14850,6 +14894,8 @@ MonoBehaviour:
       limits, and sufficient food. When the ''Level Goals'' turn entirely green,
       your plan is considered ''Feasible''. Adjust your layout to find the optimal
       solution with the highest score!'
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -14909,6 +14955,8 @@ MonoBehaviour:
     instructionText: Prosperity (P) = Building Value - Resource Gaps (Food/Electricity).
       Your P is low because gaps are too large and the budget is empty. You must
       find a way to maximize P without new construction.
+    setSpecificMoney: 1
+    moneyAmount: 0
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -14968,6 +15016,8 @@ MonoBehaviour:
     instructionText: Remove houses to decrease the demand. As gaps shrink, your Prosperity
       (P) rises. Efficiency can be improved by reducing the "negative" impact of
       gaps.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -15028,6 +15078,8 @@ MonoBehaviour:
       the peak of P, we tell the solver to Minimize -P. Minimizing the negative of
       a value is mathematically identical to maximizing the value itself. Both lead
       to the same optimal city layout.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -15087,6 +15139,8 @@ MonoBehaviour:
     instructionText: Build few buildings to either Industrial Factories (Gold/Profit)
       or CCUS Facilities (Green/Sustainability). This allocation determines the priorities
       of your city's success metric.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -15147,6 +15201,8 @@ MonoBehaviour:
       Prosperity Score = W1 \xD7 Gold + W2 \xD7 Green. Factories increase the economic
       weight W1, while CCUS facilities increase the environmental weight W2, translating
       your physical layout into a Weighted Objective Function"
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -15207,6 +15263,8 @@ MonoBehaviour:
       After weights are set, the system identifies the plan with the highest score
       within pollution limits as the "Optimal Plan," proving that maximizing this
       integrated score yields the best possible version of your city.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -15267,6 +15325,8 @@ MonoBehaviour:
       the system to compare different trade-offs consistently. This ensures every
       building choice is evaluated on the same scale, enabling the solver to find
       the best result based precisely on your defined values.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -15327,6 +15387,8 @@ MonoBehaviour:
       level to the Safety Limit. Currently, emissions are below the threshold, meaning
       the environmental constraint is Inactive. It exists in the model but does not
       yet restrict your city's planning.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -15387,6 +15449,8 @@ MonoBehaviour:
       that as CO2 levels rise, your score continues to climb without interference.
       Because you remain below the safety limit, the system allows expansion without
       mathematical resistance, showing that the constraint is not yet a bottleneck.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -15447,6 +15511,8 @@ MonoBehaviour:
       limit remains at Zero. In optimization, a zero shadow price indicates that
       the constraint is not "binding"; relaxing the limit further would not improve
       your score since you haven't exhausted your current allowance.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -15507,6 +15573,8 @@ MonoBehaviour:
       the constraint becomes Binding. The Shadow Price rises above zero, signaling
       that the environment has finally become the primary factor stopping your Prosperity
       Score from increasing further.
+    setSpecificMoney: 0
+    moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 0
@@ -22627,6 +22695,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 324085689505179180, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 425174004757621193, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -22767,6 +22839,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5181770891153675460, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 763
+      objectReference: {fileID: 0}
+    - target: {fileID: 5181770891153675460, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 201
+      objectReference: {fileID: 0}
+    - target: {fileID: 5311058109373102993, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -228
+      objectReference: {fileID: 0}
+    - target: {fileID: 5455601832840092667, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -70
+      objectReference: {fileID: 0}
     - target: {fileID: 5833615938216295466, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -22830,6 +22918,10 @@ PrefabInstance:
     - target: {fileID: 7933687562706793821, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8384008885327862613, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

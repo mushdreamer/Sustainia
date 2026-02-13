@@ -64,7 +64,6 @@ public class TutorialManager : MonoBehaviour
             {
                 met = ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < -0.1f;
             }
-            // 新增判定：等待过载开始
             else if (currentStep.startCondition == TutorialStep.StartCondition.WaitForElectricityOverload)
             {
                 met = IsAnyBatteryOverloaded();
@@ -145,8 +144,6 @@ public class TutorialManager : MonoBehaviour
     {
         if (ResourceManager.Instance == null) return;
 
-        bool statusMet = true;
-
         bool hasAutomatedCondition =
             currentStep.requirePositiveEnergyBalance ||
             currentStep.requireOptimizationGoal ||
@@ -161,18 +158,51 @@ public class TutorialManager : MonoBehaviour
 
         if (!hasAutomatedCondition) return;
 
-        // --- 联合检查逻辑 (AND 关系) ---
+        // --- 调试日志构建 ---
+        string debugMsg = $"[Step {_currentStepIndex} Logic Check]\n";
+        bool allMet = true;
 
-        if (currentStep.requireFoodSatisfied && ResourceManager.Instance.FoodBalance < 0f) statusMet = false;
-        if (currentStep.requireFoodShortage && ResourceManager.Instance.FoodBalance >= 0f) statusMet = false;
+        // Food Check
+        if (currentStep.requireFoodSatisfied)
+        {
+            bool met = ResourceManager.Instance.FoodBalance >= 0f;
+            debugMsg += $"- Food Satisfied: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")} (Balance: {ResourceManager.Instance.FoodBalance:F2})\n";
+            if (!met) allMet = false;
+        }
+        if (currentStep.requireFoodShortage)
+        {
+            bool met = ResourceManager.Instance.FoodBalance < 0f;
+            debugMsg += $"- Food Shortage: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
+            if (!met) allMet = false;
+        }
 
-        if ((currentStep.requireElecStable || currentStep.requirePositiveEnergyBalance) && ResourceManager.Instance.ElectricityBalance < 0f) statusMet = false;
-        if (currentStep.requireElecDeficit && ResourceManager.Instance.ElectricityBalance >= 0f) statusMet = false;
+        // Electricity Check
+        if (currentStep.requireElecStable || currentStep.requirePositiveEnergyBalance)
+        {
+            bool met = ResourceManager.Instance.ElectricityBalance >= 0f;
+            debugMsg += $"- Elec Stable/Positive: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")} (Balance: {ResourceManager.Instance.ElectricityBalance:F2})\n";
+            if (!met) allMet = false;
+        }
+        if (currentStep.requireElecDeficit)
+        {
+            bool met = ResourceManager.Instance.ElectricityBalance < 0f;
+            debugMsg += $"- Elec Deficit: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
+            if (!met) allMet = false;
+        }
+        if (currentStep.requireElecOverload)
+        {
+            bool met = IsAnyBatteryOverloaded();
+            debugMsg += $"- Elec Overload: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
+            if (!met) allMet = false;
+        }
+        if (currentStep.requireElecNormal)
+        {
+            bool met = !IsAnyBatteryOverloaded();
+            debugMsg += $"- Elec Normal: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
+            if (!met) allMet = false;
+        }
 
-        if (currentStep.requireElecOverload && !IsAnyBatteryOverloaded()) statusMet = false;
-
-        if (currentStep.requireElecNormal && IsAnyBatteryOverloaded()) statusMet = false;
-
+        // CO2 Check
         if (currentStep.requireCo2WithinLimit || currentStep.requireCo2OverLimit)
         {
             if (LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.currentLevel != null)
@@ -180,15 +210,42 @@ public class TutorialManager : MonoBehaviour
                 float currentNetCo2 = ResourceManager.Instance.GetCurrentNetEmission();
                 float limit = LevelScenarioLoader.Instance.currentLevel.goalCo2;
 
-                if (currentStep.requireCo2WithinLimit && currentNetCo2 > limit) statusMet = false;
-                if (currentStep.requireCo2OverLimit && currentNetCo2 <= limit) statusMet = false;
+                if (currentStep.requireCo2WithinLimit)
+                {
+                    bool met = currentNetCo2 <= limit;
+                    debugMsg += $"- CO2 Within Limit: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")} (Current: {currentNetCo2:F1}, Limit: {limit})\n";
+                    if (!met) allMet = false;
+                }
+                if (currentStep.requireCo2OverLimit)
+                {
+                    bool met = currentNetCo2 > limit;
+                    debugMsg += $"- CO2 Over Limit: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
+                    if (!met) allMet = false;
+                }
             }
-            else statusMet = false;
+            else
+            {
+                debugMsg += "- CO2 Check: <color=red>ERROR</color> (ScenarioLoader or Level missing)\n";
+                allMet = false;
+            }
         }
 
-        if (currentStep.requireOptimizationGoal && (LevelScenarioLoader.Instance == null || !LevelScenarioLoader.Instance.IsOptimizationGoalMet())) statusMet = false;
+        // Optimization Check
+        if (currentStep.requireOptimizationGoal)
+        {
+            bool met = LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.IsOptimizationGoalMet();
+            debugMsg += $"- Optimization Goal: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
+            if (!met) allMet = false;
+        }
 
-        if (statusMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding && !currentStep.requireRemoval && !currentStep.requireInput)
+        // 仅在当前步骤包含自动化条件时打印（每一秒打印一次，避免刷屏太快）
+        if (Time.frameCount % 60 == 0)
+        {
+            Debug.Log(debugMsg);
+        }
+
+        // --- 最终判定 ---
+        if (allMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding && !currentStep.requireRemoval && !currentStep.requireInput)
         {
             if (Time.time - _stepStartTime > 0.8f)
             {
@@ -198,9 +255,6 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 核心判定逻辑：检查场景中是否存在任何 Battery 处于 Balance > Threshold 的状态
-    /// </summary>
     private bool IsAnyBatteryOverloaded()
     {
         if (ResourceManager.Instance == null) return false;
@@ -212,7 +266,6 @@ public class TutorialManager : MonoBehaviour
         {
             if (tb != null && tb.tutorialType == TutorialBuildingType.Battery)
             {
-                // 获取该电池的有效阈值 (可能是自定义的或全局默认的)
                 if (currentBalance > tb.GetEffectiveThreshold())
                 {
                     return true;
@@ -253,7 +306,6 @@ public class TutorialManager : MonoBehaviour
             RecordInitialCounts();
         }
 
-        // 修改：增加对 WaitForElectricityOverload 的支持
         if (step.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit ||
             step.startCondition == TutorialStep.StartCondition.WaitForElectricityOverload)
         {
@@ -281,6 +333,12 @@ public class TutorialManager : MonoBehaviour
     private void ActivateStepUI(TutorialStep step)
     {
         _isWaitingForStartCondition = false;
+
+        if (step.setSpecificMoney && ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.SetMoneyDirectly(step.moneyAmount);
+        }
+
         tutorialUI.ShowStep(step);
         if (step.focusTarget != null) UpdateZoneHighlights(step.focusTarget, step.indicatorColor, step.showIndicator);
         if (step.focusTarget != null)

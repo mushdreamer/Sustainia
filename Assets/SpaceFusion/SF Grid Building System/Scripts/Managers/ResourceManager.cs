@@ -24,21 +24,17 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private int _populationCapacity;
         private int _basePopulation;
 
-        // --- 食物逻辑修改：完全模仿电力系统 ---
-        private float _currentFoodProduction = 0f; // 对应产电
-        private float _currentFoodDemand = 0f;     // 对应耗电
+        private float _currentFoodProduction = 0f;
+        private float _currentFoodDemand = 0f;
         public float FoodBalance => _currentFoodProduction - _currentFoodDemand;
 
         private float _currentLocalGeneration = 0f;
         private float _currentTotalDemand = 0f;
         public float ElectricityBalance => _currentLocalGeneration - _currentTotalDemand;
 
-        // 新增：公开总需求量，供 BuildingInfoUI 判断过载
         public float CurrentTotalDemand => _currentTotalDemand;
 
-        // --- 新增：过载阈值自定义 ---
         [Header("Custom Balance Thresholds")]
-        [Tooltip("定义电力平衡高于多少时显示为过载。默认为0。")]
         public float globalOverloadThreshold = 0f;
 
         public float _happiness;
@@ -118,7 +114,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             _currentDay++;
             _carbonDioxideEmission = _baseCarbonDioxideEmission * _co2EmissionModifier;
 
-            // --- 食物平衡影响人口逻辑 ---
             if (FoodBalance >= 0)
             {
                 if (_bankCount > 0 && _currentFoodDemand > 0)
@@ -175,10 +170,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
                 string elecColor = "<color=green>";
                 string statusText = "Stable";
 
-                // 修改显示逻辑：
-                // 1. 如果 Balance > Threshold，显示过载 (Overload)
-                // 2. 如果 Balance < 0，显示电力不足 (Shortage)
-                // 3. 否则显示稳定 (Stable)
                 if (balance > globalOverloadThreshold)
                 {
                     elecColor = "<color=red>";
@@ -215,15 +206,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             if (dayText != null) dayText.text = $"Day {_currentDay}";
         }
 
-        private bool IsGoalMet(float current, float target, float tolerancePercent, bool requireHigher)
-        {
-            float diff = Mathf.Abs(current - target);
-            float allowedDiff = Mathf.Abs(target * tolerancePercent);
-            if (target == 0) allowedDiff = 2f;
-            if (diff <= allowedDiff) return true;
-            return requireHigher ? current > target : current < target;
-        }
-
         public bool SpendMoney(float amount)
         {
             if (_money >= amount) { _money -= amount; UpdateUI(); return true; }
@@ -231,6 +213,13 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         }
 
         public void AddMoney(float amount) { _money += amount; UpdateUI(); }
+
+        // --- 新增：直接设置金钱的方法 ---
+        public void SetMoneyDirectly(float amount)
+        {
+            _money = amount;
+            UpdateUI();
+        }
 
         public void AddHouseEffect(int capacityIncrease, int initialPopulation)
         {

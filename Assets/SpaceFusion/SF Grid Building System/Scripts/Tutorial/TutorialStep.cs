@@ -16,7 +16,14 @@ public class TutorialStep
     [TextArea(3, 10)]
     public string instructionText;
 
-    // --- 新增：独立公式面板配置 ---
+    // --- 新增：金钱控制 ---
+    [Header("Economy Control")]
+    [Tooltip("是否在该步骤开始时重置玩家的金钱")]
+    public bool setSpecificMoney = false;
+    [Tooltip("重置后的金钱数额")]
+    public float moneyAmount = 1000f;
+
+    // --- 独立公式面板配置 ---
     [Header("Independent Formula Display")]
     [Tooltip("是否为该步骤显示独立的公式面板")]
     public bool showFormulaPanel = false;
