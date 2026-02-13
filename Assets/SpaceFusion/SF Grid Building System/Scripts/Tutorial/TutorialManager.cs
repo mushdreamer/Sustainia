@@ -379,7 +379,7 @@ public class TutorialManager : MonoBehaviour
 
         string content = step.formulaContent;
 
-        // 使用统一的 P 值属性分量
+        // --- [严格保留：原有 P 值实时逻辑] ---
         float val = ResourceManager.Instance.GetTotalBuildingCount("House") * 10f;
         float fgap = Mathf.Abs(Mathf.Min(0, ResourceManager.Instance.FoodBalance));
         float egap = Mathf.Abs(Mathf.Min(0, ResourceManager.Instance.ElectricityBalance));
@@ -393,9 +393,50 @@ public class TutorialManager : MonoBehaviour
         content = content.Replace("{p}", p.ToString("F1"));
         content = content.Replace("{-p}", (-p).ToString("F1"));
 
+        // --- [新增：S 值实时逻辑] ---
+        // 1. 实时计算权重 w1 和 w2 (基于建筑数量)
+        int factories = ResourceManager.Instance.GetTotalBuildingCount("PowerPlant");
+        int ccus = ResourceManager.Instance.GetTotalBuildingCount("Co2Storage");
+
+        ResourceManager.Instance.w1 = 1.0f + (factories * 0.5f);
+        ResourceManager.Instance.w2 = 1.0f + (ccus * 0.5f);
+
+        // 2. 获取实时数值
+        float s = ResourceManager.Instance.ProsperityScoreS;
+        float w1 = ResourceManager.Instance.w1;
+        float w2 = ResourceManager.Instance.w2;
+        float gold = ResourceManager.Instance.CurrentGoldOutput;
+        float green = ResourceManager.Instance.CurrentGreenScore;
+
+        // 3. 执行替换
+        content = content.Replace("{w1}", w1.ToString("F1"));
+        content = content.Replace("{w2}", w2.ToString("F1"));
+        content = content.Replace("{gold}", gold.ToString("F1"));
+        content = content.Replace("{green}", green.ToString("F1"));
+        content = content.Replace("{s}", s.ToString("F1"));
+
+        // --- [资源状态实时替换] ---
+        float food = ResourceManager.Instance.FoodBalance;
+        float elec = ResourceManager.Instance.ElectricityBalance;
+        content = content.Replace("{food}", (food >= 0 ? "+" : "") + food.ToString("F1"));
+        content = content.Replace("{elec}", (elec >= 0 ? "+" : "") + elec.ToString("F1"));
+
+        // --- [推送到 UI] ---
         if (FormulaUI.Instance != null)
         {
             FormulaUI.Instance.UpdateFormulaText(content);
         }
+    }
+
+    private void UpdateTeachingWeights()
+    {
+        if (ResourceManager.Instance == null) return;
+
+        // 逻辑：每多一个发电厂，w1增加0.5；每多一个碳捕集，w2增加0.5
+        int factories = ResourceManager.Instance.GetTotalBuildingCount("PowerPlant");
+        int ccus = ResourceManager.Instance.GetTotalBuildingCount("Co2Storage");
+
+        ResourceManager.Instance.w1 = 1.0f + (factories * 0.5f);
+        ResourceManager.Instance.w2 = 1.0f + (ccus * 0.5f);
     }
 }

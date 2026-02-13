@@ -9,8 +9,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         public static FormulaUI Instance;
 
         [Header("UI References")]
-        public GameObject panel;            // 公式面板的根物体
-        public TextMeshProUGUI formulaText; // 用于显示公式的文本组件
+        public GameObject panel;
+        public TextMeshProUGUI formulaText;
 
         private TutorialStep _activeStep;
 
@@ -23,8 +23,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
         private void Update()
         {
-            // 如果面板激活且有步骤数据，则实时更新数值
-            if (panel.activeSelf && _activeStep != null)
+            if (panel != null && panel.activeSelf && _activeStep != null)
             {
                 RefreshDisplay();
             }
@@ -38,43 +37,36 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                 panel.SetActive(true);
                 RefreshDisplay();
             }
-            else
-            {
-                Hide();
-            }
+            else { Hide(); }
         }
 
         private void RefreshDisplay()
         {
-            if (_activeStep == null || ResourceManager.Instance == null) return;
+            if (_activeStep == null || ResourceManager.Instance == null || formulaText == null) return;
 
             string content = _activeStep.formulaContent;
+            if (string.IsNullOrEmpty(content)) return;
 
-            // --- 保留你原有的资源数据逻辑 ---
-            float elec = ResourceManager.Instance.ElectricityBalance;
-            float co2 = ResourceManager.Instance.GetCurrentNetEmission();
-            float food = ResourceManager.Instance.FoodBalance;
-
-            content = content.Replace("{elec}", (elec >= 0 ? "+" : "") + elec.ToString("F1"));
-            content = content.Replace("{co2}", co2.ToString("F1"));
-            content = content.Replace("{food}", (food >= 0 ? "+" : "") + food.ToString("F1"));
-
-            if (LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.currentLevel != null)
+            // 处理 S 公式
+            if (content.Contains("{s}"))
             {
-                content = content.Replace("{targetCo2}", LevelScenarioLoader.Instance.currentLevel.goalCo2.ToString("F1"));
+                content = content.Replace("{s}", ResourceManager.Instance.ProsperityScoreS.ToString("F1"));
+                content = content.Replace("{w1}", ResourceManager.Instance.w1.ToString("F1"));
+                content = content.Replace("{w2}", ResourceManager.Instance.w2.ToString("F1"));
+                content = content.Replace("{gold}", ResourceManager.Instance.CurrentGoldOutput.ToString("F0"));
+                content = content.Replace("{green}", ResourceManager.Instance.CurrentGreenScore.ToString("F1"));
             }
 
-            // --- 严谨新增：针对 Event 5 的 Prosperity (P) 逻辑 ---
-            // 仅在字符串包含相关占位符时计算，不干扰其他步骤
-            if (content.Contains("{p}") || content.Contains("{val}") || content.Contains("{gap}"))
+            // 处理 P 公式
+            if (content.Contains("{p}") || content.Contains("{val}"))
             {
-                float val = ResourceManager.Instance.GetTotalBuildingCount("House") * 10f;
-                float fgap = Mathf.Abs(Mathf.Min(0, food));
-                float egap = Mathf.Abs(Mathf.Min(0, elec));
-                float totalGap = (fgap + egap) * 2.0f; // 惩罚权重
-                float p = val - totalGap;
+                float houseVal = ResourceManager.Instance.GetTotalBuildingCount("House") * 10f;
+                float fgap = Mathf.Abs(Mathf.Min(0, ResourceManager.Instance.FoodBalance));
+                float egap = Mathf.Abs(Mathf.Min(0, ResourceManager.Instance.ElectricityBalance));
+                float totalGap = (fgap + egap) * 2.0f;
+                float p = houseVal - totalGap;
 
-                content = content.Replace("{val}", val.ToString("F0"));
+                content = content.Replace("{val}", houseVal.ToString("F0"));
                 content = content.Replace("{fgap}", fgap.ToString("F1"));
                 content = content.Replace("{egap}", egap.ToString("F1"));
                 content = content.Replace("{gap}", totalGap.ToString("F1"));
@@ -82,15 +74,21 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                 content = content.Replace("{-p}", (-p).ToString("F1"));
             }
 
+            float food = ResourceManager.Instance.FoodBalance;
+            float elec = ResourceManager.Instance.ElectricityBalance;
+            float co2 = ResourceManager.Instance.GetCurrentNetEmission();
+
+            content = content.Replace("{food}", (food >= 0 ? "+" : "") + food.ToString("F1"));
+            content = content.Replace("{elec}", (elec >= 0 ? "+" : "") + elec.ToString("F1"));
+            content = content.Replace("{co2}", co2.ToString("F1"));
+
+            if (LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.currentLevel != null)
+                content = content.Replace("{targetCo2}", LevelScenarioLoader.Instance.currentLevel.goalCo2.ToString("F1"));
+
             formulaText.text = content;
         }
 
-        public void Hide()
-        {
-            _activeStep = null;
-            if (panel != null) panel.SetActive(false);
-        }
-
+        // 修复报错：补回这个被我弄丢的方法
         public void UpdateFormulaText(string text)
         {
             if (formulaText != null)
@@ -98,5 +96,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                 formulaText.text = text;
             }
         }
+
+        public void Hide() { _activeStep = null; if (panel != null) panel.SetActive(false); }
     }
 }

@@ -11,6 +11,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
     {
         public static ResourceManager Instance;
 
+        [Header("UI References")]
         public TextMeshProUGUI moneyText;
         public TextMeshProUGUI populationText;
         public TextMeshProUGUI foodText;
@@ -18,6 +19,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public TextMeshProUGUI dayText;
         public TextMeshProUGUI co2EmissionText;
 
+        [Header("State Values")]
         public int _currentDay;
         private float _money;
         public int _currentPopulation;
@@ -31,8 +33,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private float _currentLocalGeneration = 0f;
         private float _currentTotalDemand = 0f;
         public float ElectricityBalance => _currentLocalGeneration - _currentTotalDemand;
-
-        public float CurrentTotalDemand => _currentTotalDemand;
 
         [Header("Custom Balance Thresholds")]
         public float globalOverloadThreshold = 0f;
@@ -52,6 +52,10 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         private float _co2EmissionModifier = 1.0f;
         public bool isPaused = false;
 
+        [Header("Event Teaching Logic (S-Formula)")]
+        public float w1 = 1.0f;
+        public float w2 = 1.0f;
+
         [Header("Game Balance Settings")]
         public float startingMoney = 1000f;
         public int startingPopulationCapacity = 10;
@@ -65,18 +69,28 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public float airQualityRecoveryRate = 0.1f;
         public float airQualityDeclineRate = 0.2f;
 
-        [Header("Research Settings")]
-        public float researchCostBase = 100f;
-        public float researchCostMultiplier = 1.5f;
-        public int researchLevelCap = 10;
-        public float powerEfficiencyGain = 0.1f;
-        public float co2EmissionReduction = 0.1f;
-
         private float _populationGrowthProgress = 0f;
         private float _populationDecreaseProgress = 0f;
 
         public float Money => _money;
-        public int UniversityLevel => _universityLevel;
+
+        // --- S 公式相关的实时属性 ---
+        public float CurrentGoldOutput => _money;
+        public float CurrentGreenScore => _carbonDioxideAbsorption * 5.0f;
+        public float ProsperityScoreS => (w1 * CurrentGoldOutput) + (w2 * CurrentGreenScore);
+
+        // --- P 公式的实时属性 ---
+        public float CurrentPValue
+        {
+            get
+            {
+                float val = GetTotalBuildingCount("House") * 10f;
+                float fgap = Mathf.Abs(Mathf.Min(0, FoodBalance));
+                float egap = Mathf.Abs(Mathf.Min(0, ElectricityBalance));
+                float totalGap = (fgap + egap) * 2.0f;
+                return val - totalGap;
+            }
+        }
 
         void Awake()
         {
@@ -91,18 +105,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             _populationCapacity = startingPopulationCapacity;
             _happiness = 100f;
             _airQuality = 100f;
-            _universityLevel = 1;
-
-            _currentLocalGeneration = 0f;
-            _currentTotalDemand = 0f;
-            _currentFoodProduction = 0f;
-            _currentFoodDemand = 0f;
-
             _buildingCounts.Clear();
-            foreach (BuildingType type in System.Enum.GetValues(typeof(BuildingType)))
-            {
-                _buildingCounts[type] = 0;
-            }
+            foreach (BuildingType type in System.Enum.GetValues(typeof(BuildingType))) _buildingCounts[type] = 0;
 
             UpdateUI();
             InvokeRepeating(nameof(Tick), 1f, 1f);
@@ -116,29 +120,24 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
             if (FoodBalance >= 0)
             {
-                if (_bankCount > 0 && _currentFoodDemand > 0)
-                    AddMoney(_currentFoodDemand * moneyMultiplierFromFood);
-
-                if (_currentPopulation < _populationCapacity && (_currentPopulation > 0 || _currentFoodProduction > 0))
+                if (_bankCount > 0 && _currentFoodDemand > 0) AddMoney(_currentFoodDemand * moneyMultiplierFromFood);
+                if (_currentPopulation < _populationCapacity)
                 {
                     _populationGrowthProgress += populationGrowthRate;
                     if (_populationGrowthProgress >= 1f) { _currentPopulation++; _populationGrowthProgress -= 1f; }
                 }
             }
-            else
+            else if (_currentPopulation > _basePopulation)
             {
-                if (_currentPopulation > _basePopulation)
-                {
-                    _populationDecreaseProgress += populationDecreaseRate;
-                    if (_populationDecreaseProgress >= 1f) { _currentPopulation--; _populationDecreaseProgress -= 1f; }
-                }
+                _populationDecreaseProgress += populationDecreaseRate;
+                if (_populationDecreaseProgress >= 1f) { _currentPopulation--; _populationDecreaseProgress -= 1f; }
             }
 
+            float netEmission = GetCurrentNetEmission();
             if (_airQuality > 70) _happiness += happinessChangeRate;
             else if (_airQuality < 40) _happiness -= happinessChangeRate * 1.5f;
             _happiness = Mathf.Clamp(_happiness, 0f, 100f);
 
-            float netEmission = _carbonDioxideEmission - _carbonDioxideAbsorption;
             if (netEmission > 0) _airQuality -= netEmission * airQualityDeclineRate;
             _airQuality += airQualityRecoveryRate;
             _airQuality = Mathf.Clamp(_airQuality, 0f, 100f);
@@ -157,52 +156,26 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             if (foodText != null)
             {
                 bool isSatisfied = FoodBalance >= -0.01f;
-                string sign = FoodBalance >= 0 ? "+" : "";
                 string foodColor = isSatisfied ? "<color=green>" : "<color=red>";
-                string statusText = isSatisfied ? "Satisfied" : "Shortage";
-
-                foodText.text = $"Food Balance: {foodColor}{sign}{FoodBalance:F1} ({statusText})</color>\n<size=70%>(Prod: {_currentFoodProduction:F1} | Dem: {_currentFoodDemand:F1})</size>";
+                foodText.text = $"Food Balance: {foodColor}{(FoodBalance >= 0 ? "+" : "")}{FoodBalance:F1}</color>";
             }
 
             if (electricityText != null)
             {
-                float balance = ElectricityBalance;
-                bool isOverloaded = IsOverloaded();
-                // 只要余额不为负且不过载，就是稳定
-                bool isStable = (balance >= -0.01f) && !isOverloaded;
-
+                bool isStable = (ElectricityBalance >= -0.01f) && !IsOverloaded();
+                string statusText = IsOverloaded() ? "Overload" : (isStable ? "Stable" : "Shortage");
                 string elecColor = isStable ? "<color=green>" : "<color=red>";
-                string statusText = isStable ? "Stable" : "Power Shortage";
-
-                if (isOverloaded)
-                {
-                    elecColor = "<color=red>";
-                    statusText = "Overload";
-                }
-                else if (balance < -0.01f)
-                {
-                    elecColor = "<color=red>";
-                    statusText = "Power Shortage";
-                }
-
-                string sign = balance >= 0 ? "+" : "";
-                string elecString = $"Elec Balance: {elecColor}{sign}{balance:F1} ({statusText})</color>";
-                elecString += $"\n<size=70%>(Gen: {_currentLocalGeneration:F1} | Dem: {_currentTotalDemand:F1})</size>";
-                electricityText.text = elecString;
+                electricityText.text = $"Elec Balance: {elecColor}{statusText} ({(ElectricityBalance >= 0 ? "+" : "")}{ElectricityBalance:F1})</color>";
             }
 
             if (co2EmissionText != null)
             {
                 float currentNetCo2 = GetCurrentNetEmission();
-                string co2String = $"CO2 Emission: {currentNetCo2:F1}";
-
+                string co2String = $"CO2: {currentNetCo2:F1}";
                 if (currentLevel != null)
                 {
-                    bool isUnderLimit = currentNetCo2 <= currentLevel.goalCo2 + 0.01f;
-                    string statusColor = isUnderLimit ? "<color=green>" : "<color=red>";
-                    string limitColor = isUnderLimit ? "<color=#00FF00>" : "<color=#FF8888>";
-
-                    co2String = $"{statusColor}{co2String}</color> / {limitColor}Limit: <{currentLevel.goalCo2:F0}</color>";
+                    bool isUnder = currentNetCo2 <= currentLevel.goalCo2 + 0.01f;
+                    co2String = $"{(isUnder ? "<color=green>" : "<color=red>")}{co2String}</color> / Limit: {currentLevel.goalCo2:F0}";
                 }
                 co2EmissionText.text = co2String;
             }
@@ -210,87 +183,46 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             if (dayText != null) dayText.text = $"Day {_currentDay}";
         }
 
-        public bool SpendMoney(float amount)
-        {
-            if (_money >= amount) { _money -= amount; UpdateUI(); return true; }
-            return false;
-        }
-
+        // --- 核心方法 ---
+        public void SetMoneyDirectly(float amount) { _money = amount; UpdateUI(); }
         public void AddMoney(float amount) { _money += amount; UpdateUI(); }
+        public bool SpendMoney(float amount) { if (_money >= amount) { _money -= amount; UpdateUI(); return true; } return false; }
+        public float GetCurrentNetEmission() => (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
 
-        public void SetMoneyDirectly(float amount)
-        {
-            _money = amount;
-            UpdateUI();
-        }
+        public void AddHouseEffect(int cap, int initPop) { _populationCapacity += cap; _currentPopulation += initPop; _basePopulation += initPop; UpdateUI(); }
+        public void RemoveHouseEffect(int cap, int initPop) { _populationCapacity -= cap; _basePopulation -= initPop; _currentPopulation = Mathf.Min(_currentPopulation, _populationCapacity); UpdateUI(); }
 
-        public void AddHouseEffect(int capacityIncrease, int initialPopulation)
-        {
-            _populationCapacity += capacityIncrease;
-            _currentPopulation += initialPopulation;
-            _basePopulation += initialPopulation;
-            _currentPopulation = Mathf.Min(_currentPopulation, _populationCapacity);
-            UpdateUI();
-        }
-
-        public void RemoveHouseEffect(int capacityDecrease, int initialPopulationDecrease)
-        {
-            _populationCapacity -= capacityDecrease;
-            _basePopulation -= initialPopulationDecrease;
-            if (_basePopulation < 0) _basePopulation = 0;
-            _currentPopulation = Mathf.Min(_currentPopulation, _populationCapacity);
-            UpdateUI();
-        }
-
-        public void AddFoodProduction(float amount) { _currentFoodProduction += amount; UpdateUI(); }
-        public void RemoveFoodProduction(float amount) { _currentFoodProduction -= amount; if (_currentFoodProduction < 0) _currentFoodProduction = 0; UpdateUI(); }
-        public void AddFoodDemand(float amount) { _currentFoodDemand += amount; UpdateUI(); }
-        public void RemoveFoodDemand(float amount) { _currentFoodDemand -= amount; if (_currentFoodDemand < 0) _currentFoodDemand = 0; UpdateUI(); }
+        public void AddFoodProduction(float a) { _currentFoodProduction += a; UpdateUI(); }
+        public void RemoveFoodProduction(float a) { _currentFoodProduction -= a; UpdateUI(); }
+        public void AddFoodDemand(float a) { _currentFoodDemand += a; UpdateUI(); }
+        public void RemoveFoodDemand(float a) { _currentFoodDemand -= a; UpdateUI(); }
 
         public void AddPowerPlantEffect(float co2) { _baseCarbonDioxideEmission += co2; UpdateUI(); }
         public void RemovePowerPlantEffect(float co2) { _baseCarbonDioxideEmission -= co2; UpdateUI(); }
+        public void AddCo2Absorption(float a) { _carbonDioxideAbsorption += a; UpdateUI(); }
+        public void RemoveCo2Absorption(float a) { _carbonDioxideAbsorption -= a; UpdateUI(); }
 
-        public void AddCo2Absorption(float amount) { _carbonDioxideAbsorption += amount; UpdateUI(); }
-        public void RemoveCo2Absorption(float amount) { _carbonDioxideAbsorption -= amount; if (_carbonDioxideAbsorption < 0) _carbonDioxideAbsorption = 0; UpdateUI(); }
+        public void AddGeneration(float a) { _currentLocalGeneration += a; UpdateUI(); }
+        public void RemoveGeneration(float a) { _currentLocalGeneration -= a; UpdateUI(); }
+        public void AddConsumption(float a) { _currentTotalDemand += a; UpdateUI(); }
+        public void RemoveConsumption(float a) { _currentTotalDemand -= a; UpdateUI(); }
 
         public void AddBank() => _bankCount++;
-        public void RemoveBank() { _bankCount--; if (_bankCount < 0) _bankCount = 0; }
+        public void RemoveBank() => _bankCount--;
 
-        public float GetCurrentNetEmission()
-        {
-            return (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
-        }
-
-        // --- 核心修复：确保判定逻辑的一致性 ---
         public bool IsOverloaded()
         {
             float balance = ElectricityBalance;
-
-            // 1. 清理并检查教程建筑（电池）
             _allTutorialBuildings.RemoveAll(item => item == null);
             foreach (var tb in _allTutorialBuildings)
             {
                 if (tb != null && tb.tutorialType == TutorialBuildingType.Battery)
                 {
-                    float threshold = tb.GetEffectiveThreshold();
-                    // 只有当阈值被显式设定（非0）时才进行判定，避免默认值干扰
-                    if (threshold > 0.01f)
-                    {
-                        // 如果 Balance 超过了电池能承受的上限，判定为过载
-                        if (balance > threshold + 0.01f) return true;
-                    }
+                    float t = tb.GetEffectiveThreshold();
+                    if (t > 0.01f && balance > t + 0.01f) return true;
                 }
             }
-
-            // 2. 检查全局阈值
-            // 如果 globalOverloadThreshold 是 0，意味着任何正平衡都是正常的。
-            // 只有当设定了具体的正向过载阈值时才判定。
-            if (globalOverloadThreshold > 0.01f)
-            {
-                return balance > globalOverloadThreshold + 0.01f;
-            }
-
-            return false;
+            return globalOverloadThreshold > 0.01f && balance > globalOverloadThreshold + 0.01f;
         }
 
         public float GetActiveOverloadThreshold()
@@ -310,47 +242,22 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public void RegisterBuilding(BuildingType type) { if (_buildingCounts.ContainsKey(type)) _buildingCounts[type]++; }
         public void UnregisterBuilding(BuildingType type) { if (_buildingCounts.ContainsKey(type)) { _buildingCounts[type]--; if (_buildingCounts[type] < 0) _buildingCounts[type] = 0; } }
 
-        public void AddGeneration(float amount) { _currentLocalGeneration += amount; UpdateUI(); }
-        public void RemoveGeneration(float amount) { _currentLocalGeneration -= amount; if (_currentLocalGeneration < 0) _currentLocalGeneration = 0; UpdateUI(); }
-        public void AddConsumption(float amount) { _currentTotalDemand += amount; UpdateUI(); }
-        public void RemoveConsumption(float amount) { _currentTotalDemand -= amount; if (_currentTotalDemand < 0) _currentTotalDemand = 0; UpdateUI(); }
+        public void RegisterBuildingInstance(BuildingEffect b) { if (!_allPlacedBuildings.Contains(b)) _allPlacedBuildings.Add(b); }
+        public void UnregisterBuildingInstance(BuildingEffect b) { _allPlacedBuildings.Remove(b); }
+        public void RegisterTutorialBuildingInstance(TutorialBuildingEffect b) { if (!_allTutorialBuildings.Contains(b)) _allTutorialBuildings.Add(b); }
+        public void UnregisterTutorialBuildingInstance(TutorialBuildingEffect b) { _allTutorialBuildings.Remove(b); }
 
-        public void RegisterBuildingInstance(BuildingEffect building) { if (!_allPlacedBuildings.Contains(building)) _allPlacedBuildings.Add(building); }
-        public void UnregisterBuildingInstance(BuildingEffect building) { if (_allPlacedBuildings.Contains(building)) _allPlacedBuildings.Remove(building); }
-
-        public void RegisterTutorialBuildingInstance(TutorialBuildingEffect building) { if (!_allTutorialBuildings.Contains(building)) _allTutorialBuildings.Add(building); }
-        public void UnregisterTutorialBuildingInstance(TutorialBuildingEffect building) { if (_allTutorialBuildings.Contains(building)) _allTutorialBuildings.Remove(building); }
-
-        public List<BuildingEffect> GetAllPlacedBuildings() { _allPlacedBuildings.RemoveAll(item => item == null); return new List<BuildingEffect>(_allPlacedBuildings); }
-        public List<TutorialBuildingEffect> GetAllTutorialBuildings() { _allTutorialBuildings.RemoveAll(item => item == null); return new List<TutorialBuildingEffect>(_allTutorialBuildings); }
+        public List<BuildingEffect> GetAllPlacedBuildings() { _allPlacedBuildings.RemoveAll(i => i == null); return new List<BuildingEffect>(_allPlacedBuildings); }
+        public List<TutorialBuildingEffect> GetAllTutorialBuildings() { _allTutorialBuildings.RemoveAll(i => i == null); return new List<TutorialBuildingEffect>(_allTutorialBuildings); }
 
         public int GetTotalBuildingCount(string typeKey)
         {
             int count = 0;
-            _allPlacedBuildings.RemoveAll(item => item == null);
-            foreach (var b in _allPlacedBuildings)
-            {
-                if (b.type.ToString() == typeKey) count++;
-            }
-            _allTutorialBuildings.RemoveAll(item => item == null);
-            foreach (var tb in _allTutorialBuildings)
-            {
-                if (tb.tutorialType.ToString() == typeKey) count++;
-            }
+            _allPlacedBuildings.RemoveAll(i => i == null);
+            foreach (var b in _allPlacedBuildings) if (b.type.ToString() == typeKey) count++;
+            _allTutorialBuildings.RemoveAll(i => i == null);
+            foreach (var tb in _allTutorialBuildings) if (tb.tutorialType.ToString() == typeKey) count++;
             return count;
-        }
-
-        public float CurrentPValue
-        {
-            get
-            {
-                // 逻辑与 UpdateDynamicFormula 保持一致
-                float val = GetTotalBuildingCount("House") * 10f;
-                float fgap = Mathf.Abs(Mathf.Min(0, FoodBalance));
-                float egap = Mathf.Abs(Mathf.Min(0, ElectricityBalance));
-                float totalGap = (fgap + egap) * 2.0f;
-                return val - totalGap;
-            }
         }
     }
 }

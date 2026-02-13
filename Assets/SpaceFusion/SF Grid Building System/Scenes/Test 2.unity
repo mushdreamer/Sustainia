@@ -11197,6 +11197,8 @@ MonoBehaviour:
   _happiness: 0
   _airQuality: 0
   isPaused: 0
+  w1: 1
+  w2: 1
   startingMoney: 10000
   startingPopulationCapacity: 10
   populationDecreaseRate: 0.2
@@ -11206,11 +11208,6 @@ MonoBehaviour:
   happinessChangeRate: 1
   airQualityRecoveryRate: 0.1
   airQualityDeclineRate: 0.2
-  researchCostBase: 100
-  researchCostMultiplier: 1.5
-  researchLevelCap: 10
-  powerEfficiencyGain: 1
-  co2EmissionReduction: 0.25
 --- !u!4 &1184223222
 Transform:
   m_ObjectHideFlags: 0
@@ -15191,10 +15188,10 @@ MonoBehaviour:
     instructionText: Build few buildings to either Industrial Factories (Gold/Profit)
       or CCUS Facilities (Green/Sustainability). This allocation determines the priorities
       of your city's success metric.
-    setSpecificMoney: 0
+    setSpecificMoney: 1
     moneyAmount: 1000
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: S = {w1} * {gold} + {w2} * {green} = {s}
     clearSceneBeforeStart: 1
     layoutToLoad: 5
     focusTarget: {fileID: 1113102201}
@@ -15223,10 +15220,10 @@ MonoBehaviour:
     bankReq:
       checkThis: 0
       goalCount: 1
-    requireTutorialBuilding: 0
+    requireTutorialBuilding: 1
     localGenReq:
-      checkThis: 0
-      goalCount: 1
+      checkThis: 1
+      goalCount: 10
     batteryReq:
       checkThis: 0
       goalCount: 1
