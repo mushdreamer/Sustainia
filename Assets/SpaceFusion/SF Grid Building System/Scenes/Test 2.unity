@@ -13614,6 +13614,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -13674,6 +13676,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -13735,6 +13739,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -13794,6 +13800,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -13854,6 +13862,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -13914,6 +13924,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 0
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -13974,6 +13986,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14034,6 +14048,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 0
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14094,6 +14110,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14154,6 +14172,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 0
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14215,6 +14235,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14275,6 +14297,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14335,6 +14359,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14395,6 +14421,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14456,6 +14484,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14516,6 +14546,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14576,6 +14608,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 0
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 1
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14637,6 +14671,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 0
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 1
     requireFoodShortage: 0
     requireElecStable: 1
@@ -14697,6 +14733,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 0
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 1
     requireFoodShortage: 0
     requireElecStable: 1
@@ -14758,6 +14796,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14819,6 +14859,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14880,6 +14922,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -14943,6 +14987,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 0
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 1
     requireFoodShortage: 0
     requireElecStable: 1
@@ -15004,6 +15050,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15061,10 +15109,12 @@ MonoBehaviour:
     ccHouseReq:
       checkThis: 0
       goalCount: 1
-    requireRemoval: 1
+    requireRemoval: 0
     requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 1
+    requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 1
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15127,6 +15177,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15188,6 +15240,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15250,6 +15304,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15312,6 +15368,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15374,6 +15432,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15436,6 +15496,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15498,6 +15560,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15560,6 +15624,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 1
     requireInput: 0
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0
@@ -15622,6 +15688,8 @@ MonoBehaviour:
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
     requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0

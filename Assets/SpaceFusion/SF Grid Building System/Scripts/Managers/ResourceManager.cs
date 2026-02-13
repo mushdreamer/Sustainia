@@ -339,5 +339,18 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             }
             return count;
         }
+
+        public float CurrentPValue
+        {
+            get
+            {
+                // 逻辑与 UpdateDynamicFormula 保持一致
+                float val = GetTotalBuildingCount("House") * 10f;
+                float fgap = Mathf.Abs(Mathf.Min(0, FoodBalance));
+                float egap = Mathf.Abs(Mathf.Min(0, ElectricityBalance));
+                float totalGap = (fgap + egap) * 2.0f;
+                return val - totalGap;
+            }
+        }
     }
 }

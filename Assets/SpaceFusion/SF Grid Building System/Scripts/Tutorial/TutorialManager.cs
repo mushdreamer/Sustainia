@@ -103,7 +103,6 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    // --- 核心修复：完善判定逻辑并增加详细电力诊断打印 ---
     private bool ValidateAllRequirements(TutorialStep step, out string report)
     {
         report = $"<b>[Step {_currentStepIndex} 诊断报告]</b>\n";
@@ -130,11 +129,10 @@ public class TutorialManager : MonoBehaviour
                     else report += $"  - {check.Key}: OK\n";
                 }
             }
-            if (!isPass) isPass = false;
+            if (!bPass) isPass = false;
         }
 
         // 2. 数值检查
-        // 食物判定
         if (step.requireFoodSatisfied)
         {
             bool ok = ResourceManager.Instance.FoodBalance >= -epsilon;
@@ -148,7 +146,6 @@ public class TutorialManager : MonoBehaviour
             if (!ok) isPass = false;
         }
 
-        // 电力判定核心：增加 Overload 与 Threshold 的详细汇报
         float elecBal = ResourceManager.Instance.ElectricityBalance;
         bool isOverloaded = ResourceManager.Instance.IsOverloaded();
         float threshold = ResourceManager.Instance.GetActiveOverloadThreshold();
@@ -181,7 +178,6 @@ public class TutorialManager : MonoBehaviour
             if (!ok) isPass = false;
         }
 
-        // CO2判定
         if (step.requireCo2WithinLimit)
         {
             if (LevelScenarioLoader.Instance?.currentLevel != null)
@@ -207,7 +203,15 @@ public class TutorialManager : MonoBehaviour
             else isPass = false;
         }
 
-        // 优化目标判定
+        // --- P值判定逻辑集成 ---
+        if (step.requirePValueGoal)
+        {
+            float currentP = ResourceManager.Instance.CurrentPValue;
+            bool ok = currentP >= step.targetPValue - epsilon;
+            report += $"  - P值目标: {(ok ? "OK" : "FAIL")} (Current:{currentP:F1}, Target:{step.targetPValue:F1})\n";
+            if (!ok) isPass = false;
+        }
+
         if (step.requireOptimizationGoal)
         {
             bool ok = LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.IsOptimizationGoalMet();
@@ -369,23 +373,19 @@ public class TutorialManager : MonoBehaviour
         if (externalCameraController != null) externalCameraController.enabled = true;
     }
 
-    // --- 请将此函数粘贴在 TutorialManager 类末尾 ---
     private void UpdateDynamicFormula(TutorialStep step)
     {
         if (ResourceManager.Instance == null || string.IsNullOrEmpty(step.formulaContent)) return;
 
         string content = step.formulaContent;
 
-        // 仅获取数值，不修改任何 ResourceManager 里的状态
+        // 使用统一的 P 值属性分量
         float val = ResourceManager.Instance.GetTotalBuildingCount("House") * 10f;
         float fgap = Mathf.Abs(Mathf.Min(0, ResourceManager.Instance.FoodBalance));
         float egap = Mathf.Abs(Mathf.Min(0, ResourceManager.Instance.ElectricityBalance));
-
-        // 计算 P 的逻辑
         float totalGap = (fgap + egap) * 2.0f;
-        float p = val - totalGap;
+        float p = ResourceManager.Instance.CurrentPValue;
 
-        // 替换字符串占位符
         content = content.Replace("{val}", val.ToString("F0"));
         content = content.Replace("{fgap}", fgap.ToString("F1"));
         content = content.Replace("{egap}", egap.ToString("F1"));
@@ -393,7 +393,6 @@ public class TutorialManager : MonoBehaviour
         content = content.Replace("{p}", p.ToString("F1"));
         content = content.Replace("{-p}", (-p).ToString("F1"));
 
-        // 调用你已有的 FormulaUI
         if (FormulaUI.Instance != null)
         {
             FormulaUI.Instance.UpdateFormulaText(content);

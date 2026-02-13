@@ -78,6 +78,10 @@ public class TutorialStep
     public bool requireOptimizationGoal = false;
     public bool requireInput = false;
 
+    [Header("P Value Condition")]
+    public bool requirePValueGoal = false;
+    public float targetPValue = 0f;
+
     [Header("New Status Conditions")]
     public bool requireFoodSatisfied = false;
     public bool requireFoodShortage = false;
