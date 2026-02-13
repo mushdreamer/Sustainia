@@ -63,14 +63,13 @@ public class TutorialManager : MonoBehaviour
             if (currentStep.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit)
                 met = ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < -0.1f;
             else if (currentStep.startCondition == TutorialStep.StartCondition.WaitForElectricityOverload)
-                met = IsAnyBatteryOverloaded();
+                met = ResourceManager.Instance != null && ResourceManager.Instance.IsOverloaded();
             else met = true;
 
             if (met) ActivateStepUI(currentStep);
             return;
         }
 
-        // --- Update 核心：静默检查 ---
         CheckNonBuildingConditions(currentStep);
     }
 
@@ -86,8 +85,6 @@ public class TutorialManager : MonoBehaviour
         if (ResourceManager.Instance == null) yield break;
 
         TutorialStep current = steps[_currentStepIndex];
-
-        // 只有玩家手动操作时，才打印详细诊断报告
         string report;
         bool allFulfilled = ValidateAllRequirements(current, out report);
 
@@ -102,12 +99,12 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    // --- 核心修复：统一判定逻辑，消除双重标准 ---
+    // --- 核心修复：完善判定逻辑并增加详细电力诊断打印 ---
     private bool ValidateAllRequirements(TutorialStep step, out string report)
     {
         report = $"<b>[Step {_currentStepIndex} 诊断报告]</b>\n";
         bool isPass = true;
-        float epsilon = 0.01f; // 浮点数精度容错
+        float epsilon = 0.01f;
 
         // 1. 建筑检查
         if (step.requireBuilding || step.requireTutorialBuilding)
@@ -120,34 +117,67 @@ public class TutorialManager : MonoBehaviour
                 { "NegativeHouse", step.negativeHouseReq }, { "CCHouse", step.ccHouseReq }
             };
 
-            bool hasSpecific = false;
             foreach (var check in checks)
             {
                 if (check.Value.checkThis)
                 {
-                    hasSpecific = true;
                     int delta = GetCountDelta(check.Key);
                     if (delta < check.Value.goalCount) { bPass = false; report += $"  - {check.Key}: FAIL ({delta}/{check.Value.goalCount})\n"; }
                     else report += $"  - {check.Key}: OK\n";
                 }
             }
-            if (!hasSpecific && GetTotalCurrentCount() <= _initialTotalCount) bPass = false;
-            if (!bPass) isPass = false;
+            if (!isPass) isPass = false;
         }
 
-        // 2. 数值检查 (统一调用 ResourceManager.Instance)
+        // 2. 数值检查
+        // 食物判定
         if (step.requireFoodSatisfied)
         {
             bool ok = ResourceManager.Instance.FoodBalance >= -epsilon;
-            report += $"  - 食物满足: {(ok ? "OK" : "FAIL")} ({ResourceManager.Instance.FoodBalance:F1})\n";
+            report += $"  - 食物满足: {(ok ? "OK" : "FAIL")} (Bal: {ResourceManager.Instance.FoodBalance:F1})\n";
             if (!ok) isPass = false;
         }
-        if (step.requireElecStable)
+        if (step.requireFoodShortage)
         {
-            bool ok = ResourceManager.Instance.ElectricityBalance >= -epsilon;
-            report += $"  - 电力稳定: {(ok ? "OK" : "FAIL")} ({ResourceManager.Instance.ElectricityBalance:F1})\n";
+            bool ok = ResourceManager.Instance.FoodBalance < -epsilon;
+            report += $"  - 食物短缺: {(ok ? "OK" : "FAIL")} (Bal: {ResourceManager.Instance.FoodBalance:F1})\n";
             if (!ok) isPass = false;
         }
+
+        // 电力判定核心：增加 Overload 与 Threshold 的详细汇报
+        float elecBal = ResourceManager.Instance.ElectricityBalance;
+        bool isOverloaded = ResourceManager.Instance.IsOverloaded();
+        float threshold = ResourceManager.Instance.GetActiveOverloadThreshold();
+
+        report += $"  - 电力诊断: Balance={elecBal:F1}, Threshold={threshold:F1}\n";
+        report += $"  - 电力状态: {(isOverloaded ? "<color=red>OVERLOAD</color>" : "<color=green>NORMAL</color>")}\n";
+
+        if (step.requireElecStable || step.requirePositiveEnergyBalance)
+        {
+            bool ok = elecBal >= -epsilon;
+            report += $"    - 判定稳定: {(ok ? "OK" : "FAIL")}\n";
+            if (!ok) isPass = false;
+        }
+        if (step.requireElecDeficit)
+        {
+            bool ok = elecBal < -epsilon;
+            report += $"    - 判定赤字: {(ok ? "OK" : "FAIL")}\n";
+            if (!ok) isPass = false;
+        }
+        if (step.requireElecOverload)
+        {
+            bool ok = isOverloaded;
+            report += $"    - 判定过载: {(ok ? "OK" : "FAIL")}\n";
+            if (!ok) isPass = false;
+        }
+        if (step.requireElecNormal)
+        {
+            bool ok = !isOverloaded;
+            report += $"    - 判定正常: {(ok ? "OK" : "FAIL")}\n";
+            if (!ok) isPass = false;
+        }
+
+        // CO2判定
         if (step.requireCo2WithinLimit)
         {
             if (LevelScenarioLoader.Instance?.currentLevel != null)
@@ -155,10 +185,30 @@ public class TutorialManager : MonoBehaviour
                 float cur = ResourceManager.Instance.GetCurrentNetEmission();
                 float limit = LevelScenarioLoader.Instance.currentLevel.goalCo2;
                 bool ok = cur <= limit + epsilon;
-                report += $"  - CO2限制: {(ok ? "OK" : "FAIL")} (当前:{cur:F1}, 限制:{limit:F1})\n";
+                report += $"  - CO2限制: {(ok ? "OK" : "FAIL")} (Net:{cur:F1}, Limit:{limit:F1})\n";
                 if (!ok) isPass = false;
             }
             else isPass = false;
+        }
+        if (step.requireCo2OverLimit)
+        {
+            if (LevelScenarioLoader.Instance?.currentLevel != null)
+            {
+                float cur = ResourceManager.Instance.GetCurrentNetEmission();
+                float limit = LevelScenarioLoader.Instance.currentLevel.goalCo2;
+                bool ok = cur > limit + epsilon;
+                report += $"  - CO2超标: {(ok ? "OK" : "FAIL")} (Net:{cur:F1}, Limit:{limit:F1})\n";
+                if (!ok) isPass = false;
+            }
+            else isPass = false;
+        }
+
+        // 优化目标判定
+        if (step.requireOptimizationGoal)
+        {
+            bool ok = LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.IsOptimizationGoalMet();
+            report += $"  - 优化目标: {(ok ? "OK" : "FAIL")}\n";
+            if (!ok) isPass = false;
         }
 
         return isPass;
@@ -167,11 +217,8 @@ public class TutorialManager : MonoBehaviour
     private void CheckNonBuildingConditions(TutorialStep currentStep)
     {
         if (ResourceManager.Instance == null) return;
-
-        // 如果该步骤需要手动盖建筑或移除，则不自动跳关，必须通过 Action 诊断
         if (currentStep.requireBuilding || currentStep.requireTutorialBuilding || currentStep.requireRemoval || currentStep.requireInput) return;
 
-        // 只针对纯数值任务进行 Update 自动跳转
         if (ValidateAllRequirements(currentStep, out _))
         {
             if (Time.time - _stepStartTime > 0.8f)
@@ -182,30 +229,11 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    private int GetTotalCurrentCount()
-    {
-        int total = 0;
-        string[] allKeys = { "House", "Farm", "Institute", "PowerPlant", "Co2Storage", "Bank", "LocalGen", "Battery", "NegativeHouse", "CCHouse" };
-        foreach (var key in allKeys) total += ResourceManager.Instance.GetTotalBuildingCount(key);
-        return total;
-    }
-
     private int GetCountDelta(string typeKey)
     {
         int currentCount = ResourceManager.Instance.GetTotalBuildingCount(typeKey);
         int initialCount = _initialCounts.ContainsKey(typeKey) ? _initialCounts[typeKey] : 0;
         return Mathf.Max(0, currentCount - initialCount);
-    }
-
-    private bool IsAnyBatteryOverloaded()
-    {
-        if (ResourceManager.Instance == null) return false;
-        float currentBalance = ResourceManager.Instance.ElectricityBalance;
-        foreach (var tb in ResourceManager.Instance.GetAllTutorialBuildings())
-        {
-            if (tb != null && tb.tutorialType == TutorialBuildingType.Battery && currentBalance > tb.GetEffectiveThreshold()) return true;
-        }
-        return false;
     }
 
     public void StartTutorial() { _isTutorialActive = true; _currentStepIndex = 0; PrepareStep(0); }
@@ -246,14 +274,16 @@ public class TutorialManager : MonoBehaviour
 
     private void RecordInitialCounts()
     {
-        _initialCounts.Clear(); _initialTotalCount = 0;
+        _initialCounts.Clear();
         if (ResourceManager.Instance == null) return;
         string[] allKeys = { "House", "Farm", "Institute", "PowerPlant", "Co2Storage", "Bank", "LocalGen", "Battery", "NegativeHouse", "CCHouse" };
+        int total = 0;
         foreach (var key in allKeys)
         {
             int count = ResourceManager.Instance.GetTotalBuildingCount(key);
-            _initialCounts[key] = count; _initialTotalCount += count;
+            _initialCounts[key] = count; total += count;
         }
+        _initialTotalCount = total;
     }
 
     private void ActivateStepUI(TutorialStep step)

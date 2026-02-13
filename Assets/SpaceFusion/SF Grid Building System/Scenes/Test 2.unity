@@ -14818,7 +14818,7 @@ MonoBehaviour:
     requireRemoval: 0
     requirePositiveEnergyBalance: 0
     requireOptimizationGoal: 0
-    requireInput: 0
+    requireInput: 1
     requireFoodSatisfied: 0
     requireFoodShortage: 0
     requireElecStable: 0

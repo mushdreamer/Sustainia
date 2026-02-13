@@ -167,14 +167,22 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             if (electricityText != null)
             {
                 float balance = ElectricityBalance;
-                bool isStable = balance >= -0.01f;
+                bool isOverloaded = IsOverloaded();
+                // 只要余额不为负且不过载，就是稳定
+                bool isStable = (balance >= -0.01f) && !isOverloaded;
+
                 string elecColor = isStable ? "<color=green>" : "<color=red>";
                 string statusText = isStable ? "Stable" : "Power Shortage";
 
-                if (balance > globalOverloadThreshold + 0.01f)
+                if (isOverloaded)
                 {
                     elecColor = "<color=red>";
                     statusText = "Overload";
+                }
+                else if (balance < -0.01f)
+                {
+                    elecColor = "<color=red>";
+                    statusText = "Power Shortage";
                 }
 
                 string sign = balance >= 0 ? "+" : "";
@@ -248,11 +256,55 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public void AddBank() => _bankCount++;
         public void RemoveBank() { _bankCount--; if (_bankCount < 0) _bankCount = 0; }
 
-        // --- 核心修复：确保计算公式与 UI 逻辑完全同步 ---
         public float GetCurrentNetEmission()
         {
-            // 必须包含 Modifier，否则诊断报告报 0，UI 却报 -30
             return (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
+        }
+
+        // --- 核心修复：确保判定逻辑的一致性 ---
+        public bool IsOverloaded()
+        {
+            float balance = ElectricityBalance;
+
+            // 1. 清理并检查教程建筑（电池）
+            _allTutorialBuildings.RemoveAll(item => item == null);
+            foreach (var tb in _allTutorialBuildings)
+            {
+                if (tb != null && tb.tutorialType == TutorialBuildingType.Battery)
+                {
+                    float threshold = tb.GetEffectiveThreshold();
+                    // 只有当阈值被显式设定（非0）时才进行判定，避免默认值干扰
+                    if (threshold > 0.01f)
+                    {
+                        // 如果 Balance 超过了电池能承受的上限，判定为过载
+                        if (balance > threshold + 0.01f) return true;
+                    }
+                }
+            }
+
+            // 2. 检查全局阈值
+            // 如果 globalOverloadThreshold 是 0，意味着任何正平衡都是正常的。
+            // 只有当设定了具体的正向过载阈值时才判定。
+            if (globalOverloadThreshold > 0.01f)
+            {
+                return balance > globalOverloadThreshold + 0.01f;
+            }
+
+            return false;
+        }
+
+        public float GetActiveOverloadThreshold()
+        {
+            _allTutorialBuildings.RemoveAll(item => item == null);
+            foreach (var tb in _allTutorialBuildings)
+            {
+                if (tb != null && tb.tutorialType == TutorialBuildingType.Battery)
+                {
+                    float t = tb.GetEffectiveThreshold();
+                    if (t > 0.01f) return t;
+                }
+            }
+            return globalOverloadThreshold;
         }
 
         public void RegisterBuilding(BuildingType type) { if (_buildingCounts.ContainsKey(type)) _buildingCounts[type]++; }
