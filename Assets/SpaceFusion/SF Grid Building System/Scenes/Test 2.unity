@@ -15201,32 +15201,32 @@ MonoBehaviour:
     indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
     startCondition: 0
     shouldPauseGame: 1
-    requireBuilding: 0
+    requireBuilding: 1
     houseReq:
-      checkThis: 0
-      goalCount: 1
+      checkThis: 1
+      goalCount: 10
     farmReq:
-      checkThis: 0
-      goalCount: 1
+      checkThis: 1
+      goalCount: 10
     instituteReq:
-      checkThis: 0
-      goalCount: 1
+      checkThis: 1
+      goalCount: 10
     powerPlantReq:
-      checkThis: 0
-      goalCount: 1
+      checkThis: 1
+      goalCount: 10
     co2StorageReq:
-      checkThis: 0
-      goalCount: 1
+      checkThis: 1
+      goalCount: 10
     bankReq:
-      checkThis: 0
-      goalCount: 1
+      checkThis: 1
+      goalCount: 10
     requireTutorialBuilding: 1
     localGenReq:
       checkThis: 1
       goalCount: 10
     batteryReq:
-      checkThis: 0
-      goalCount: 1
+      checkThis: 1
+      goalCount: 10
     negativeHouseReq:
       checkThis: 0
       goalCount: 1
@@ -15254,8 +15254,8 @@ MonoBehaviour:
       your physical layout into a Weighted Objective Function"
     setSpecificMoney: 0
     moneyAmount: 1000
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: S = {w1} * {gold} + {w2} * {green} = {s}
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -15318,8 +15318,8 @@ MonoBehaviour:
       integrated score yields the best possible version of your city.
     setSpecificMoney: 0
     moneyAmount: 1000
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: 'your score is: {s}'
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -15382,8 +15382,8 @@ MonoBehaviour:
       the best result based precisely on your defined values.
     setSpecificMoney: 0
     moneyAmount: 1000
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: compare different trade-offs consistently
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
