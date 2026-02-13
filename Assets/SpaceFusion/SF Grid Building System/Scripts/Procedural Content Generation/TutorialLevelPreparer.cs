@@ -105,5 +105,20 @@ public class TutorialLevelPreparer : MonoBehaviour
 
             Debug.Log("<color=cyan>[Tutorial]</color> Event 3: Generated Surplus Energy Scenario.");
         }
+        else if (eventIndex == 4)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(i, "House T1");
+            }
+
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(6, "Farm");
+
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(7, "LocalGen");
+
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(8, "Battery");
+
+            Debug.Log("<color=cyan>[Tutorial]</color> Event 5: Scarcity Scenario Generated. High Demand vs Low Supply.");
+        }
     }
 }

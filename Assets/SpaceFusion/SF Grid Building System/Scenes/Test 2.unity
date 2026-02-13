@@ -14959,9 +14959,9 @@ MonoBehaviour:
     moneyAmount: 0
     showFormulaPanel: 0
     formulaContent: 
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
-    focusTarget: {fileID: 0}
+    clearSceneBeforeStart: 1
+    layoutToLoad: 4
+    focusTarget: {fileID: 1060047925}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
