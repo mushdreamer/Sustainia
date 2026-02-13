@@ -14204,8 +14204,8 @@ MonoBehaviour:
   - stepName: 'Event 2.1: The Baseline State'
     instructionText: "Look at the CO2 Emission in the goal panel. This value represents
       CO2(t)\u2014the total concentration inherited from the previous year."
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: Co2(t)
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -14262,8 +14262,8 @@ MonoBehaviour:
   - stepName: 'Event 2.2: Defining Net Annual Change'
     instructionText: Build a Power Plant. Observe the CO2 Emissions rise. Every operational
       factory or plant adds new carbon to the atmosphere.
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: Co2(t) + emissions
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
@@ -14320,8 +14320,8 @@ MonoBehaviour:
   - stepName: 'Event 2.3: Adding Emissions to the State'
     instructionText: Build a CCUS Facility. Observe the Co2 Emissions fall. These
       facilities actively subtract or "remove" carbon from the current year's output.
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: Co2(t) + emissions - removals
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
@@ -14379,8 +14379,8 @@ MonoBehaviour:
     instructionText: 'The environment calculates the next year''s level (t+1) using
       this formula: Co2(t+1) = Co2(t) + emissions - removals. Manage this balance
       to keep the total concentration within sustainable limits year after year.'
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: Co2(t+1) = Co2(t) + emissions - removals
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 1743267687}
@@ -22735,6 +22735,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI
       objectReference: {fileID: 0}
+    - target: {fileID: 4277116753325622536, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_fontSize
+      value: 56
+      objectReference: {fileID: 0}
+    - target: {fileID: 4277116753325622536, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 56
+      objectReference: {fileID: 0}
     - target: {fileID: 4586432826691276540, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -22797,19 +22805,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7345592351364239474, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7345592351364239474, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7345592351364239474, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 127
       objectReference: {fileID: 0}
     - target: {fileID: 7345592351364239474, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -3
       objectReference: {fileID: 0}
     - target: {fileID: 7561411106749792228, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_AnchoredPosition.x
