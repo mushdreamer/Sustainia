@@ -50,12 +50,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
 
             string content = _activeStep.formulaContent;
 
-            // 获取实时资源数据
+            // --- 保留你原有的资源数据逻辑 ---
             float elec = ResourceManager.Instance.ElectricityBalance;
             float co2 = ResourceManager.Instance.GetCurrentNetEmission();
             float food = ResourceManager.Instance.FoodBalance;
 
-            // 占位符替换逻辑
             content = content.Replace("{elec}", (elec >= 0 ? "+" : "") + elec.ToString("F1"));
             content = content.Replace("{co2}", co2.ToString("F1"));
             content = content.Replace("{food}", (food >= 0 ? "+" : "") + food.ToString("F1"));
@@ -65,6 +64,24 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
                 content = content.Replace("{targetCo2}", LevelScenarioLoader.Instance.currentLevel.goalCo2.ToString("F1"));
             }
 
+            // --- 严谨新增：针对 Event 5 的 Prosperity (P) 逻辑 ---
+            // 仅在字符串包含相关占位符时计算，不干扰其他步骤
+            if (content.Contains("{p}") || content.Contains("{val}") || content.Contains("{gap}"))
+            {
+                float val = ResourceManager.Instance.GetTotalBuildingCount("House") * 10f;
+                float fgap = Mathf.Abs(Mathf.Min(0, food));
+                float egap = Mathf.Abs(Mathf.Min(0, elec));
+                float totalGap = (fgap + egap) * 2.0f; // 惩罚权重
+                float p = val - totalGap;
+
+                content = content.Replace("{val}", val.ToString("F0"));
+                content = content.Replace("{fgap}", fgap.ToString("F1"));
+                content = content.Replace("{egap}", egap.ToString("F1"));
+                content = content.Replace("{gap}", totalGap.ToString("F1"));
+                content = content.Replace("{p}", p.ToString("F1"));
+                content = content.Replace("{-p}", (-p).ToString("F1"));
+            }
+
             formulaText.text = content;
         }
 
@@ -72,6 +89,14 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Core
         {
             _activeStep = null;
             if (panel != null) panel.SetActive(false);
+        }
+
+        public void UpdateFormulaText(string text)
+        {
+            if (formulaText != null)
+            {
+                formulaText.text = text;
+            }
         }
     }
 }

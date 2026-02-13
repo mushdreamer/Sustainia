@@ -14957,8 +14957,8 @@ MonoBehaviour:
       find a way to maximize P without new construction.
     setSpecificMoney: 1
     moneyAmount: 0
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: P = {val} - {gap} = {p}
     clearSceneBeforeStart: 1
     layoutToLoad: 4
     focusTarget: {fileID: 1060047925}
@@ -15018,8 +15018,8 @@ MonoBehaviour:
       gaps.
     setSpecificMoney: 0
     moneyAmount: 1000
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: P = {val} - {gap} = {p}
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -15061,9 +15061,9 @@ MonoBehaviour:
     ccHouseReq:
       checkThis: 0
       goalCount: 1
-    requireRemoval: 0
+    requireRemoval: 1
     requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 0
+    requireOptimizationGoal: 1
     requireInput: 1
     requireFoodSatisfied: 0
     requireFoodShortage: 0
@@ -15080,8 +15080,8 @@ MonoBehaviour:
       to the same optimal city layout.
     setSpecificMoney: 0
     moneyAmount: 1000
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: Minimize -P = {-p}
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
