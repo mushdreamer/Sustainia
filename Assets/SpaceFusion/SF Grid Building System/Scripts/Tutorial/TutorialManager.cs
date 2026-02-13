@@ -61,19 +61,16 @@ public class TutorialManager : MonoBehaviour
         {
             bool met = false;
             if (currentStep.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit)
-            {
                 met = ResourceManager.Instance != null && ResourceManager.Instance.ElectricityBalance < -0.1f;
-            }
             else if (currentStep.startCondition == TutorialStep.StartCondition.WaitForElectricityOverload)
-            {
                 met = IsAnyBatteryOverloaded();
-            }
             else met = true;
 
             if (met) ActivateStepUI(currentStep);
             return;
         }
 
+        // --- Update 核心：静默检查 ---
         CheckNonBuildingConditions(currentStep);
     }
 
@@ -89,48 +86,108 @@ public class TutorialManager : MonoBehaviour
         if (ResourceManager.Instance == null) yield break;
 
         TutorialStep current = steps[_currentStepIndex];
-        if (IsStepRequirementFulfilled(current))
+
+        // 只有玩家手动操作时，才打印详细诊断报告
+        string report;
+        bool allFulfilled = ValidateAllRequirements(current, out report);
+
+        if (allFulfilled)
         {
-            Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} completed via Building Action.");
+            Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} PASS: 玩家操作后所有条件已达成。");
             NextStep();
+        }
+        else
+        {
+            Debug.Log(report);
         }
     }
 
-    private bool IsStepRequirementFulfilled(TutorialStep step)
+    // --- 核心修复：统一判定逻辑，消除双重标准 ---
+    private bool ValidateAllRequirements(TutorialStep step, out string report)
     {
-        if (step.requireRemoval) return false;
+        report = $"<b>[Step {_currentStepIndex} 诊断报告]</b>\n";
+        bool isPass = true;
+        float epsilon = 0.01f; // 浮点数精度容错
 
+        // 1. 建筑检查
         if (step.requireBuilding || step.requireTutorialBuilding)
         {
-            bool hasSpecificRequirement = false;
+            bool bPass = true;
+            var checks = new Dictionary<string, BuildingCheck> {
+                { "House", step.houseReq }, { "Farm", step.farmReq }, { "Institute", step.instituteReq },
+                { "PowerPlant", step.powerPlantReq }, { "Co2Storage", step.co2StorageReq }, { "Bank", step.bankReq },
+                { "LocalGen", step.localGenReq }, { "Battery", step.batteryReq },
+                { "NegativeHouse", step.negativeHouseReq }, { "CCHouse", step.ccHouseReq }
+            };
 
-            if (step.houseReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("House") < step.houseReq.goalCount) return false; }
-            if (step.farmReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Farm") < step.farmReq.goalCount) return false; }
-            if (step.instituteReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Institute") < step.instituteReq.goalCount) return false; }
-            if (step.powerPlantReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("PowerPlant") < step.powerPlantReq.goalCount) return false; }
-            if (step.co2StorageReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Co2Storage") < step.co2StorageReq.goalCount) return false; }
-            if (step.bankReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Bank") < step.bankReq.goalCount) return false; }
-
-            if (step.localGenReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("LocalGen") < step.localGenReq.goalCount) return false; }
-            if (step.batteryReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("Battery") < step.batteryReq.goalCount) return false; }
-            if (step.negativeHouseReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("NegativeHouse") < step.negativeHouseReq.goalCount) return false; }
-            if (step.ccHouseReq.checkThis) { hasSpecificRequirement = true; if (GetCountDelta("CCHouse") < step.ccHouseReq.goalCount) return false; }
-
-            if (!hasSpecificRequirement)
+            bool hasSpecific = false;
+            foreach (var check in checks)
             {
-                int currentTotal = 0;
-                if (ResourceManager.Instance != null)
+                if (check.Value.checkThis)
                 {
-                    string[] allKeys = { "House", "Farm", "Institute", "PowerPlant", "Co2Storage", "Bank", "LocalGen", "Battery", "NegativeHouse", "CCHouse" };
-                    foreach (var key in allKeys) currentTotal += ResourceManager.Instance.GetTotalBuildingCount(key);
+                    hasSpecific = true;
+                    int delta = GetCountDelta(check.Key);
+                    if (delta < check.Value.goalCount) { bPass = false; report += $"  - {check.Key}: FAIL ({delta}/{check.Value.goalCount})\n"; }
+                    else report += $"  - {check.Key}: OK\n";
                 }
-                return currentTotal > _initialTotalCount;
             }
-
-            return true;
+            if (!hasSpecific && GetTotalCurrentCount() <= _initialTotalCount) bPass = false;
+            if (!bPass) isPass = false;
         }
 
-        return false;
+        // 2. 数值检查 (统一调用 ResourceManager.Instance)
+        if (step.requireFoodSatisfied)
+        {
+            bool ok = ResourceManager.Instance.FoodBalance >= -epsilon;
+            report += $"  - 食物满足: {(ok ? "OK" : "FAIL")} ({ResourceManager.Instance.FoodBalance:F1})\n";
+            if (!ok) isPass = false;
+        }
+        if (step.requireElecStable)
+        {
+            bool ok = ResourceManager.Instance.ElectricityBalance >= -epsilon;
+            report += $"  - 电力稳定: {(ok ? "OK" : "FAIL")} ({ResourceManager.Instance.ElectricityBalance:F1})\n";
+            if (!ok) isPass = false;
+        }
+        if (step.requireCo2WithinLimit)
+        {
+            if (LevelScenarioLoader.Instance?.currentLevel != null)
+            {
+                float cur = ResourceManager.Instance.GetCurrentNetEmission();
+                float limit = LevelScenarioLoader.Instance.currentLevel.goalCo2;
+                bool ok = cur <= limit + epsilon;
+                report += $"  - CO2限制: {(ok ? "OK" : "FAIL")} (当前:{cur:F1}, 限制:{limit:F1})\n";
+                if (!ok) isPass = false;
+            }
+            else isPass = false;
+        }
+
+        return isPass;
+    }
+
+    private void CheckNonBuildingConditions(TutorialStep currentStep)
+    {
+        if (ResourceManager.Instance == null) return;
+
+        // 如果该步骤需要手动盖建筑或移除，则不自动跳关，必须通过 Action 诊断
+        if (currentStep.requireBuilding || currentStep.requireTutorialBuilding || currentStep.requireRemoval || currentStep.requireInput) return;
+
+        // 只针对纯数值任务进行 Update 自动跳转
+        if (ValidateAllRequirements(currentStep, out _))
+        {
+            if (Time.time - _stepStartTime > 0.8f)
+            {
+                Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} 自动达标过关。");
+                NextStep();
+            }
+        }
+    }
+
+    private int GetTotalCurrentCount()
+    {
+        int total = 0;
+        string[] allKeys = { "House", "Farm", "Institute", "PowerPlant", "Co2Storage", "Bank", "LocalGen", "Battery", "NegativeHouse", "CCHouse" };
+        foreach (var key in allKeys) total += ResourceManager.Instance.GetTotalBuildingCount(key);
+        return total;
     }
 
     private int GetCountDelta(string typeKey)
@@ -140,137 +197,13 @@ public class TutorialManager : MonoBehaviour
         return Mathf.Max(0, currentCount - initialCount);
     }
 
-    private void CheckNonBuildingConditions(TutorialStep currentStep)
-    {
-        if (ResourceManager.Instance == null) return;
-
-        bool hasAutomatedCondition =
-            currentStep.requirePositiveEnergyBalance ||
-            currentStep.requireOptimizationGoal ||
-            currentStep.requireFoodSatisfied ||
-            currentStep.requireFoodShortage ||
-            currentStep.requireElecStable ||
-            currentStep.requireElecDeficit ||
-            currentStep.requireElecOverload ||
-            currentStep.requireElecNormal ||
-            currentStep.requireCo2WithinLimit ||
-            currentStep.requireCo2OverLimit;
-
-        if (!hasAutomatedCondition) return;
-
-        // --- 调试日志构建 ---
-        string debugMsg = $"[Step {_currentStepIndex} Logic Check]\n";
-        bool allMet = true;
-
-        // Food Check
-        if (currentStep.requireFoodSatisfied)
-        {
-            bool met = ResourceManager.Instance.FoodBalance >= 0f;
-            debugMsg += $"- Food Satisfied: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")} (Balance: {ResourceManager.Instance.FoodBalance:F2})\n";
-            if (!met) allMet = false;
-        }
-        if (currentStep.requireFoodShortage)
-        {
-            bool met = ResourceManager.Instance.FoodBalance < 0f;
-            debugMsg += $"- Food Shortage: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
-            if (!met) allMet = false;
-        }
-
-        // Electricity Check
-        if (currentStep.requireElecStable || currentStep.requirePositiveEnergyBalance)
-        {
-            bool met = ResourceManager.Instance.ElectricityBalance >= 0f;
-            debugMsg += $"- Elec Stable/Positive: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")} (Balance: {ResourceManager.Instance.ElectricityBalance:F2})\n";
-            if (!met) allMet = false;
-        }
-        if (currentStep.requireElecDeficit)
-        {
-            bool met = ResourceManager.Instance.ElectricityBalance < 0f;
-            debugMsg += $"- Elec Deficit: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
-            if (!met) allMet = false;
-        }
-        if (currentStep.requireElecOverload)
-        {
-            bool met = IsAnyBatteryOverloaded();
-            debugMsg += $"- Elec Overload: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
-            if (!met) allMet = false;
-        }
-        if (currentStep.requireElecNormal)
-        {
-            bool met = !IsAnyBatteryOverloaded();
-            debugMsg += $"- Elec Normal: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
-            if (!met) allMet = false;
-        }
-
-        // CO2 Check
-        if (currentStep.requireCo2WithinLimit || currentStep.requireCo2OverLimit)
-        {
-            if (LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.currentLevel != null)
-            {
-                float currentNetCo2 = ResourceManager.Instance.GetCurrentNetEmission();
-                float limit = LevelScenarioLoader.Instance.currentLevel.goalCo2;
-
-                if (currentStep.requireCo2WithinLimit)
-                {
-                    bool met = currentNetCo2 <= limit;
-                    debugMsg += $"- CO2 Within Limit: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")} (Current: {currentNetCo2:F1}, Limit: {limit})\n";
-                    if (!met) allMet = false;
-                }
-                if (currentStep.requireCo2OverLimit)
-                {
-                    bool met = currentNetCo2 > limit;
-                    debugMsg += $"- CO2 Over Limit: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
-                    if (!met) allMet = false;
-                }
-            }
-            else
-            {
-                debugMsg += "- CO2 Check: <color=red>ERROR</color> (ScenarioLoader or Level missing)\n";
-                allMet = false;
-            }
-        }
-
-        // Optimization Check
-        if (currentStep.requireOptimizationGoal)
-        {
-            bool met = LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.IsOptimizationGoalMet();
-            debugMsg += $"- Optimization Goal: {(met ? "<color=green>OK</color>" : "<color=red>FAIL</color>")}\n";
-            if (!met) allMet = false;
-        }
-
-        // 仅在当前步骤包含自动化条件时打印（每一秒打印一次，避免刷屏太快）
-        if (Time.frameCount % 60 == 0)
-        {
-            Debug.Log(debugMsg);
-        }
-
-        // --- 最终判定 ---
-        if (allMet && !currentStep.requireBuilding && !currentStep.requireTutorialBuilding && !currentStep.requireRemoval && !currentStep.requireInput)
-        {
-            if (Time.time - _stepStartTime > 0.8f)
-            {
-                Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} completed: All status conditions met.");
-                NextStep();
-            }
-        }
-    }
-
     private bool IsAnyBatteryOverloaded()
     {
         if (ResourceManager.Instance == null) return false;
-
         float currentBalance = ResourceManager.Instance.ElectricityBalance;
-        List<TutorialBuildingEffect> tutorials = ResourceManager.Instance.GetAllTutorialBuildings();
-
-        foreach (var tb in tutorials)
+        foreach (var tb in ResourceManager.Instance.GetAllTutorialBuildings())
         {
-            if (tb != null && tb.tutorialType == TutorialBuildingType.Battery)
-            {
-                if (currentBalance > tb.GetEffectiveThreshold())
-                {
-                    return true;
-                }
-            }
+            if (tb != null && tb.tutorialType == TutorialBuildingType.Battery && currentBalance > tb.GetEffectiveThreshold()) return true;
         }
         return false;
     }
@@ -294,17 +227,12 @@ public class TutorialManager : MonoBehaviour
             _isSystemClearing = true;
             TutorialLevelPreparer.Instance.ClearAllBuildings();
             if (step.layoutToLoad >= 0) TutorialLevelPreparer.Instance.PrepareLayoutForEvent(step.layoutToLoad);
-
             yield return new WaitForEndOfFrame();
             yield return new WaitForFixedUpdate();
-
             RecordInitialCounts();
             _isSystemClearing = false;
         }
-        else
-        {
-            RecordInitialCounts();
-        }
+        else RecordInitialCounts();
 
         if (step.startCondition == TutorialStep.StartCondition.WaitForElectricityDeficit ||
             step.startCondition == TutorialStep.StartCondition.WaitForElectricityOverload)
@@ -313,31 +241,26 @@ public class TutorialManager : MonoBehaviour
             tutorialUI.Hide();
             if (ResourceManager.Instance != null) ResourceManager.Instance.isPaused = false;
         }
-        else { ActivateStepUI(step); }
+        else ActivateStepUI(step);
     }
 
     private void RecordInitialCounts()
     {
-        _initialCounts.Clear();
-        _initialTotalCount = 0;
+        _initialCounts.Clear(); _initialTotalCount = 0;
         if (ResourceManager.Instance == null) return;
         string[] allKeys = { "House", "Farm", "Institute", "PowerPlant", "Co2Storage", "Bank", "LocalGen", "Battery", "NegativeHouse", "CCHouse" };
         foreach (var key in allKeys)
         {
             int count = ResourceManager.Instance.GetTotalBuildingCount(key);
-            _initialCounts[key] = count;
-            _initialTotalCount += count;
+            _initialCounts[key] = count; _initialTotalCount += count;
         }
     }
 
     private void ActivateStepUI(TutorialStep step)
     {
         _isWaitingForStartCondition = false;
-
         if (step.setSpecificMoney && ResourceManager.Instance != null)
-        {
             ResourceManager.Instance.SetMoneyDirectly(step.moneyAmount);
-        }
 
         tutorialUI.ShowStep(step);
         if (step.focusTarget != null) UpdateZoneHighlights(step.focusTarget, step.indicatorColor, step.showIndicator);
@@ -365,26 +288,21 @@ public class TutorialManager : MonoBehaviour
         Camera mainCam = Camera.main;
         var controller = externalCameraController as CameraController;
         if (controller) controller.enabled = false;
-
         Vector3 targetPos = step.focusTarget.transform.position;
         float pitchRad = step.cameraAngle * Mathf.Deg2Rad;
         Vector3 offset = new Vector3(0, Mathf.Sin(pitchRad), -Mathf.Cos(pitchRad)) * step.cameraDistance;
         Vector3 finalPos = targetPos + offset;
-
         float elapsed = 0;
         Vector3 startPos = mainCam.transform.position;
         Quaternion startRot = mainCam.transform.rotation;
         Quaternion finalRot = Quaternion.LookRotation(targetPos - finalPos);
-
         while (elapsed < 1.0f)
         {
             float t = Mathf.SmoothStep(0, 1, elapsed);
             mainCam.transform.position = Vector3.Lerp(startPos, finalPos, t);
             mainCam.transform.rotation = Quaternion.Slerp(startRot, finalRot, t);
-            elapsed += Time.unscaledDeltaTime;
-            yield return null;
+            elapsed += Time.unscaledDeltaTime; yield return null;
         }
-
         if (controller)
         {
             controller.SyncTutorialFocus(targetPos, step.cameraDistance, step.cameraAngle, mainCam.transform.eulerAngles.y);
@@ -392,18 +310,13 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    public void NextStep()
-    {
-        _currentStepIndex++;
-        PrepareStep(_currentStepIndex);
-    }
+    public void NextStep() { _currentStepIndex++; PrepareStep(_currentStepIndex); }
 
     public void SkipCurrentStep() { if (_isTutorialActive) NextStep(); }
 
     private void OnBuildingRemovedTrigger()
     {
         if (!_isTutorialActive || _isWaitingForStartCondition || _isSystemClearing || _currentStepIndex >= steps.Count) return;
-
         if (steps[_currentStepIndex].requireRemoval && Time.time - _stepStartTime > 0.5f)
         {
             Debug.Log($"<color=green>[Tutorial]</color> Step {_currentStepIndex} completed via Building Removal.");

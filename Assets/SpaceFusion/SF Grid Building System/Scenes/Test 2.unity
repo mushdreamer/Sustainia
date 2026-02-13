@@ -14468,7 +14468,7 @@ MonoBehaviour:
     instructionText: A city needs a mathematical "compass" called an Objective Function.
       You must define what "success" looks like by addressing competing needs.
     setSpecificMoney: 1
-    moneyAmount: 1000
+    moneyAmount: 3000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 1
@@ -14770,8 +14770,8 @@ MonoBehaviour:
     instructionText: Notice the net electricity is positive; surplus flows to Battery
       Storage. Storing energy leads to leakage and wasted investment. Build consuming
       facilities or demolish power plants to match production with consumption.
-    setSpecificMoney: 0
-    moneyAmount: 1000
+    setSpecificMoney: 1
+    moneyAmount: 3000
     showFormulaPanel: 0
     formulaContent: 
     clearSceneBeforeStart: 1

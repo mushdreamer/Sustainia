@@ -156,8 +156,8 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
             if (foodText != null)
             {
-                bool isSatisfied = FoodBalance >= 0;
-                string sign = isSatisfied ? "+" : "";
+                bool isSatisfied = FoodBalance >= -0.01f;
+                string sign = FoodBalance >= 0 ? "+" : "";
                 string foodColor = isSatisfied ? "<color=green>" : "<color=red>";
                 string statusText = isSatisfied ? "Satisfied" : "Shortage";
 
@@ -167,18 +167,14 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
             if (electricityText != null)
             {
                 float balance = ElectricityBalance;
-                string elecColor = "<color=green>";
-                string statusText = "Stable";
+                bool isStable = balance >= -0.01f;
+                string elecColor = isStable ? "<color=green>" : "<color=red>";
+                string statusText = isStable ? "Stable" : "Power Shortage";
 
-                if (balance > globalOverloadThreshold)
+                if (balance > globalOverloadThreshold + 0.01f)
                 {
                     elecColor = "<color=red>";
                     statusText = "Overload";
-                }
-                else if (balance < 0)
-                {
-                    elecColor = "<color=red>";
-                    statusText = "Power Shortage";
                 }
 
                 string sign = balance >= 0 ? "+" : "";
@@ -189,12 +185,12 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
             if (co2EmissionText != null)
             {
-                float currentNetCo2 = (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
+                float currentNetCo2 = GetCurrentNetEmission();
                 string co2String = $"CO2 Emission: {currentNetCo2:F1}";
 
                 if (currentLevel != null)
                 {
-                    bool isUnderLimit = currentNetCo2 <= currentLevel.goalCo2;
+                    bool isUnderLimit = currentNetCo2 <= currentLevel.goalCo2 + 0.01f;
                     string statusColor = isUnderLimit ? "<color=green>" : "<color=red>";
                     string limitColor = isUnderLimit ? "<color=#00FF00>" : "<color=#FF8888>";
 
@@ -214,7 +210,6 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
 
         public void AddMoney(float amount) { _money += amount; UpdateUI(); }
 
-        // --- 新增：直接设置金钱的方法 ---
         public void SetMoneyDirectly(float amount)
         {
             _money = amount;
@@ -253,10 +248,11 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
         public void AddBank() => _bankCount++;
         public void RemoveBank() { _bankCount--; if (_bankCount < 0) _bankCount = 0; }
 
+        // --- 核心修复：确保计算公式与 UI 逻辑完全同步 ---
         public float GetCurrentNetEmission()
         {
-            float netEmission = _carbonDioxideEmission - _carbonDioxideAbsorption;
-            return (netEmission > 0) ? netEmission : 0;
+            // 必须包含 Modifier，否则诊断报告报 0，UI 却报 -30
+            return (_baseCarbonDioxideEmission * _co2EmissionModifier) - _carbonDioxideAbsorption;
         }
 
         public void RegisterBuilding(BuildingType type) { if (_buildingCounts.ContainsKey(type)) _buildingCounts[type]++; }
