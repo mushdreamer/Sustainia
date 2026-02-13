@@ -114,11 +114,22 @@ public class TutorialLevelPreparer : MonoBehaviour
 
             MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(6, "Farm");
 
-            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(7, "LocalGen");
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(7, "LocalGeneration");
 
             MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(8, "Battery");
 
             Debug.Log("<color=cyan>[Tutorial]</color> Event 5: Scarcity Scenario Generated. High Demand vs Low Supply.");
+        }
+        else if (eventIndex == 5)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(i, "House T1");
+            }
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(3, "LocalGeneration");
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(4, "Co2 Storage");
+
+            Debug.Log("<color=cyan>[Tutorial]</color> Event 5: Multi-Objective Trade-off Scenario Generated.");
         }
     }
 }

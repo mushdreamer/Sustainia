@@ -15131,7 +15131,7 @@ MonoBehaviour:
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 1
-    formulaContent: Minimize -P = {-p}
+    formulaContent: Minimize -P
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     focusTarget: {fileID: 0}
@@ -15195,9 +15195,9 @@ MonoBehaviour:
     moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
-    focusTarget: {fileID: 0}
+    clearSceneBeforeStart: 1
+    layoutToLoad: 5
+    focusTarget: {fileID: 1113102201}
     cameraDistance: 15
     cameraAngle: 45
     showIndicator: 1
