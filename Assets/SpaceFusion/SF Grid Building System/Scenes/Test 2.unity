@@ -13568,6 +13568,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 1
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -13630,6 +13632,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 1
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -13693,6 +13697,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -13754,6 +13760,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -13816,6 +13824,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 1
     layoutToLoad: 1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 597993825}
     cameraDistance: 15
     cameraAngle: 45
@@ -13878,6 +13888,8 @@ MonoBehaviour:
     formulaContent: Input
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -13940,6 +13952,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 97609123}
     cameraDistance: 15
     cameraAngle: 45
@@ -14002,6 +14016,8 @@ MonoBehaviour:
     formulaContent: Input + Generation
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1060047925}
     cameraDistance: 15
     cameraAngle: 45
@@ -14064,6 +14080,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1113102201}
     cameraDistance: 15
     cameraAngle: 45
@@ -14126,6 +14144,8 @@ MonoBehaviour:
     formulaContent: Input + Generation - Demand
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 2120787670}
     cameraDistance: 15
     cameraAngle: 45
@@ -14189,6 +14209,8 @@ MonoBehaviour:
     formulaContent: Input + Generation - Demand = Change in battery energy
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 331275197}
     cameraDistance: 15
     cameraAngle: 45
@@ -14251,6 +14273,8 @@ MonoBehaviour:
     formulaContent: Co2(t)
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -14313,6 +14337,8 @@ MonoBehaviour:
     formulaContent: Co2(t) + emissions
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -14375,6 +14401,8 @@ MonoBehaviour:
     formulaContent: Co2(t) + emissions - removals
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -14438,6 +14466,8 @@ MonoBehaviour:
     formulaContent: Co2(t+1) = Co2(t) + emissions - removals
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -14500,6 +14530,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 1
     layoutToLoad: 2
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -14562,6 +14594,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -14625,6 +14659,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -14687,6 +14723,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -14750,6 +14788,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -14813,6 +14853,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 1
     layoutToLoad: 3
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1743267687}
     cameraDistance: 15
     cameraAngle: 45
@@ -14876,6 +14918,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -14941,6 +14985,8 @@ MonoBehaviour:
     formulaContent: 
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -15004,6 +15050,8 @@ MonoBehaviour:
     formulaContent: P = {val} - {gap} = {p}
     clearSceneBeforeStart: 1
     layoutToLoad: 4
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1060047925}
     cameraDistance: 15
     cameraAngle: 45
@@ -15067,6 +15115,8 @@ MonoBehaviour:
     formulaContent: P = {val} - {gap} = {p}
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -15131,6 +15181,8 @@ MonoBehaviour:
     formulaContent: Minimize -P
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -15194,6 +15246,8 @@ MonoBehaviour:
     formulaContent: S = {w1} * {gold} + {w2} * {green} = {s}
     clearSceneBeforeStart: 1
     layoutToLoad: 5
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 1113102201}
     cameraDistance: 15
     cameraAngle: 45
@@ -15258,6 +15312,8 @@ MonoBehaviour:
     formulaContent: S = {w1} * {gold} + {w2} * {green} = {s}
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -15322,6 +15378,8 @@ MonoBehaviour:
     formulaContent: 'your score is: {s}'
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -15386,6 +15444,8 @@ MonoBehaviour:
     formulaContent: compare different trade-offs consistently
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -15439,17 +15499,89 @@ MonoBehaviour:
     requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
-  - stepName: 'Event 9.1: Identifying Inactive Constraints'
-    instructionText: Open the City Environment panel and compare the CO2 Emission
-      level to the Safety Limit. Currently, emissions are below the threshold, meaning
-      the environmental constraint is Inactive. It exists in the model but does not
-      yet restrict your city's planning.
-    setSpecificMoney: 0
-    moneyAmount: 1000
+  - stepName: 'Event 9.1: Energy Expansion'
+    instructionText: 'Our city is entering a rapid expansion phase! To support the
+      upcoming housing projects, we need a massive increase in electricity. Please
+      construct as many powerplant as you can to boost our power supply.
+
+
+      Tip:
+      If you feel stuck, click Next to proceed.'
+    setSpecificMoney: 1
+    moneyAmount: 3000
     showFormulaPanel: 0
     formulaContent: 
+    clearSceneBeforeStart: 1
+    layoutToLoad: -1
+    enableConstraintEnforcement: 1
+    customCo2Limit: 50
+    focusTarget: {fileID: 0}
+    cameraDistance: 15
+    cameraAngle: 45
+    showIndicator: 1
+    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    startCondition: 0
+    shouldPauseGame: 1
+    requireBuilding: 1
+    houseReq:
+      checkThis: 0
+      goalCount: 1
+    farmReq:
+      checkThis: 0
+      goalCount: 1
+    instituteReq:
+      checkThis: 0
+      goalCount: 1
+    powerPlantReq:
+      checkThis: 1
+      goalCount: 10
+    co2StorageReq:
+      checkThis: 0
+      goalCount: 1
+    bankReq:
+      checkThis: 0
+      goalCount: 1
+    requireTutorialBuilding: 0
+    localGenReq:
+      checkThis: 0
+      goalCount: 1
+    batteryReq:
+      checkThis: 0
+      goalCount: 1
+    negativeHouseReq:
+      checkThis: 0
+      goalCount: 1
+    ccHouseReq:
+      checkThis: 0
+      goalCount: 1
+    requireRemoval: 0
+    requirePositiveEnergyBalance: 0
+    requireOptimizationGoal: 0
+    requireInput: 1
+    requirePValueGoal: 0
+    targetPValue: 0
+    requireFoodSatisfied: 0
+    requireFoodShortage: 0
+    requireElecStable: 0
+    requireElecDeficit: 0
+    requireElecOverload: 0
+    requireElecNormal: 0
+    requireCo2WithinLimit: 0
+    requireCo2OverLimit: 0
+  - stepName: 'Event 9.2: The Buffer Zone'
+    instructionText: Notice that you can no longer build more factories to meet the
+      city's improvement needs. Since we have hit the 50 units limit, any further
+      expansion is blocked by environmental regulations.This proves that the Co2
+      constraint is now 'Binding'. At this stage, Pollution is the primary limiting
+      factor for further improvement.
+    setSpecificMoney: 0
+    moneyAmount: 1000
+    showFormulaPanel: 1
+    formulaContent: Pollution is the primary limiting factor for further improvement
     clearSceneBeforeStart: 0
     layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45
@@ -15503,145 +15635,21 @@ MonoBehaviour:
     requireElecNormal: 0
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
-  - stepName: 'Event 9.2: Expansion Without Resistance'
-    instructionText: Construct Industrial Factories to increase Prosperity. Notice
-      that as CO2 levels rise, your score continues to climb without interference.
-      Because you remain below the safety limit, the system allows expansion without
-      mathematical resistance, showing that the constraint is not yet a bottleneck.
+  - stepName: Thank you!
+    instructionText: 'You have completed all tutorial steps! You now understand the
+      core concepts of resource balance and optimization constraints.
+
+
+      Thank
+      you for playing!'
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 0
     formulaContent: 
-    clearSceneBeforeStart: 0
+    clearSceneBeforeStart: 1
     layoutToLoad: -1
-    focusTarget: {fileID: 0}
-    cameraDistance: 15
-    cameraAngle: 45
-    showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    startCondition: 0
-    shouldPauseGame: 1
-    requireBuilding: 0
-    houseReq:
-      checkThis: 0
-      goalCount: 1
-    farmReq:
-      checkThis: 0
-      goalCount: 1
-    instituteReq:
-      checkThis: 0
-      goalCount: 1
-    powerPlantReq:
-      checkThis: 0
-      goalCount: 1
-    co2StorageReq:
-      checkThis: 0
-      goalCount: 1
-    bankReq:
-      checkThis: 0
-      goalCount: 1
-    requireTutorialBuilding: 0
-    localGenReq:
-      checkThis: 0
-      goalCount: 1
-    batteryReq:
-      checkThis: 0
-      goalCount: 1
-    negativeHouseReq:
-      checkThis: 0
-      goalCount: 1
-    ccHouseReq:
-      checkThis: 0
-      goalCount: 1
-    requireRemoval: 0
-    requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 0
-    requireInput: 1
-    requirePValueGoal: 0
-    targetPValue: 0
-    requireFoodSatisfied: 0
-    requireFoodShortage: 0
-    requireElecStable: 0
-    requireElecDeficit: 0
-    requireElecOverload: 0
-    requireElecNormal: 0
-    requireCo2WithinLimit: 0
-    requireCo2OverLimit: 0
-  - stepName: 'Event 9.3: The Shadow Price of Zero'
-    instructionText: While building within this buffer, the Shadow Price of the CO2
-      limit remains at Zero. In optimization, a zero shadow price indicates that
-      the constraint is not "binding"; relaxing the limit further would not improve
-      your score since you haven't exhausted your current allowance.
-    setSpecificMoney: 0
-    moneyAmount: 1000
-    showFormulaPanel: 0
-    formulaContent: 
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
-    focusTarget: {fileID: 0}
-    cameraDistance: 15
-    cameraAngle: 45
-    showIndicator: 1
-    indicatorColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    startCondition: 0
-    shouldPauseGame: 0
-    requireBuilding: 0
-    houseReq:
-      checkThis: 0
-      goalCount: 1
-    farmReq:
-      checkThis: 0
-      goalCount: 1
-    instituteReq:
-      checkThis: 0
-      goalCount: 1
-    powerPlantReq:
-      checkThis: 0
-      goalCount: 1
-    co2StorageReq:
-      checkThis: 0
-      goalCount: 1
-    bankReq:
-      checkThis: 0
-      goalCount: 1
-    requireTutorialBuilding: 0
-    localGenReq:
-      checkThis: 0
-      goalCount: 1
-    batteryReq:
-      checkThis: 0
-      goalCount: 1
-    negativeHouseReq:
-      checkThis: 0
-      goalCount: 1
-    ccHouseReq:
-      checkThis: 0
-      goalCount: 1
-    requireRemoval: 0
-    requirePositiveEnergyBalance: 0
-    requireOptimizationGoal: 1
-    requireInput: 0
-    requirePValueGoal: 0
-    targetPValue: 0
-    requireFoodSatisfied: 0
-    requireFoodShortage: 0
-    requireElecStable: 0
-    requireElecDeficit: 0
-    requireElecOverload: 0
-    requireElecNormal: 0
-    requireCo2WithinLimit: 0
-    requireCo2OverLimit: 0
-  - stepName: 'Event 9.4: Reaching the Binding Constraint'
-    instructionText: The moment your total CO2 Emission matches the Safety Limit,
-      the constraint becomes Binding. The Shadow Price rises above zero, signaling
-      that the environment has finally become the primary factor stopping your Prosperity
-      Score from increasing further.
-    setSpecificMoney: 0
-    moneyAmount: 1000
-    showFormulaPanel: 0
-    formulaContent: 
-    clearSceneBeforeStart: 0
-    layoutToLoad: -1
+    enableConstraintEnforcement: 0
+    customCo2Limit: -1
     focusTarget: {fileID: 0}
     cameraDistance: 15
     cameraAngle: 45

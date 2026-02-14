@@ -34,6 +34,13 @@ public class TutorialStep
     public bool clearSceneBeforeStart = false;
     public int layoutToLoad = -1;
 
+    // --- 约束绑定教学彩蛋 ---
+    [Header("Constraint Enforcement (Easter Egg)")]
+    [Tooltip("如果勾选，当 CO2 超过限制时会触发 3 秒倒计时强制拆除逻辑")]
+    public bool enableConstraintEnforcement = false;
+    [Tooltip("如果大于0，将在此步骤开始时强制设置环境上限")]
+    public float customCo2Limit = -1f;
+
     [Header("Camera Control")]
     public GameObject focusTarget;
     public float cameraDistance = 15f;

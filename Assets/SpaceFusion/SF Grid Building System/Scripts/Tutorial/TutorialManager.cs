@@ -61,6 +61,8 @@ public class TutorialManager : MonoBehaviour
 
         TutorialStep currentStep = steps[_currentStepIndex];
 
+        HandleConstraintEnforcement(currentStep);
+
         if (_isWaitingForStartCondition)
         {
             bool met = false;
@@ -426,6 +428,74 @@ public class TutorialManager : MonoBehaviour
         {
             FormulaUI.Instance.UpdateFormulaText(content);
         }
+    }
+
+    private Coroutine _enforcementCoroutine;
+
+    private void HandleConstraintEnforcement(TutorialStep step)
+    {
+        // 只有在 Inspector 勾选了开关，且没有正在运行倒计时，且 ResourceManager 存在时才执行
+        if (!step.enableConstraintEnforcement || _enforcementCoroutine != null || ResourceManager.Instance == null) return;
+
+        float currentCo2 = ResourceManager.Instance.GetCurrentNetEmission();
+
+        // 获取当前关卡的限制值
+        float limit = (LevelScenarioLoader.Instance != null && LevelScenarioLoader.Instance.currentLevel != null)
+                     ? LevelScenarioLoader.Instance.currentLevel.goalCo2 : 999f;
+
+        // 如果 CO2 超过了 Limit (加一个极小的余量 epsilon)
+        if (currentCo2 > limit + 0.01f)
+        {
+            _enforcementCoroutine = StartCoroutine(EnforcementRoutine(step));
+        }
+    }
+
+    private IEnumerator EnforcementRoutine(TutorialStep step)
+    {
+        // 1. 临时修改 UI 文本显示警告
+        if (tutorialUI != null)
+        {
+            // 记录原始文本以便恢复，或者直接重新调用 ShowStep
+            tutorialUI.instructionText.text = "<color=red><b>[Environmental Violation]</b></color>\n" +
+            "CO2 emissions have exceeded the municipal limit! The violating building will be forcibly demolished in 3 seconds!";
+        }
+
+        // 2. 倒计时效果（3... 2... 1...）
+        for (int i = 3; i > 0; i--)
+        {
+            Debug.Log($"<color=red>[Enforcement]</color> T-minus {i} seconds...");
+            yield return new WaitForSeconds(1f);
+            if (tutorialUI != null)
+                tutorialUI.instructionText.text += $"\n<color=red>{i}...</color>";
+        }
+
+        // 3. 执行拆除逻辑：优先拆除最近的一个建筑
+        var allBuildings = ResourceManager.Instance.GetAllPlacedBuildings();
+        if (allBuildings.Count > 0)
+        {
+            // 销毁最后一个加入列表的建筑
+            GameObject toDestroy = allBuildings[allBuildings.Count - 1].gameObject;
+            Debug.Log($"<color=red>[Action]</color> Removing {toDestroy.name} for environmental violation.");
+            Destroy(toDestroy);
+        }
+        else
+        {
+            // 如果普通建筑列表为空，尝试拆除教程建筑
+            var tutorialBuildings = ResourceManager.Instance.GetAllTutorialBuildings();
+            if (tutorialBuildings.Count > 0)
+            {
+                Destroy(tutorialBuildings[tutorialBuildings.Count - 1].gameObject);
+            }
+        }
+
+        // 4. 等待物理销毁和数值更新完成
+        yield return new WaitForEndOfFrame();
+
+        // 5. 恢复原本的教学文本
+        if (tutorialUI != null) tutorialUI.ShowStep(step);
+
+        // 6. 重置协程状态，允许下一次违规检测
+        _enforcementCoroutine = null;
     }
 
     private void UpdateTeachingWeights()

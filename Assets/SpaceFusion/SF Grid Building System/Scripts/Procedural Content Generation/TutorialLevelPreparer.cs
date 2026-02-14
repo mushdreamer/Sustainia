@@ -131,5 +131,15 @@ public class TutorialLevelPreparer : MonoBehaviour
 
             Debug.Log("<color=cyan>[Tutorial]</color> Event 5: Multi-Objective Trade-off Scenario Generated.");
         }
+        else if (eventIndex == 6)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(i, "House T1");
+            }
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(4, "Food");
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(5, "Bank");
+            MultiZoneCityGenerator.Instance.ForceSpawnBuildingInZone(6, "Institute");
+        }
     }
 }
