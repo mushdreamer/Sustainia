@@ -1,10 +1,12 @@
-using System;
+﻿using System;
 using SpaceFusion.SF_Grid_Building_System.Scripts.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers {
-    public class InputManager : MonoBehaviour {
+namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers
+{
+    public class InputManager : MonoBehaviour
+    {
         public static InputManager Instance;
 
         public event Action OnClicked;
@@ -15,6 +17,7 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers {
         public event Action OnLmbRelease;
         public event Action<Vector2> OnMmbDrag;
         public event Action<Vector2> OnRmbDrag;
+        public event Action OnRmbClicked; // 新增：右键点击事件
         public event Action<float> OnScroll;
         public event Action<Vector2> OnMouseAtScreenCorner;
 
@@ -31,17 +34,23 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers {
         private float _holdThreshold;
         private float _edgeMarginForAutoMove;
 
-        private void Awake() {
-            if (Instance != null) {
+        // 新增变量用于判断右键点击
+        private float _rmbDownTime;
+        private const float ClickThreshold = 0.2f;
+
+        private void Awake()
+        {
+            if (Instance != null)
+            {
                 Destroy(gameObject);
             }
 
             Instance = this;
             _screenSize = new Vector2(Screen.width, Screen.height);
-
         }
 
-        private void Start() {
+        private void Start()
+        {
             var config = GameConfig.Instance;
             _placementLayerMask = config.PlacementLayerMask;
             _holdThreshold = config.HoldThreshold;
@@ -49,92 +58,114 @@ namespace SpaceFusion.SF_Grid_Building_System.Scripts.Managers {
             _sceneCamera = GameManager.Instance.SceneCamera;
         }
 
-        private void Update() {
-            if (Input.GetMouseButtonDown(0)) {
+        private void Update()
+        {
+            // 左键逻辑
+            if (Input.GetMouseButtonDown(0))
+            {
                 _isHolding = true;
                 _holdTimer = 0;
                 OnLmbPress?.Invoke(Input.mousePosition);
                 OnClicked?.Invoke();
             }
 
-            if (_isHolding) {
+            if (_isHolding)
+            {
                 _holdTimer += Time.deltaTime;
-                if (_holdTimer >= _holdThreshold) {
+                if (_holdTimer >= _holdThreshold)
+                {
                     OnLmbHold?.Invoke(Input.mousePosition);
-                    _isHolding = false; // Only invoke hold once
+                    _isHolding = false;
                 }
             }
 
-            if (Input.GetMouseButtonUp(0)) {
+            if (Input.GetMouseButtonUp(0))
+            {
                 _isHolding = false;
                 OnLmbRelease?.Invoke();
             }
 
-            if (Input.GetMouseButtonDown(2)) {
+            // 中键逻辑
+            if (Input.GetMouseButtonDown(2))
+            {
                 _lastMousePositionMmb = Input.mousePosition;
             }
 
-            if (Input.GetMouseButton(2)) {
+            if (Input.GetMouseButton(2))
+            {
                 var delta = (Vector2)Input.mousePosition - _lastMousePositionMmb;
                 _lastMousePositionMmb = Input.mousePosition;
                 OnMmbDrag?.Invoke(delta);
             }
 
-            if (Input.GetMouseButtonDown(1)) {
+            // 右键逻辑（修改部分）
+            if (Input.GetMouseButtonDown(1))
+            {
                 _lastMousePositionRmb = Input.mousePosition;
+                _rmbDownTime = Time.time; // 记录按下时间
             }
 
-            if (Input.GetMouseButton(1)) {
+            if (Input.GetMouseButton(1))
+            {
                 var delta = (Vector2)Input.mousePosition - _lastMousePositionRmb;
                 _lastMousePositionRmb = Input.mousePosition;
                 OnRmbDrag?.Invoke(delta);
             }
 
+            if (Input.GetMouseButtonUp(1))
+            {
+                // 如果按下到抬起的时间很短，判定为一次点击
+                if (Time.time - _rmbDownTime < ClickThreshold)
+                {
+                    OnRmbClicked?.Invoke();
+                    OnExit?.Invoke(); // 直接复用 OnExit 事件来取消建造
+                }
+            }
+
+            // 其他输入
             var scrollInput = Input.GetAxis("Mouse ScrollWheel");
-            if (scrollInput != 0) {
+            if (scrollInput != 0)
+            {
                 OnScroll?.Invoke(scrollInput);
             }
 
-            if (Input.GetKeyDown(KeyCode.Escape)) {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
                 OnExit?.Invoke();
             }
 
-            if (Input.GetKeyDown(KeyCode.R)) {
+            if (Input.GetKeyDown(KeyCode.R))
+            {
                 OnRotate?.Invoke();
             }
 
             Vector2 mousePos = Input.mousePosition;
 
-            // Check if the mouse is near the edges
             if (!(mousePos.x <= _edgeMarginForAutoMove) &&
                 !(mousePos.x >= _screenSize.x - _edgeMarginForAutoMove) &&
                 !(mousePos.y <= _edgeMarginForAutoMove) &&
-                !(mousePos.y >= _screenSize.y - _edgeMarginForAutoMove)) {
+                !(mousePos.y >= _screenSize.y - _edgeMarginForAutoMove))
+            {
                 return;
             }
 
-            // Send normalized direction from center
             var screenCenter = new Vector2(_screenSize.x / 2, _screenSize.y / 2);
             var direction = (mousePos - screenCenter).normalized;
             OnMouseAtScreenCorner?.Invoke(direction);
         }
 
-        /// <summary>
-        /// Checks if the pointer is over a UI object, since we do not want to place any object when we click on a UI object (action called in the PlacementSystem)
-        /// </summary>
-        public static bool IsPointerOverUIObject() {
+        public static bool IsPointerOverUIObject()
+        {
             return EventSystem.current.IsPointerOverGameObject();
         }
 
-        /// <summary>
-        /// Selects the exact grid map position based on the mouse input
-        /// The ground will have a layer defined, so we only track the positions on those layers and ignore all other objects
-        /// </summary>
-        public Vector3 GetSelectedMapPosition() {
+        public Vector3 GetSelectedMapPosition()
+        {
             var mousePos = Input.mousePosition;
             mousePos.z = _sceneCamera.nearClipPlane;
             var ray = _sceneCamera.ScreenPointToRay(mousePos);
-            if (Physics.Raycast(ray, out var hit, 100, _placementLayerMask)) {
+            if (Physics.Raycast(ray, out var hit, 100, _placementLayerMask))
+            {
                 _lastGridPosition = hit.point;
             }
 
