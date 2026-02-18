@@ -13625,11 +13625,12 @@ MonoBehaviour:
     requireCo2OverLimit: 0
   - stepName: Build Anything
     instructionText: Select any building from the shop panel at the bottom of the
-      screen. To begin, move your cursor over the shop panel and Left Click on the
-      'House' icon. Once selected, hover your cursor over an empty grid cell. You
-      will notice small green circles marking valid locations where buildings can
-      be placed. When the building blueprint on your cursor turns green, it indicates
-      a valid placement; simply Left Click again to finalize the construction.
+      screen. To begin, <color="red">move your cursor over the shop panel and Left
+      Click on the 'House' icon</color>. Once selected, <color="red">hover your cursor</color>
+      over an <color="red">empty grid cell</color>. You will notice small <color="red">green
+      circles</color> marking valid locations where buildings can be placed. When
+      the building blueprint on your cursor turns green, it indicates a valid placement;
+      simply <color="red">Left Click again</color> to finalize the construction.
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 0
@@ -13692,9 +13693,9 @@ MonoBehaviour:
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: Remove Building
-    instructionText: Great! Now let's try to remove it. Click and HOLD the Left Mouse
-      Button on the building to open the menu, then select the "Trash Can" button
-      to remove.
+    instructionText: Great! Now let's try to remove it. <color="red">Click and HOLD
+      the Left Mouse Button on the building</color> to open the menu, then select
+      the <color="red">"Trash Can" button</color> to remove.
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 0
@@ -13884,8 +13885,8 @@ MonoBehaviour:
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 1.2: Building the Power Plant'
-    instructionText: Place a Power Plant. Check the UI; the Input value increases
-      as energy enters the network.
+    instructionText: Place a Power Plant. Check the electricity demand in Level Goal
+      UI; the Input value increases as energy enters the network.
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 1
@@ -14204,9 +14205,9 @@ MonoBehaviour:
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 1.7: The Role of Battery Storage'
-    instructionText: 'The city energy balance is calculated as: Input + Generation
-      - Demand. The result is the Change in battery energy (Storage). Surplus is
-      stored; deficits are drawn from storage.'
+    instructionText: 'The city energy balance is calculated as: <color="red">Input
+      + Generation - Demand. The result is the Change in battery energy (Storage)</color>.
+      Surplus is stored; deficits are drawn from storage.'
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 1
@@ -14462,8 +14463,9 @@ MonoBehaviour:
     requireCo2OverLimit: 0
   - stepName: 'Event 2.4: Implementing Removals & The Final Balance'
     instructionText: 'The environment calculates the next year''s level (t+1) using
-      this formula: Co2(t+1) = Co2(t) + emissions - removals. Manage this balance
-      to keep the total concentration within sustainable limits year after year.'
+      this formula: <color="red">Co2(t+1) = Co2(t) + emissions - removals</color>.
+      Manage this balance to keep the total concentration within sustainable limits
+      year after year.'
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 1
@@ -14848,10 +14850,10 @@ MonoBehaviour:
     requireElecNormal: 0
     requireCo2WithinLimit: 1
     requireCo2OverLimit: 0
-  - stepName: 'Event 3.5: The Final Integrated Objective'
-    instructionText: 'The complete objective is now set: "Minimize total cost while
-      meeting demand and CO2 limits". Optimization is the process of finding the
-      cheapest way to satisfy all constraints simultaneously.'
+  - stepName: 'Event 3.6: The Final Integrated Objective'
+    instructionText: 'The complete objective is now set: <color="red">"Minimize total
+      cost while meeting demand and CO2 limits"</color>. Optimization is the process
+      of finding the cheapest way to satisfy all constraints simultaneously.'
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 0
@@ -14980,8 +14982,8 @@ MonoBehaviour:
     requireCo2OverLimit: 0
   - stepName: 'Event 4.2: The Capacity Boundary'
     instructionText: 'Now you will know that the constraint has to be feasible. For
-      example: Battery energy cannot exceed its capacity, Real-world variables (Houses,
-      Plants) must be greater than 0.'
+      example: <color="red">Battery energy cannot exceed its capacity</color>, <color="red">Real-world
+      variables (Houses, Plants) must be greater than 0</color>.'
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 0
@@ -15241,10 +15243,10 @@ MonoBehaviour:
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 5.3: Minimizing -P to Maximize P'
-    instructionText: If your solver only accepts minimization problems. To reach
-      the peak of P, we tell the solver to minimize -P. Minimizing the negative of
-      a value is mathematically identical to maximizing the value itself. Both lead
-      to the same optimal city layout.
+    instructionText: If your solver only accepts minimization problems. <color="red">To
+      reach the peak of P, we tell the solver to minimize -P</color>. Minimizing
+      the negative of a value is mathematically identical to maximizing the value
+      itself. Both lead to the same optimal city layout.
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 1
@@ -15439,9 +15441,10 @@ MonoBehaviour:
     requireCo2OverLimit: 0
   - stepName: 'Event 6.3: The Logic of the Optimal Score'
     instructionText: The Prosperity Score acts as the ultimate compass for decision-making.
-      After weights are set, the system identifies the plan with the highest score
-      within pollution limits as the "Optimal Plan," proving that maximizing this
-      integrated score yields the best possible version of your city.
+      After weights are set, the system identifies the plan with the <color="red">highest
+      score within pollution limits as the "Optimal Plan,"</color>proving that <color="red">combining
+      objectives into a single weighted score</color> and maximizing this integrated
+      score yields the best possible version of your city.
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 1
@@ -15504,10 +15507,10 @@ MonoBehaviour:
     requireCo2WithinLimit: 0
     requireCo2OverLimit: 0
   - stepName: 'Event 6.4: The Power of Consistent Trade-offs'
-    instructionText: Collapsing Gold and Green into a single weighted score allows
-      the system to compare different trade-offs consistently. This ensures every
-      building choice is evaluated on the same scale, enabling the solver to find
-      the best result based precisely on your defined values.
+    instructionText: Collapsing Gold and Green into a single weighted score <color="red">allows
+      the system to compare different trade-offs consistently</color>. This ensures
+      every building choice is evaluated on the same scale, enabling the solver to
+      find the best result based precisely on your defined values.
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 1
@@ -15642,8 +15645,8 @@ MonoBehaviour:
     instructionText: Notice that you can no longer build more factories to meet the
       city's improvement needs. Since we have hit the 50 units limit, any further
       expansion is blocked by environmental regulations.This proves that the Co2
-      constraint is now 'Binding'. At this stage, Pollution is the primary limiting
-      factor for further improvement.
+      constraint is now 'Binding'. At this stage, <color="red">Pollution is the primary
+      limiting factor for further improvement</color>.
     setSpecificMoney: 0
     moneyAmount: 1000
     showFormulaPanel: 1
@@ -22866,6 +22869,18 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1614961477845010620, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_text
+      value: Notification
+      objectReference: {fileID: 0}
+    - target: {fileID: 1614961477845010620, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_margin.x
+      value: -272.05573
+      objectReference: {fileID: 0}
+    - target: {fileID: 1614961477845010620, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
+      propertyPath: m_margin.z
+      value: -267.61337
+      objectReference: {fileID: 0}
     - target: {fileID: 2232338049669128568, guid: 6ad444ab0f22ffa4eaf30a798243a0be, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -23073,10 +23088,11 @@ PrefabInstance:
         transition.
 
 
-        To navigate your city, use the WASD keys to move the
-        camera, hold Right Click to rotate, and use the Scroll Wheel to zoom. You
-        can press Right Click to escape current actions. For city management, use
-        Left Click to build, demolish, and interact with various elements.
+        To navigate your city, use the <color="red">WASD keys
+        to move the camera</color>, <color="red">hold Right Click to rotate</color>,
+        and use the <color="red">Scroll Wheel to zoom</color>. You can press <color="red">Right
+        Click to escape current actions</color>. For city management, use <color="red">Left
+        Click to build, demolish, and interact with various elements.</color>
 
 
         The
