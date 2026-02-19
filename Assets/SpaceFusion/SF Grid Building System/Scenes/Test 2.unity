@@ -14856,8 +14856,8 @@ MonoBehaviour:
       of finding the cheapest way to satisfy all constraints simultaneously.'
     setSpecificMoney: 0
     moneyAmount: 1000
-    showFormulaPanel: 0
-    formulaContent: 
+    showFormulaPanel: 1
+    formulaContent: Minimize total cost while meeting demand and CO2 limits
     clearSceneBeforeStart: 0
     layoutToLoad: -1
     enableConstraintEnforcement: 0
